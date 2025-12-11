@@ -179,6 +179,79 @@
             line-height: 1.5;
         }
 
+        .collapsible-section {
+            margin-bottom: 18px;
+        }
+
+        .collapsible-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .collapsible-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .collapsible-header h2 {
+            margin: 0;
+            color: white;
+            font-size: 15px;
+        }
+
+        .collapsible-icon {
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .collapsible-header.active .collapsible-icon {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .collapsible-content.active {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .collapsible-inner {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .form-group {
             margin-bottom: 18px;
         }
@@ -748,8 +821,24 @@
             </div>
 
             <div class="form-group">
-                <label>Ancho del Logo (px)</label>
-                <input type="text" id="logoWidth" value="300">
+                <label>Ancho del Logo (px o %)</label>
+                <input type="text" id="logoWidth" value="300px" placeholder="300px o 100%">
+            </div>
+
+            <div class="form-group">
+                <label>Alto del Logo (px, % o auto)</label>
+                <input type="text" id="logoHeight" value="auto" placeholder="auto, 100px o 50%">
+            </div>
+
+            <div class="form-group">
+                <label>Ajuste de Imagen (object-fit)</label>
+                <select id="logoObjectFit">
+                    <option value="none">Ninguno (por defecto)</option>
+                    <option value="contain">Contain - Ajustar sin recortar</option>
+                    <option value="cover">Cover - Llenar recortando</option>
+                    <option value="fill">Fill - Estirar para llenar</option>
+                    <option value="scale-down">Scale Down - Reducir si es necesario</option>
+                </select>
             </div>
 
             <div class="form-group">
@@ -765,99 +854,115 @@
                 </button>
             </div>
 
-            <h2>🎨 Colores</h2>
+            <div class="collapsible-section">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <h2>🎨 Colores Generales</h2>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <div class="form-group">
+                            <label>Color de Fondo Principal</label>
+                            <div class="color-input">
+                                <input type="color" id="bgColor" value="#ffffff">
+                                <input type="text" class="color-value" id="bgColorValue" value="#ffffff">
+                            </div>
+                        </div>
 
-            <div class="form-group">
-                <label>Color de Fondo Principal</label>
-                <div class="color-input">
-                    <input type="color" id="bgColor" value="#ffffff">
-                    <input type="text" class="color-value" id="bgColorValue" value="#ffffff">
+                        <div class="form-group">
+                            <label>Color del Contenedor</label>
+                            <div class="color-input">
+                                <input type="color" id="containerColor" value="#ffffff">
+                                <input type="text" class="color-value" id="containerColorValue" value="#ffffff">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Color del Borde del Contenedor</label>
+                            <div class="color-input">
+                                <input type="color" id="borderColor" value="#cccccc">
+                                <input type="text" class="color-value" id="borderColorValue" value="#cccccc">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Color del Texto</label>
+                            <div class="color-input">
+                                <input type="color" id="textColor" value="#153643">
+                                <input type="text" class="color-value" id="textColorValue" value="#153643">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Color del Contenedor</label>
-                <div class="color-input">
-                    <input type="color" id="containerColor" value="#ffffff">
-                    <input type="text" class="color-value" id="containerColorValue" value="#ffffff">
+            <div class="collapsible-section">
+                <div class="collapsible-header active" onclick="toggleCollapsible(this)">
+                    <h2>🔘 Estilo del Botón</h2>
+                    <span class="collapsible-icon">▼</span>
                 </div>
-            </div>
+                <div class="collapsible-content active">
+                    <div class="collapsible-inner">
+                        <div class="form-group">
+                            <label>Color de Fondo del Botón</label>
+                            <div class="color-input">
+                                <input type="color" id="buttonColor" value="#070707">
+                                <input type="text" class="color-value" id="buttonColorValue" value="#070707">
+                            </div>
+                        </div>
 
-            <div class="form-group">
-                <label>Color del Borde del Contenedor</label>
-                <div class="color-input">
-                    <input type="color" id="borderColor" value="#cccccc">
-                    <input type="text" class="color-value" id="borderColorValue" value="#cccccc">
+                        <div class="form-group">
+                            <label>Color del Texto del Botón</label>
+                            <div class="color-input">
+                                <input type="color" id="buttonTextColor" value="#ffffff">
+                                <input type="text" class="color-value" id="buttonTextColorValue" value="#ffffff">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Color del Borde del Botón</label>
+                            <div class="color-input">
+                                <input type="color" id="buttonBorderColor" value="#070707">
+                                <input type="text" class="color-value" id="buttonBorderColorValue" value="#070707">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Grosor del Borde (px)</label>
+                            <input type="number" id="buttonBorderWidth" value="0" min="0" max="10">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Radio del Borde (px)</label>
+                            <input type="number" id="buttonBorderRadius" value="20" min="0" max="50">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Padding (Top, Right, Bottom, Left en px)</label>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                                <input type="number" id="buttonPaddingTop" value="15" min="0" max="50" placeholder="Top">
+                                <input type="number" id="buttonPaddingRight" value="15" min="0" max="50" placeholder="Right">
+                                <input type="number" id="buttonPaddingBottom" value="15" min="0" max="50" placeholder="Bottom">
+                                <input type="number" id="buttonPaddingLeft" value="15" min="0" max="50" placeholder="Left">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Margin (Top, Right, Bottom, Left en px)</label>
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                                <input type="number" id="buttonMarginTop" value="10" min="0" max="50" placeholder="Top">
+                                <input type="number" id="buttonMarginRight" value="0" min="0" max="50" placeholder="Right">
+                                <input type="number" id="buttonMarginBottom" value="10" min="0" max="50" placeholder="Bottom">
+                                <input type="number" id="buttonMarginLeft" value="0" min="0" max="50" placeholder="Left">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ancho del Botón (px)</label>
+                            <input type="number" id="buttonWidth" value="200" min="100" max="400">
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label>Color del Texto</label>
-                <div class="color-input">
-                    <input type="color" id="textColor" value="#153643">
-                    <input type="text" class="color-value" id="textColorValue" value="#153643">
-                </div>
-            </div>
-
-            <h2>🔘 Estilo del Botón</h2>
-
-            <div class="form-group">
-                <label>Color de Fondo del Botón</label>
-                <div class="color-input">
-                    <input type="color" id="buttonColor" value="#070707">
-                    <input type="text" class="color-value" id="buttonColorValue" value="#070707">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Color del Texto del Botón</label>
-                <div class="color-input">
-                    <input type="color" id="buttonTextColor" value="#ffffff">
-                    <input type="text" class="color-value" id="buttonTextColorValue" value="#ffffff">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Color del Borde del Botón</label>
-                <div class="color-input">
-                    <input type="color" id="buttonBorderColor" value="#070707">
-                    <input type="text" class="color-value" id="buttonBorderColorValue" value="#070707">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Grosor del Borde (px)</label>
-                <input type="number" id="buttonBorderWidth" value="0" min="0" max="10">
-            </div>
-
-            <div class="form-group">
-                <label>Radio del Borde (px)</label>
-                <input type="number" id="buttonBorderRadius" value="20" min="0" max="50">
-            </div>
-
-            <div class="form-group">
-                <label>Padding (Top, Right, Bottom, Left en px)</label>
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-                    <input type="number" id="buttonPaddingTop" value="15" min="0" max="50" placeholder="Top">
-                    <input type="number" id="buttonPaddingRight" value="15" min="0" max="50" placeholder="Right">
-                    <input type="number" id="buttonPaddingBottom" value="15" min="0" max="50" placeholder="Bottom">
-                    <input type="number" id="buttonPaddingLeft" value="15" min="0" max="50" placeholder="Left">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Margin (Top, Right, Bottom, Left en px)</label>
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-                    <input type="number" id="buttonMarginTop" value="10" min="0" max="50" placeholder="Top">
-                    <input type="number" id="buttonMarginRight" value="0" min="0" max="50" placeholder="Right">
-                    <input type="number" id="buttonMarginBottom" value="10" min="0" max="50" placeholder="Bottom">
-                    <input type="number" id="buttonMarginLeft" value="0" min="0" max="50" placeholder="Left">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Ancho del Botón (px)</label>
-                <input type="number" id="buttonWidth" value="200" min="100" max="400">
             </div>
 
             <div class="button-group">
@@ -963,7 +1068,9 @@
         // Valores por defecto de la plantilla
         const defaults = {
             logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Wikipedia-logo-v2-es.svg',
-            logoWidth: '300',
+            logoWidth: '300px',
+            logoHeight: 'auto',
+            logoObjectFit: 'none',
             emailContent: 'Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para firmar:\n\n{{filename}}\n\nPara proceder con la revisión de la documentación presione el siguiente botón:\n\n{{sign_button}}\n\n{{email_body}}',
             bgColor: '#ffffff',
             containerColor: '#ffffff',
@@ -989,6 +1096,13 @@
         let isMobileView = false;
         let isFullscreen = false;
         let showCodeView = false;
+
+        // Toggle collapsible sections
+        function toggleCollapsible(header) {
+            header.classList.toggle('active');
+            const content = header.nextElementSibling;
+            content.classList.toggle('active');
+        }
 
         // Renderizar variables inline como botones
         function renderVariablesInline() {
@@ -1193,6 +1307,8 @@
         function generateHTML() {
             const logoUrl = document.getElementById('logoUrl').value || defaults.logoUrl;
             const logoWidth = document.getElementById('logoWidth').value || defaults.logoWidth;
+            const logoHeight = document.getElementById('logoHeight').value || defaults.logoHeight;
+            const logoObjectFit = document.getElementById('logoObjectFit').value || defaults.logoObjectFit;
             const emailContent = document.getElementById('emailContent').value;
             const bgColor = document.getElementById('bgColor').value;
             const containerColor = document.getElementById('containerColor').value;
@@ -1212,6 +1328,10 @@
             const buttonMarginLeft = document.getElementById('buttonMarginLeft').value || '0';
             const buttonWidth = document.getElementById('buttonWidth').value || '200';
             const textColor = document.getElementById('textColor').value;
+
+            // Crear estilos del logo
+            const logoObjectFitStyle = logoObjectFit !== 'none' ? `object-fit:${logoObjectFit};` : '';
+            const logoStyles = `width:${logoWidth};height:${logoHeight};${logoObjectFitStyle}display:block;`;
 
             // Crear el HTML del botón estilizado
             const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
@@ -1267,7 +1387,7 @@
 \t\t\t\t<table role="presentation" style="width:800px;border-collapse:collapse;border:1px solid ${borderColor};border-spacing:0;text-align:left;background:${containerColor}">
 \t\t\t\t\t<tr>
 \t\t\t\t\t\t<td align="center" style="padding:30px 0 20px 0;">
-\t\t\t\t\t\t\t<img width="${logoWidth}px" height="auto" style="display:block;" alt="Logo" src="${logoUrl}">
+\t\t\t\t\t\t\t<img style="${logoStyles}" alt="Logo" src="${logoUrl}">
 \t\t\t\t\t\t</td>
 \t\t\t\t\t</tr>
 \t\t\t\t\t<tr>
