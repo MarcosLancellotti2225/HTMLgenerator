@@ -19,22 +19,25 @@
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
+            width: 95%;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 450px 1fr;
-            gap: 20px;
+            grid-template-columns: 420px 1fr;
+            gap: 0;
             background: white;
             border-radius: 16px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
+            min-height: 85vh;
         }
 
         .controls {
             background: #f8f9fa;
-            padding: 30px;
+            padding: 25px;
             overflow-y: auto;
-            max-height: 90vh;
+            max-height: 85vh;
+            border-right: 1px solid #e9ecef;
         }
 
         .preview-section {
@@ -100,6 +103,7 @@
             overflow-y: auto;
             flex: 1;
             position: relative;
+            max-height: 85vh;
         }
 
         .preview.fullscreen {
@@ -110,6 +114,36 @@
             bottom: 0;
             z-index: 9999;
             max-height: 100vh;
+            background: white;
+        }
+
+        .fullscreen-close {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .fullscreen-close:hover {
+            background: #c82333;
+            transform: scale(1.1);
+        }
+
+        .fullscreen-close.show {
+            display: flex;
         }
 
         .preview.mobile-view .preview-frame {
@@ -117,20 +151,22 @@
             margin: 0 auto;
             border: 3px solid #333;
             border-radius: 30px;
-            padding: 10px;
+            padding: 20px 10px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            background: white;
         }
 
         h1 {
             color: #667eea;
             margin-bottom: 10px;
-            font-size: 24px;
+            font-size: 26px;
+            font-weight: 700;
         }
 
         h2 {
             color: #495057;
-            margin: 25px 0 15px 0;
-            font-size: 16px;
+            margin: 20px 0 12px 0;
+            font-size: 15px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -138,12 +174,13 @@
 
         .subtitle {
             color: #6c757d;
-            margin-bottom: 25px;
-            font-size: 14px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            line-height: 1.5;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         label {
@@ -253,8 +290,10 @@
             border-radius: 8px;
             padding: 20px;
             background: #f8f9fa;
-            transform-origin: top left;
+            transform-origin: top center;
             transition: transform 0.3s;
+            width: 100%;
+            overflow: auto;
         }
 
         .code-view {
@@ -803,6 +842,7 @@
                 <div class="preview-frame" id="previewFrame"></div>
                 <pre class="code-view" id="codeView"></pre>
             </div>
+            <button class="fullscreen-close" id="fullscreenCloseBtn" onclick="toggleFullscreen()">✕</button>
         </div>
     </div>
 
@@ -1186,15 +1226,18 @@ ${contentParagraphs}
             isFullscreen = !isFullscreen;
             const preview = document.getElementById('previewContainer');
             const btn = document.getElementById('fullscreenBtn');
+            const closeBtn = document.getElementById('fullscreenCloseBtn');
             
             if (isFullscreen) {
                 preview.classList.add('fullscreen');
                 btn.classList.add('active');
                 btn.innerHTML = '⛶ Salir Pantalla Completa';
+                closeBtn.classList.add('show');
             } else {
                 preview.classList.remove('fullscreen');
                 btn.classList.remove('active');
                 btn.innerHTML = '⛶ Pantalla Completa';
+                closeBtn.classList.remove('show');
             }
         }
 
