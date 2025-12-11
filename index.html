@@ -193,6 +193,7 @@
 
         input[type="text"],
         input[type="url"],
+        input[type="number"],
         textarea,
         input[type="color"] {
             width: 100%;
@@ -205,6 +206,7 @@
 
         input[type="text"]:focus,
         input[type="url"]:focus,
+        input[type="number"]:focus,
         textarea:focus {
             outline: none;
             border-color: #667eea;
@@ -777,7 +779,7 @@
             </div>
 
             <div class="form-group">
-                <label>Color del Borde</label>
+                <label>Color del Borde del Contenedor</label>
                 <div class="color-input">
                     <input type="color" id="borderColor" value="#cccccc">
                     <input type="text" class="color-value" id="borderColorValue" value="#cccccc">
@@ -785,7 +787,17 @@
             </div>
 
             <div class="form-group">
-                <label>Color del Botón</label>
+                <label>Color del Texto</label>
+                <div class="color-input">
+                    <input type="color" id="textColor" value="#153643">
+                    <input type="text" class="color-value" id="textColorValue" value="#153643">
+                </div>
+            </div>
+
+            <h2>🔘 Estilo del Botón</h2>
+
+            <div class="form-group">
+                <label>Color de Fondo del Botón</label>
                 <div class="color-input">
                     <input type="color" id="buttonColor" value="#070707">
                     <input type="text" class="color-value" id="buttonColorValue" value="#070707">
@@ -801,11 +813,31 @@
             </div>
 
             <div class="form-group">
-                <label>Color del Texto</label>
+                <label>Color del Borde del Botón</label>
                 <div class="color-input">
-                    <input type="color" id="textColor" value="#153643">
-                    <input type="text" class="color-value" id="textColorValue" value="#153643">
+                    <input type="color" id="buttonBorderColor" value="#070707">
+                    <input type="text" class="color-value" id="buttonBorderColorValue" value="#070707">
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label>Grosor del Borde (px)</label>
+                <input type="number" id="buttonBorderWidth" value="0" min="0" max="10">
+            </div>
+
+            <div class="form-group">
+                <label>Radio del Borde (px)</label>
+                <input type="number" id="buttonBorderRadius" value="20" min="0" max="50">
+            </div>
+
+            <div class="form-group">
+                <label>Padding del Botón (px)</label>
+                <input type="number" id="buttonPadding" value="15" min="5" max="40">
+            </div>
+
+            <div class="form-group">
+                <label>Ancho del Botón (px)</label>
+                <input type="number" id="buttonWidth" value="200" min="100" max="400">
             </div>
 
             <div class="button-group">
@@ -918,6 +950,11 @@
             borderColor: '#cccccc',
             buttonColor: '#070707',
             buttonTextColor: '#ffffff',
+            buttonBorderColor: '#070707',
+            buttonBorderWidth: '0',
+            buttonBorderRadius: '20',
+            buttonPadding: '15',
+            buttonWidth: '200',
             textColor: '#153643'
         };
 
@@ -1103,6 +1140,7 @@
                 ['borderColor', 'borderColorValue'],
                 ['buttonColor', 'buttonColorValue'],
                 ['buttonTextColor', 'buttonTextColorValue'],
+                ['buttonBorderColor', 'buttonBorderColorValue'],
                 ['textColor', 'textColorValue']
             ];
 
@@ -1134,13 +1172,36 @@
             const borderColor = document.getElementById('borderColor').value;
             const buttonColor = document.getElementById('buttonColor').value;
             const buttonTextColor = document.getElementById('buttonTextColor').value;
+            const buttonBorderColor = document.getElementById('buttonBorderColor').value;
+            const buttonBorderWidth = document.getElementById('buttonBorderWidth').value || '0';
+            const buttonBorderRadius = document.getElementById('buttonBorderRadius').value || '20';
+            const buttonPadding = document.getElementById('buttonPadding').value || '15';
+            const buttonWidth = document.getElementById('buttonWidth').value || '200';
             const textColor = document.getElementById('textColor').value;
 
-            // Convertir el contenido a párrafos HTML
+            // Crear el HTML del botón estilizado
+            const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
+            const buttonHTML = `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}'>
+\t\t\t\t\t\t\t\t\t\t\t<tr>
+\t\t\t\t\t\t\t\t\t\t\t\t<td style='padding:${buttonPadding}px;line-height:12px'>
+\t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;'>
+\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:18px;font-family:"Arial";color:${buttonTextColor};'>{{sign_button}}</span>
+\t\t\t\t\t\t\t\t\t\t\t\t\t</p>
+\t\t\t\t\t\t\t\t\t\t\t\t</td>
+\t\t\t\t\t\t\t\t\t\t\t</tr>
+\t\t\t\t\t\t\t\t\t\t</table>`;
+
+            // Convertir el contenido a párrafos HTML y reemplazar {{sign_button}} con el HTML del botón
             const contentParagraphs = emailContent
                 .split('\n')
                 .filter(line => line.trim() !== '')
-                .map(line => `\t\t\t\t\t\t\t\t\t\t<p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:'Helvetica Neue', Helvetica, Arial;">\n\t\t\t\t\t\t\t\t\t\t${line}</p>`)
+                .map(line => {
+                    // Si la línea contiene {{sign_button}}, reemplazarla con el HTML del botón
+                    if (line.includes('{{sign_button}}')) {
+                        return line.replace('{{sign_button}}', buttonHTML);
+                    }
+                    return `\t\t\t\t\t\t\t\t\t\t<p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:'Helvetica Neue', Helvetica, Arial;">\n\t\t\t\t\t\t\t\t\t\t${line}</p>`;
+                })
                 .join('\n');
 
             return `<!DOCTYPE html>
