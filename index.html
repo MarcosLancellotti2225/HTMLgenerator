@@ -1015,6 +1015,8 @@
             <div class="button-group">
                 <button class="btn-primary" onclick="downloadHTML()">⬇️ Descargar</button>
                 <button class="btn-secondary" onclick="resetToDefault()">🔄 Reset</button>
+                <button class="btn-secondary" onclick="document.getElementById('importHTML').click()">📂 Importar HTML</button>
+                <input type="file" id="importHTML" accept=".html,.htm" style="display:none;" onchange="importHTMLFile(event)">
             </div>
 
             <div class="form-group" style="margin-top: 15px;">
@@ -1464,6 +1466,205 @@ ${contentParagraphs}
 \t</table>
 </body>
 </html>`;
+        }
+
+        // Importar HTML existente
+        function importHTMLFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    parseHTMLTemplate(e.target.result);
+                    showToast('✓ HTML importado correctamente');
+                } catch (error) {
+                    console.error('Error parsing HTML:', error);
+                    showToast('✗ Error al importar HTML');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Parsear HTML template y extraer valores
+        function parseHTMLTemplate(htmlString) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, 'text/html');
+
+            // Extraer logo
+            const logoImg = doc.querySelector('img[alt="Logo"]');
+            if (logoImg) {
+                const logoSrc = logoImg.getAttribute('src');
+                const logoStyle = logoImg.getAttribute('style') || '';
+                
+                document.getElementById('logoUrl').value = logoSrc || defaults.logoUrl;
+                
+                // Extraer width
+                const widthMatch = logoStyle.match(/width:\s*([^;]+)/);
+                if (widthMatch) {
+                    document.getElementById('logoWidth').value = widthMatch[1].trim();
+                }
+                
+                // Extraer height
+                const heightMatch = logoStyle.match(/height:\s*([^;]+)/);
+                if (heightMatch) {
+                    document.getElementById('logoHeight').value = heightMatch[1].trim();
+                }
+                
+                // Extraer object-fit
+                const objectFitMatch = logoStyle.match(/object-fit:\s*([^;]+)/);
+                if (objectFitMatch) {
+                    document.getElementById('logoObjectFit').value = objectFitMatch[1].trim();
+                } else {
+                    document.getElementById('logoObjectFit').value = 'none';
+                }
+            }
+
+            // Extraer colores del body
+            const body = doc.querySelector('body');
+            if (body) {
+                const bodyStyle = body.getAttribute('style') || '';
+                const bgColorMatch = bodyStyle.match(/background-color:\s*([^;]+)/);
+                if (bgColorMatch) {
+                    const bgColor = bgColorMatch[1].trim();
+                    document.getElementById('bgColor').value = bgColor;
+                    document.getElementById('bgColorValue').value = bgColor;
+                }
+            }
+
+            // Extraer colores del contenedor
+            const mainTable = doc.querySelector('table[role="presentation"][style*="width:800px"]');
+            if (mainTable) {
+                const tableStyle = mainTable.getAttribute('style') || '';
+                
+                // Color de fondo del contenedor
+                const containerColorMatch = tableStyle.match(/background:\s*([^;]+)/);
+                if (containerColorMatch) {
+                    const containerColor = containerColorMatch[1].trim();
+                    document.getElementById('containerColor').value = containerColor;
+                    document.getElementById('containerColorValue').value = containerColor;
+                }
+                
+                // Color del borde
+                const borderMatch = tableStyle.match(/border:\s*1px solid ([^;]+)/);
+                if (borderMatch) {
+                    const borderColor = borderMatch[1].trim();
+                    document.getElementById('borderColor').value = borderColor;
+                    document.getElementById('borderColorValue').value = borderColor;
+                }
+            }
+
+            // Extraer color del texto
+            const contentTd = doc.querySelector('td[style*="color:"]');
+            if (contentTd) {
+                const tdStyle = contentTd.getAttribute('style') || '';
+                const textColorMatch = tdStyle.match(/color:\s*([^;]+)/);
+                if (textColorMatch) {
+                    const textColor = textColorMatch[1].trim();
+                    document.getElementById('textColor').value = textColor;
+                    document.getElementById('textColorValue').value = textColor;
+                }
+            }
+
+            // Extraer estilos del botón
+            const buttonTable = doc.querySelector('table.miboton');
+            if (buttonTable) {
+                const buttonStyle = buttonTable.getAttribute('style') || '';
+                
+                // Width
+                const widthMatch = buttonStyle.match(/width:\s*(\d+)px/);
+                if (widthMatch) {
+                    document.getElementById('buttonWidth').value = widthMatch[1];
+                }
+                
+                // Background color
+                const bgMatch = buttonStyle.match(/background:\s*([^;]+)/);
+                if (bgMatch) {
+                    const buttonColor = bgMatch[1].trim();
+                    document.getElementById('buttonColor').value = buttonColor;
+                    document.getElementById('buttonColorValue').value = buttonColor;
+                }
+                
+                // Border radius
+                const radiusMatch = buttonStyle.match(/border-radius:\s*(\d+)px/);
+                if (radiusMatch) {
+                    document.getElementById('buttonBorderRadius').value = radiusMatch[1];
+                }
+                
+                // Border
+                const borderMatch = buttonStyle.match(/border:\s*(\d+)px solid ([^;]+)/);
+                if (borderMatch) {
+                    document.getElementById('buttonBorderWidth').value = borderMatch[1];
+                    const borderColor = borderMatch[2].trim();
+                    document.getElementById('buttonBorderColor').value = borderColor;
+                    document.getElementById('buttonBorderColorValue').value = borderColor;
+                } else {
+                    document.getElementById('buttonBorderWidth').value = '0';
+                }
+                
+                // Margin
+                const marginMatch = buttonStyle.match(/margin:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+                if (marginMatch) {
+                    document.getElementById('buttonMarginTop').value = marginMatch[1];
+                    document.getElementById('buttonMarginRight').value = marginMatch[2];
+                    document.getElementById('buttonMarginBottom').value = marginMatch[3];
+                    document.getElementById('buttonMarginLeft').value = marginMatch[4];
+                }
+                
+                // Padding y color del texto del botón
+                const buttonTd = buttonTable.querySelector('td');
+                if (buttonTd) {
+                    const tdStyle = buttonTd.getAttribute('style') || '';
+                    
+                    // Padding
+                    const paddingMatch = tdStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+                    if (paddingMatch) {
+                        document.getElementById('buttonPaddingTop').value = paddingMatch[1];
+                        document.getElementById('buttonPaddingRight').value = paddingMatch[2];
+                        document.getElementById('buttonPaddingBottom').value = paddingMatch[3];
+                        document.getElementById('buttonPaddingLeft').value = paddingMatch[4];
+                    }
+                }
+                
+                // Color del texto del botón
+                const buttonSpan = buttonTable.querySelector('span.mititulo');
+                if (buttonSpan) {
+                    const spanStyle = buttonSpan.getAttribute('style') || '';
+                    const colorMatch = spanStyle.match(/color:\s*([^;]+)/);
+                    if (colorMatch) {
+                        const textColor = colorMatch[1].trim();
+                        document.getElementById('buttonTextColor').value = textColor;
+                        document.getElementById('buttonTextColorValue').value = textColor;
+                    }
+                }
+            }
+
+            // Extraer contenido del email
+            let emailContent = '';
+            const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]');
+            if (contentArea) {
+                const paragraphs = contentArea.querySelectorAll('p');
+                const buttonTables = contentArea.querySelectorAll('table.miboton');
+                
+                // Reconstruir el contenido
+                const children = Array.from(contentArea.children);
+                children.forEach(child => {
+                    if (child.tagName === 'P') {
+                        const text = child.textContent.trim();
+                        if (text) {
+                            emailContent += text + '\n';
+                        }
+                    } else if (child.tagName === 'TABLE' && child.classList.contains('miboton')) {
+                        emailContent += '{{sign_button}}\n';
+                    }
+                });
+            }
+            
+            document.getElementById('emailContent').value = emailContent.trim();
+
+            // Actualizar sincronización de colores y vista previa
+            syncColorInputs();
+            updatePreview();
         }
 
         // Minificar HTML (quitar espacios y saltos de línea innecesarios)
