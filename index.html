@@ -1,4 +1,4 @@
-<!DOCTYPE html>
++<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1332,7 +1332,7 @@
             try {
                 parseHTMLTemplate(htmlContent);
                 closePasteHTMLModal();
-                showToast('✓ HTML cargado correctamente');
+                showToast('✓ HTML cargado - Edita el contenido arriba');
             } catch (error) {
                 console.error('Error parsing HTML:', error);
                 showToast('✗ Error al cargar HTML');
@@ -1542,7 +1542,7 @@ ${contentParagraphs}
             reader.onload = function(e) {
                 try {
                     parseHTMLTemplate(e.target.result);
-                    showToast('✓ HTML importado correctamente');
+                    showToast('✓ HTML cargado - Edita el contenido arriba');
                 } catch (error) {
                     console.error('Error parsing HTML:', error);
                     showToast('✗ Error al importar HTML');
@@ -1726,6 +1726,28 @@ ${contentParagraphs}
             }
             
             document.getElementById('emailContent').value = emailContent.trim();
+
+            // Asegurar que la sección de contenido esté abierta
+            const contentSection = document.querySelector('.collapsible-section .collapsible-header');
+            const contentContent = contentSection.nextElementSibling;
+            if (!contentSection.classList.contains('active')) {
+                contentSection.classList.add('active');
+                contentContent.classList.add('active');
+            }
+
+            // Scroll suave al inicio del panel de controles
+            const controlsPanel = document.querySelector('.controls');
+            if (controlsPanel) {
+                controlsPanel.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Hacer scroll al textarea de contenido y darle foco
+            const textarea = document.getElementById('emailContent');
+            textarea.scrollTop = 0;
+            setTimeout(() => {
+                textarea.focus();
+                textarea.setSelectionRange(0, 0);
+            }, 300);
 
             // Actualizar sincronización de colores y vista previa
             syncColorInputs();
