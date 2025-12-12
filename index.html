@@ -1107,6 +1107,8 @@
             <div class="variable-hint">
                 💡 <strong>Pega aquí un template de email</strong> (HTML generado previamente por este generador o un template compatible con la estructura de Signaturit)
                 <br><br>
+                ✅ <strong>Soporta:</strong> HTML normal o HTML escapado como JSON (de API)
+                <br>
                 ⚠️ <strong>No pegues:</strong> El código del generador mismo, páginas web completas, o HTML de otros formatos
             </div>
 
@@ -1325,10 +1327,27 @@
         }
 
         function loadPastedHTML() {
-            const htmlContent = document.getElementById('pasteHTMLTextarea').value.trim();
+            let htmlContent = document.getElementById('pasteHTMLTextarea').value.trim();
             if (!htmlContent) {
                 showToast('⚠️ Por favor pega código HTML primero');
                 return;
+            }
+
+            // Detectar y limpiar HTML escapado como JSON
+            if (htmlContent.includes('\\"') || htmlContent.includes('\\n')) {
+                try {
+                    // Intentar parsear como JSON string
+                    htmlContent = JSON.parse('"' + htmlContent + '"');
+                    showToast('🔧 HTML desescapado automáticamente');
+                } catch (e) {
+                    // Si falla, intentar reemplazo simple
+                    htmlContent = htmlContent
+                        .replace(/\\"/g, '"')
+                        .replace(/\\n/g, '\n')
+                        .replace(/\\t/g, '\t')
+                        .replace(/\\\\/g, '\\');
+                    showToast('🔧 HTML limpiado automáticamente');
+                }
             }
 
             // Verificar que no sea el generador mismo
@@ -1548,7 +1567,24 @@ ${contentParagraphs}
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const htmlContent = e.target.result;
+                let htmlContent = e.target.result;
+                
+                // Detectar y limpiar HTML escapado como JSON
+                if (htmlContent.includes('\\"') || htmlContent.includes('\\n')) {
+                    try {
+                        // Intentar parsear como JSON string
+                        htmlContent = JSON.parse('"' + htmlContent + '"');
+                        showToast('🔧 HTML desescapado automáticamente');
+                    } catch (err) {
+                        // Si falla, intentar reemplazo simple
+                        htmlContent = htmlContent
+                            .replace(/\\"/g, '"')
+                            .replace(/\\n/g, '\n')
+                            .replace(/\\t/g, '\t')
+                            .replace(/\\\\/g, '\\');
+                        showToast('🔧 HTML limpiado automáticamente');
+                    }
+                }
                 
                 // Verificar que no sea el generador mismo
                 if (htmlContent.includes('Generador de Plantillas HTML') || htmlContent.includes('class="controls"')) {
