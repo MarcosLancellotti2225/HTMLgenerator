@@ -1,4 +1,4 @@
-+<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1105,7 +1105,9 @@
             </div>
 
             <div class="variable-hint">
-                💡 Pega aquí el código HTML de tu plantilla para editarla
+                💡 <strong>Pega aquí un template de email</strong> (HTML generado previamente por este generador o un template compatible con la estructura de Signaturit)
+                <br><br>
+                ⚠️ <strong>No pegues:</strong> El código del generador mismo, páginas web completas, o HTML de otros formatos
             </div>
 
             <div style="margin: 20px 0;">
@@ -1329,13 +1331,19 @@
                 return;
             }
 
+            // Verificar que no sea el generador mismo
+            if (htmlContent.includes('Generador de Plantillas HTML') || htmlContent.includes('class="controls"')) {
+                showToast('⚠️ Parece que pegaste el generador mismo. Pega un email template.');
+                return;
+            }
+
             try {
                 parseHTMLTemplate(htmlContent);
                 closePasteHTMLModal();
                 showToast('✓ HTML cargado - Edita el contenido arriba');
             } catch (error) {
                 console.error('Error parsing HTML:', error);
-                showToast('✗ Error al cargar HTML');
+                showToast('✗ Error: HTML no es un template de email válido');
             }
         }
 
@@ -1540,12 +1548,20 @@ ${contentParagraphs}
 
             const reader = new FileReader();
             reader.onload = function(e) {
+                const htmlContent = e.target.result;
+                
+                // Verificar que no sea el generador mismo
+                if (htmlContent.includes('Generador de Plantillas HTML') || htmlContent.includes('class="controls"')) {
+                    showToast('⚠️ Archivo no válido: Es el generador mismo, no un template');
+                    return;
+                }
+
                 try {
-                    parseHTMLTemplate(e.target.result);
+                    parseHTMLTemplate(htmlContent);
                     showToast('✓ HTML cargado - Edita el contenido arriba');
                 } catch (error) {
                     console.error('Error parsing HTML:', error);
-                    showToast('✗ Error al importar HTML');
+                    showToast('✗ Error: Archivo no es un template de email válido');
                 }
             };
             reader.readAsText(file);
@@ -1555,6 +1571,15 @@ ${contentParagraphs}
         function parseHTMLTemplate(htmlString) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlString, 'text/html');
+
+            // Validar que sea un template de email válido
+            const hasEmailStructure = doc.querySelector('table[role="presentation"]');
+            const hasLogo = doc.querySelector('img[alt="Logo"]');
+            
+            if (!hasEmailStructure && !hasLogo) {
+                showToast('⚠️ HTML no válido - Debe ser un template de email');
+                throw new Error('Invalid email template structure');
+            }
 
             // Extraer logo
             const logoImg = doc.querySelector('img[alt="Logo"]');
