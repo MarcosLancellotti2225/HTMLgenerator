@@ -857,48 +857,56 @@
                 <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; font-size: 12px;" id="variableCount">14</span>
             </button>
 
-            <h2>📝 Contenido del Email</h2>
-            
-            <div class="form-group">
-                <label>URL del Logo</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="url" id="logoUrl" placeholder="https://ejemplo.com/logo.png" style="flex: 1;">
-                    <button class="btn-logo" onclick="insertLogoVariable()">🖼️ Logo</button>
+            <div class="collapsible-section">
+                <div class="collapsible-header active" onclick="toggleCollapsible(this)">
+                    <h2>📝 Contenido del Email</h2>
+                    <span class="collapsible-icon">▼</span>
                 </div>
-            </div>
+                <div class="collapsible-content active">
+                    <div class="collapsible-inner">
+                        <div class="form-group">
+                            <label>URL del Logo</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="url" id="logoUrl" placeholder="https://ejemplo.com/logo.png" style="flex: 1;">
+                                <button class="btn-logo" onclick="insertLogoVariable()">🖼️ Logo</button>
+                            </div>
+                        </div>
 
-            <div class="form-group">
-                <label>Ancho del Logo (px o %)</label>
-                <input type="text" id="logoWidth" value="300px" placeholder="300px o 100%">
-            </div>
+                        <div class="form-group">
+                            <label>Ancho del Logo (px o %)</label>
+                            <input type="text" id="logoWidth" value="300px" placeholder="300px o 100%">
+                        </div>
 
-            <div class="form-group">
-                <label>Alto del Logo (px, % o auto)</label>
-                <input type="text" id="logoHeight" value="auto" placeholder="auto, 100px o 50%">
-            </div>
+                        <div class="form-group">
+                            <label>Alto del Logo (px, % o auto)</label>
+                            <input type="text" id="logoHeight" value="auto" placeholder="auto, 100px o 50%">
+                        </div>
 
-            <div class="form-group">
-                <label>Ajuste de Imagen (object-fit)</label>
-                <select id="logoObjectFit">
-                    <option value="none">Ninguno (por defecto)</option>
-                    <option value="contain">Contain - Ajustar sin recortar</option>
-                    <option value="cover">Cover - Llenar recortando</option>
-                    <option value="fill">Fill - Estirar para llenar</option>
-                    <option value="scale-down">Scale Down - Reducir si es necesario</option>
-                </select>
-            </div>
+                        <div class="form-group">
+                            <label>Ajuste de Imagen (object-fit)</label>
+                            <select id="logoObjectFit">
+                                <option value="none">Ninguno (por defecto)</option>
+                                <option value="contain">Contain - Ajustar sin recortar</option>
+                                <option value="cover">Cover - Llenar recortando</option>
+                                <option value="fill">Fill - Estirar para llenar</option>
+                                <option value="scale-down">Scale Down - Reducir si es necesario</option>
+                            </select>
+                        </div>
 
-            <div class="form-group">
-                <label>Contenido Completo del Email</label>
-                <textarea id="emailContent" style="min-height: 300px;" placeholder="Escribe aquí el contenido de tu email...&#10;&#10;Ejemplo:&#10;Estimado/a {{signer_name}}, le hacemos llegar la documentación:&#10;&#10;{{filename}}&#10;&#10;Para firmar, haga clic en: {{sign_button}}&#10;&#10;{{email_body}}"></textarea>
-            </div>
+                        <div class="form-group">
+                            <label>Contenido Completo del Email</label>
+                            <textarea id="emailContent" style="min-height: 300px;" placeholder="Escribe aquí el contenido de tu email...&#10;&#10;Ejemplo:&#10;Estimado/a {{signer_name}}, le hacemos llegar la documentación:&#10;&#10;{{filename}}&#10;&#10;Para firmar, haga clic en: {{sign_button}}&#10;&#10;{{email_body}}"></textarea>
+                        </div>
 
-            <div class="form-group">
-                <label>Variables Disponibles (Haz clic para insertar)</label>
-                <div class="variables-inline" id="variablesInline"></div>
-                <button class="btn-manage-vars" onclick="openVariableModal()">
-                    ⚙️ Gestionar Variables
-                </button>
+                        <div class="form-group">
+                            <label>Variables Disponibles (Haz clic para insertar)</label>
+                            <div class="variables-inline" id="variablesInline"></div>
+                            <button class="btn-manage-vars" onclick="openVariableModal()">
+                                ⚙️ Gestionar Variables
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="collapsible-section">
@@ -944,11 +952,11 @@
             </div>
 
             <div class="collapsible-section">
-                <div class="collapsible-header active" onclick="toggleCollapsible(this)">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
                     <h2>🔘 Estilo del Botón</h2>
                     <span class="collapsible-icon">▼</span>
                 </div>
-                <div class="collapsible-content active">
+                <div class="collapsible-content">
                     <div class="collapsible-inner">
                         <div class="form-group">
                             <label>Color de Fondo del Botón</label>
@@ -1015,7 +1023,8 @@
             <div class="button-group">
                 <button class="btn-primary" onclick="downloadHTML()">⬇️ Descargar</button>
                 <button class="btn-secondary" onclick="resetToDefault()">🔄 Reset</button>
-                <button class="btn-secondary" onclick="document.getElementById('importHTML').click()">📂 Importar HTML</button>
+                <button class="btn-secondary" onclick="document.getElementById('importHTML').click()">📂 Importar</button>
+                <button class="btn-secondary" onclick="openPasteHTMLModal()">📋 Pegar HTML</button>
                 <input type="file" id="importHTML" accept=".html,.htm" style="display:none;" onchange="importHTMLFile(event)">
             </div>
 
@@ -1083,6 +1092,29 @@
             <div class="add-variable-form">
                 <input type="text" id="newVariableName" placeholder="nombre_variable" onkeypress="handleVariableKeyPress(event)">
                 <button class="btn-small btn-add" onclick="addVariableFromModal()">➕ Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paste HTML Modal -->
+    <div class="modal" id="pasteHTMLModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>📋 Pegar HTML</h2>
+                <button class="close-modal" onclick="closePasteHTMLModal()">&times;</button>
+            </div>
+
+            <div class="variable-hint">
+                💡 Pega aquí el código HTML de tu plantilla para editarla
+            </div>
+
+            <div style="margin: 20px 0;">
+                <textarea id="pasteHTMLTextarea" placeholder="Pega aquí tu código HTML..." style="width: 100%; min-height: 400px; font-family: 'Courier New', monospace; font-size: 13px; padding: 15px; border: 2px solid #e9ecef; border-radius: 8px;"></textarea>
+            </div>
+
+            <div style="text-align: right; margin-top: 15px;">
+                <button class="btn-secondary" onclick="closePasteHTMLModal()" style="margin-right: 10px;">Cancelar</button>
+                <button class="btn-primary" onclick="loadPastedHTML()">✓ Cargar HTML</button>
             </div>
         </div>
     </div>
@@ -1279,11 +1311,44 @@
             document.getElementById('variableModal').classList.remove('show');
         }
 
+        // Funciones del modal de pegar HTML
+        function openPasteHTMLModal() {
+            document.getElementById('pasteHTMLModal').classList.add('show');
+            document.getElementById('pasteHTMLTextarea').value = '';
+            document.getElementById('pasteHTMLTextarea').focus();
+        }
+
+        function closePasteHTMLModal() {
+            document.getElementById('pasteHTMLModal').classList.remove('show');
+        }
+
+        function loadPastedHTML() {
+            const htmlContent = document.getElementById('pasteHTMLTextarea').value.trim();
+            if (!htmlContent) {
+                showToast('⚠️ Por favor pega código HTML primero');
+                return;
+            }
+
+            try {
+                parseHTMLTemplate(htmlContent);
+                closePasteHTMLModal();
+                showToast('✓ HTML cargado correctamente');
+            } catch (error) {
+                console.error('Error parsing HTML:', error);
+                showToast('✗ Error al cargar HTML');
+            }
+        }
+
         // Cerrar modal al hacer clic fuera
         window.onclick = function(event) {
-            const modal = document.getElementById('variableModal');
-            if (event.target === modal) {
+            const variableModal = document.getElementById('variableModal');
+            const pasteModal = document.getElementById('pasteHTMLModal');
+            
+            if (event.target === variableModal) {
                 closeVariableModal();
+            }
+            if (event.target === pasteModal) {
+                closePasteHTMLModal();
             }
         }
 
@@ -1855,6 +1920,14 @@ ${contentParagraphs}
         if (minifyCheckbox) {
             minifyCheckbox.addEventListener('change', updateCodeView);
         }
+
+        // Event listener para cerrar modales con Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeVariableModal();
+                closePasteHTMLModal();
+            }
+        });
 
         // Inicializar
         syncColorInputs();
