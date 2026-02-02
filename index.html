@@ -1234,7 +1234,7 @@
 
         // Valores por defecto de la plantilla
         const defaults = {
-            logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1e/Wikipedia-logo-v2-es.svg',
+            logoUrl: '',
             logoWidth: '300px',
             logoHeight: 'auto',
             logoObjectFit: 'none',
@@ -1593,6 +1593,13 @@
             // Crear estilos del logo
             const logoObjectFitStyle = logoObjectFit !== 'none' ? `object-fit:${logoObjectFit};` : '';
             const logoStyles = `width:${logoWidth};height:${logoHeight};${logoObjectFitStyle}display:block;`;
+            
+            // Generar sección del logo solo si hay URL
+            const logoSection = logoUrl ? `\t\t\t\t\t<tr>
+\t\t\t\t\t\t<td align="center" style="padding:30px 0 20px 0;">
+\t\t\t\t\t\t\t<img style="${logoStyles}" alt="Logo" src="${logoUrl}">
+\t\t\t\t\t\t</td>
+\t\t\t\t\t</tr>` : '';
 
             // Crear el HTML del botón estilizado
             const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
@@ -1646,11 +1653,7 @@
 \t\t<tr>
 \t\t\t<td align="center" style="padding:0;">
 \t\t\t\t<table role="presentation" style="width:800px;border-collapse:collapse;border:1px solid ${borderColor};border-spacing:0;text-align:left;background:${containerColor}">
-\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td align="center" style="padding:30px 0 20px 0;">
-\t\t\t\t\t\t\t<img style="${logoStyles}" alt="Logo" src="${logoUrl}">
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>
+${logoSection}
 \t\t\t\t\t<tr>
 \t\t\t\t\t\t<td style="padding:10px 25px 0px 25px;">
 \t\t\t\t\t\t\t<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;">
