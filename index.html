@@ -1177,11 +1177,11 @@
             </div>
 
             <div class="variable-hint">
-                💡 <strong>Pega aquí un template de email</strong> (HTML generado previamente por este generador o un template compatible con la estructura de Signaturit)
+                💡 <strong>Pega aquí cualquier HTML de email</strong> 
                 <br><br>
-                ✅ <strong>Soporta:</strong> HTML normal o HTML escapado como JSON (de API)
+                ✅ <strong>Acepta:</strong> Cualquier formato de HTML de email, con o sin `\n`, con o sin estructura específica
                 <br>
-                ⚠️ <strong>No pegues:</strong> El código del generador mismo, páginas web completas, o HTML de otros formatos
+                ❌ <strong>No pegues:</strong> El código del generador mismo
             </div>
 
             <div style="margin: 20px 0;">
@@ -1718,33 +1718,45 @@ ${contentParagraphs}
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlString, 'text/html');
 
-            // Validar que sea un template de email válido
-            const hasEmailStructure = doc.querySelector('table[role="presentation"]');
-            const hasLogo = doc.querySelector('img[alt="Logo"]');
-            
-            if (!hasEmailStructure && !hasLogo) {
-                showToast('⚠️ HTML no válido - Debe ser un template de email');
-                throw new Error('Invalid email template structure');
+            // Validar que NO sea el generador mismo
+            if (htmlString.includes('Generador de Plantillas HTML') || 
+                htmlString.includes('class="controls"') ||
+                htmlString.includes('id="previewFrame"')) {
+                showToast('⚠️ HTML no válido - Es el generador mismo');
+                throw new Error('Cannot import generator code');
             }
 
-            // Extraer logo
-            const logoImg = doc.querySelector('img[alt="Logo"]');
+            // Si tiene estructura básica de HTML, intentar extraer lo que podamos
+            let extractedSomething = false;
+
+            // Extraer logo (múltiples formatos)
+            const logoImg = doc.querySelector('img[alt="Logo"]') || 
+                           doc.querySelector('img[alt="logo"]') ||
+                           doc.querySelector('img');
+            
             if (logoImg) {
                 const logoSrc = logoImg.getAttribute('src');
                 const logoStyle = logoImg.getAttribute('style') || '';
                 
-                document.getElementById('logoUrl').value = logoSrc || defaults.logoUrl;
+                if (logoSrc && !logoSrc.includes('data:image')) {
+                    document.getElementById('logoUrl').value = logoSrc;
+                    extractedSomething = true;
+                }
                 
                 // Extraer width
-                const widthMatch = logoStyle.match(/width:\s*([^;]+)/);
+                const widthMatch = logoStyle.match(/width:\s*([^;]+)/) || 
+                                 logoImg.getAttribute('width');
                 if (widthMatch) {
-                    document.getElementById('logoWidth').value = widthMatch[1].trim();
+                    const width = typeof widthMatch === 'string' ? widthMatch : widthMatch[1].trim();
+                    document.getElementById('logoWidth').value = width.includes('px') || width.includes('%') ? width : width + 'px';
                 }
                 
                 // Extraer height
-                const heightMatch = logoStyle.match(/height:\s*([^;]+)/);
+                const heightMatch = logoStyle.match(/height:\s*([^;]+)/) ||
+                                  logoImg.getAttribute('height');
                 if (heightMatch) {
-                    document.getElementById('logoHeight').value = heightMatch[1].trim();
+                    const height = typeof heightMatch === 'string' ? heightMatch : heightMatch[1].trim();
+                    document.getElementById('logoHeight').value = height.includes('px') || height.includes('%') || height === 'auto' ? height : height + 'px';
                 }
                 
                 // Extraer object-fit
@@ -1763,47 +1775,40 @@ ${contentParagraphs}
                 const bgColorMatch = bodyStyle.match(/background-color:\s*([^;]+)/);
                 if (bgColorMatch) {
                     const bgColor = bgColorMatch[1].trim();
-                    document.getElementById('bgColor').value = bgColor;
-                    document.getElementById('bgColorValue').value = bgColor;
+                    document.getElementById('bgColor').value = bgColor.startsWith('#') ? bgColor : '#ffffff';
+                    document.getElementById('bgColorValue').value = bgColor.startsWith('#') ? bgColor : '#ffffff';
+                    extractedSomething = true;
                 }
             }
 
-            // Extraer colores del contenedor
-            const mainTable = doc.querySelector('table[role="presentation"][style*="width:800px"]');
-            if (mainTable) {
-                const tableStyle = mainTable.getAttribute('style') || '';
-                
-                // Color de fondo del contenedor
-                const containerColorMatch = tableStyle.match(/background:\s*([^;]+)/);
-                if (containerColorMatch) {
-                    const containerColor = containerColorMatch[1].trim();
-                    document.getElementById('containerColor').value = containerColor;
-                    document.getElementById('containerColorValue').value = containerColor;
-                }
-                
-                // Color del borde
-                const borderMatch = tableStyle.match(/border:\s*1px solid ([^;]+)/);
-                if (borderMatch) {
-                    const borderColor = borderMatch[1].trim();
-                    document.getElementById('borderColor').value = borderColor;
-                    document.getElementById('borderColorValue').value = borderColor;
-                }
-            }
-
-            // Extraer color del texto
-            const contentTd = doc.querySelector('td[style*="color:"]');
-            if (contentTd) {
-                const tdStyle = contentTd.getAttribute('style') || '';
-                const textColorMatch = tdStyle.match(/color:\s*([^;]+)/);
-                if (textColorMatch) {
-                    const textColor = textColorMatch[1].trim();
-                    document.getElementById('textColor').value = textColor;
-                    document.getElementById('textColorValue').value = textColor;
+            // Extraer colores del contenedor (buscar tables con background)
+            const tables = doc.querySelectorAll('table[bgcolor], table[style*="background"]');
+            if (tables.length > 0) {
+                for (let table of tables) {
+                    const bgcolor = table.getAttribute('bgcolor');
+                    const style = table.getAttribute('style') || '';
+                    
+                    if (bgcolor && bgcolor.startsWith('#')) {
+                        document.getElementById('containerColor').value = bgcolor;
+                        document.getElementById('containerColorValue').value = bgcolor;
+                        extractedSomething = true;
+                        break;
+                    }
+                    
+                    const bgMatch = style.match(/background(?:-color)?:\s*([^;]+)/);
+                    if (bgMatch && bgMatch[1].trim().startsWith('#')) {
+                        document.getElementById('containerColor').value = bgMatch[1].trim();
+                        document.getElementById('containerColorValue').value = bgMatch[1].trim();
+                        extractedSomething = true;
+                        break;
+                    }
                 }
             }
 
-            // Extraer estilos del botón
-            const buttonTable = doc.querySelector('table.miboton');
+            // Extraer estilos del botón (buscar .miboton o cualquier table/button)
+            const buttonTable = doc.querySelector('table.miboton') || 
+                               doc.querySelector('table[align="center"][style*="background"]');
+            
             if (buttonTable) {
                 const buttonStyle = buttonTable.getAttribute('style') || '';
                 
@@ -1811,14 +1816,18 @@ ${contentParagraphs}
                 const widthMatch = buttonStyle.match(/width:\s*(\d+)px/);
                 if (widthMatch) {
                     document.getElementById('buttonWidth').value = widthMatch[1];
+                    extractedSomething = true;
                 }
                 
                 // Background color
-                const bgMatch = buttonStyle.match(/background:\s*([^;]+)/);
+                const bgMatch = buttonStyle.match(/background(?:-color)?:\s*([^;]+)/);
                 if (bgMatch) {
                     const buttonColor = bgMatch[1].trim();
-                    document.getElementById('buttonColor').value = buttonColor;
-                    document.getElementById('buttonColorValue').value = buttonColor;
+                    if (buttonColor.startsWith('#')) {
+                        document.getElementById('buttonColor').value = buttonColor;
+                        document.getElementById('buttonColorValue').value = buttonColor;
+                        extractedSomething = true;
+                    }
                 }
                 
                 // Border radius
@@ -1832,8 +1841,10 @@ ${contentParagraphs}
                 if (borderMatch) {
                     document.getElementById('buttonBorderWidth').value = borderMatch[1];
                     const borderColor = borderMatch[2].trim();
-                    document.getElementById('buttonBorderColor').value = borderColor;
-                    document.getElementById('buttonBorderColorValue').value = borderColor;
+                    if (borderColor.startsWith('#')) {
+                        document.getElementById('buttonBorderColor').value = borderColor;
+                        document.getElementById('buttonBorderColorValue').value = borderColor;
+                    }
                 } else {
                     document.getElementById('buttonBorderWidth').value = '0';
                 }
@@ -1863,11 +1874,13 @@ ${contentParagraphs}
                 }
                 
                 // Color del texto del botón
-                const buttonSpan = buttonTable.querySelector('span.mititulo');
+                const buttonSpan = buttonTable.querySelector('span.mititulo') || 
+                                 buttonTable.querySelector('span') ||
+                                 buttonTable.querySelector('a');
                 if (buttonSpan) {
                     const spanStyle = buttonSpan.getAttribute('style') || '';
                     const colorMatch = spanStyle.match(/color:\s*([^;]+)/);
-                    if (colorMatch) {
+                    if (colorMatch && colorMatch[1].trim().startsWith('#')) {
                         const textColor = colorMatch[1].trim();
                         document.getElementById('buttonTextColor').value = textColor;
                         document.getElementById('buttonTextColorValue').value = textColor;
@@ -1877,26 +1890,63 @@ ${contentParagraphs}
 
             // Extraer contenido del email
             let emailContent = '';
-            const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]');
+            
+            // Intentar extraer de múltiples formas
+            const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
+                               doc.querySelector('.note') ||
+                               doc.querySelector('table[bgcolor="#ffffff"] td') ||
+                               doc.querySelector('body');
+            
             if (contentArea) {
-                const paragraphs = contentArea.querySelectorAll('p');
-                const buttonTables = contentArea.querySelectorAll('table.miboton');
-                
-                // Reconstruir el contenido
-                const children = Array.from(contentArea.children);
-                children.forEach(child => {
-                    if (child.tagName === 'P') {
-                        const text = child.textContent.trim();
-                        if (text) {
-                            emailContent += text + '\n';
+                // Extraer texto y variables
+                const extractTextAndVariables = (element) => {
+                    let content = '';
+                    const walker = document.createTreeWalker(
+                        element,
+                        NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+                        null,
+                        false
+                    );
+                    
+                    let node;
+                    while (node = walker.nextNode()) {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            const text = node.textContent.trim();
+                            if (text) {
+                                content += text + '\n';
+                            }
+                        } else if (node.nodeName === 'BR') {
+                            content += '\n';
+                        } else if (node.classList && node.classList.contains('miboton')) {
+                            content += '{{sign_button}}\n';
                         }
-                    } else if (child.tagName === 'TABLE' && child.classList.contains('miboton')) {
-                        emailContent += '{{sign_button}}\n';
                     }
-                });
+                    return content;
+                };
+                
+                emailContent = extractTextAndVariables(contentArea);
+                
+                // Si no hay contenido, extraer el texto plano
+                if (!emailContent.trim()) {
+                    emailContent = contentArea.textContent || '';
+                }
+                
+                extractedSomething = true;
             }
             
-            document.getElementById('emailContent').value = emailContent.trim();
+            // Limpiar contenido
+            emailContent = emailContent
+                .replace(/\n{3,}/g, '\n\n')  // Múltiples saltos a máximo 2
+                .trim();
+            
+            if (emailContent) {
+                document.getElementById('emailContent').value = emailContent;
+            }
+
+            // Si no se extrajo nada, mostrar advertencia pero no fallar
+            if (!extractedSomething) {
+                showToast('⚠️ No se pudo extraer información - Edita manualmente');
+            }
 
             // Asegurar que la sección de contenido esté abierta
             const contentSection = document.querySelector('.collapsible-section .collapsible-header');
