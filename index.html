@@ -1766,6 +1766,9 @@ ${contentParagraphs}
                 } else {
                     document.getElementById('logoObjectFit').value = 'none';
                 }
+            } else {
+                // No hay logo en el HTML - limpiar el campo para evitar confusión
+                document.getElementById('logoUrl').value = '';
             }
 
             // Extraer colores del body
