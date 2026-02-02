@@ -337,6 +337,43 @@
             color: #adb5bd;
         }
 
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+            outline: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
         textarea {
             resize: vertical;
             min-height: 80px;
@@ -922,6 +959,11 @@
                                 <input type="color" id="bgColor" value="#ffffff">
                                 <input type="text" class="color-value" id="bgColorValue" value="#ffffff">
                             </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <label style="margin: 0; font-size: 12px; min-width: 80px;">Opacidad:</label>
+                                <input type="range" id="bgColorOpacity" min="0" max="1" step="0.01" value="1" style="flex: 1;">
+                                <span id="bgColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -929,6 +971,11 @@
                             <div class="color-input">
                                 <input type="color" id="containerColor" value="#ffffff">
                                 <input type="text" class="color-value" id="containerColorValue" value="#ffffff">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <label style="margin: 0; font-size: 12px; min-width: 80px;">Opacidad:</label>
+                                <input type="range" id="containerColorOpacity" min="0" max="1" step="0.01" value="1" style="flex: 1;">
+                                <span id="containerColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
                             </div>
                         </div>
 
@@ -938,6 +985,11 @@
                                 <input type="color" id="borderColor" value="#cccccc">
                                 <input type="text" class="color-value" id="borderColorValue" value="#cccccc">
                             </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <label style="margin: 0; font-size: 12px; min-width: 80px;">Opacidad:</label>
+                                <input type="range" id="borderColorOpacity" min="0" max="1" step="0.01" value="1" style="flex: 1;">
+                                <span id="borderColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -945,6 +997,11 @@
                             <div class="color-input">
                                 <input type="color" id="textColor" value="#153643">
                                 <input type="text" class="color-value" id="textColorValue" value="#153643">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <label style="margin: 0; font-size: 12px; min-width: 80px;">Opacidad:</label>
+                                <input type="range" id="textColorOpacity" min="0" max="1" step="0.01" value="1" style="flex: 1;">
+                                <span id="textColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
                             </div>
                         </div>
                     </div>
@@ -964,6 +1021,11 @@
                                 <input type="color" id="buttonColor" value="#070707">
                                 <input type="text" class="color-value" id="buttonColorValue" value="#070707">
                             </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <label style="margin: 0; font-size: 12px; min-width: 80px;">Opacidad:</label>
+                                <input type="range" id="buttonColorOpacity" min="0" max="1" step="0.01" value="1" style="flex: 1;">
+                                <span id="buttonColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -972,6 +1034,11 @@
                                 <input type="color" id="buttonTextColor" value="#ffffff">
                                 <input type="text" class="color-value" id="buttonTextColorValue" value="#ffffff">
                             </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <label style="margin: 0; font-size: 12px; min-width: 80px;">Opacidad:</label>
+                                <input type="range" id="buttonTextColorOpacity" min="0" max="1" step="0.01" value="1" style="flex: 1;">
+                                <span id="buttonTextColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -979,6 +1046,11 @@
                             <div class="color-input">
                                 <input type="color" id="buttonBorderColor" value="#070707">
                                 <input type="text" class="color-value" id="buttonBorderColorValue" value="#070707">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                <label style="margin: 0; font-size: 12px; min-width: 80px;">Opacidad:</label>
+                                <input type="range" id="buttonBorderColorOpacity" min="0" max="1" step="0.01" value="1" style="flex: 1;">
+                                <span id="buttonBorderColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
                             </div>
                         </div>
 
@@ -1168,11 +1240,19 @@
             logoObjectFit: 'none',
             emailContent: 'Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para firmar:\n\n{{filename}}\n\nPara proceder con la revisión de la documentación presione el siguiente botón:\n\n{{sign_button}}\n\n{{email_body}}',
             bgColor: '#ffffff',
+            bgColorOpacity: '1',
             containerColor: '#ffffff',
+            containerColorOpacity: '1',
             borderColor: '#cccccc',
+            borderColorOpacity: '1',
+            textColor: '#153643',
+            textColorOpacity: '1',
             buttonColor: '#070707',
+            buttonColorOpacity: '1',
             buttonTextColor: '#ffffff',
+            buttonTextColorOpacity: '1',
             buttonBorderColor: '#070707',
+            buttonBorderColorOpacity: '1',
             buttonBorderWidth: '0',
             buttonBorderRadius: '20',
             buttonPaddingTop: '15',
@@ -1183,14 +1263,21 @@
             buttonMarginRight: '0',
             buttonMarginBottom: '10',
             buttonMarginLeft: '0',
-            buttonWidth: '200',
-            textColor: '#153643'
+            buttonWidth: '200'
         };
 
         let currentZoom = 100;
         let isMobileView = false;
         let isFullscreen = false;
         let showCodeView = false;
+
+        // Convertir hex a rgba
+        function hexToRgba(hex, opacity) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        }
 
         // Toggle collapsible sections
         function toggleCollapsible(header) {
@@ -1461,12 +1548,36 @@
             const logoHeight = document.getElementById('logoHeight').value || defaults.logoHeight;
             const logoObjectFit = document.getElementById('logoObjectFit').value || defaults.logoObjectFit;
             const emailContent = document.getElementById('emailContent').value;
-            const bgColor = document.getElementById('bgColor').value;
-            const containerColor = document.getElementById('containerColor').value;
-            const borderColor = document.getElementById('borderColor').value;
-            const buttonColor = document.getElementById('buttonColor').value;
-            const buttonTextColor = document.getElementById('buttonTextColor').value;
-            const buttonBorderColor = document.getElementById('buttonBorderColor').value;
+            
+            // Colores con opacidad
+            const bgColorHex = document.getElementById('bgColor').value;
+            const bgColorOpacity = document.getElementById('bgColorOpacity').value;
+            const bgColor = hexToRgba(bgColorHex, bgColorOpacity);
+            
+            const containerColorHex = document.getElementById('containerColor').value;
+            const containerColorOpacity = document.getElementById('containerColorOpacity').value;
+            const containerColor = hexToRgba(containerColorHex, containerColorOpacity);
+            
+            const borderColorHex = document.getElementById('borderColor').value;
+            const borderColorOpacity = document.getElementById('borderColorOpacity').value;
+            const borderColor = hexToRgba(borderColorHex, borderColorOpacity);
+            
+            const textColorHex = document.getElementById('textColor').value;
+            const textColorOpacity = document.getElementById('textColorOpacity').value;
+            const textColor = hexToRgba(textColorHex, textColorOpacity);
+            
+            const buttonColorHex = document.getElementById('buttonColor').value;
+            const buttonColorOpacity = document.getElementById('buttonColorOpacity').value;
+            const buttonColor = hexToRgba(buttonColorHex, buttonColorOpacity);
+            
+            const buttonTextColorHex = document.getElementById('buttonTextColor').value;
+            const buttonTextColorOpacity = document.getElementById('buttonTextColorOpacity').value;
+            const buttonTextColor = hexToRgba(buttonTextColorHex, buttonTextColorOpacity);
+            
+            const buttonBorderColorHex = document.getElementById('buttonBorderColor').value;
+            const buttonBorderColorOpacity = document.getElementById('buttonBorderColorOpacity').value;
+            const buttonBorderColor = hexToRgba(buttonBorderColorHex, buttonBorderColorOpacity);
+            
             const buttonBorderWidth = document.getElementById('buttonBorderWidth').value || '0';
             const buttonBorderRadius = document.getElementById('buttonBorderRadius').value || '20';
             const buttonPaddingTop = document.getElementById('buttonPaddingTop').value || '15';
@@ -1478,7 +1589,6 @@
             const buttonMarginBottom = document.getElementById('buttonMarginBottom').value || '10';
             const buttonMarginLeft = document.getElementById('buttonMarginLeft').value || '0';
             const buttonWidth = document.getElementById('buttonWidth').value || '200';
-            const textColor = document.getElementById('textColor').value;
 
             // Crear estilos del logo
             const logoObjectFitStyle = logoObjectFit !== 'none' ? `object-fit:${logoObjectFit};` : '';
@@ -1603,60 +1713,38 @@ ${contentParagraphs}
             reader.readAsText(file);
         }
 
-        // ============================================
-        // PARSER MEJORADO - SOPORTA MÚLTIPLES FORMATOS
-        // ============================================
+        // Parsear HTML template y extraer valores
         function parseHTMLTemplate(htmlString) {
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlString, 'text/html');
 
             // Validar que sea un template de email válido
             const hasEmailStructure = doc.querySelector('table[role="presentation"]');
-            const hasAnyLogo = doc.querySelector('img');
+            const hasLogo = doc.querySelector('img[alt="Logo"]');
             
-            if (!hasEmailStructure && !hasAnyLogo) {
+            if (!hasEmailStructure && !hasLogo) {
                 showToast('⚠️ HTML no válido - Debe ser un template de email');
                 throw new Error('Invalid email template structure');
             }
 
-            // ===== EXTRAER LOGO (BÚSQUEDA FLEXIBLE) =====
-            // Buscar img con múltiples criterios en orden de prioridad
-            let logoImg = doc.querySelector('img[alt*="Logo"]') || 
-                          doc.querySelector('img[alt*="logo"]') ||
-                          doc.querySelector('img[src*="logo"]') ||
-                          doc.querySelector('img');
-            
+            // Extraer logo
+            const logoImg = doc.querySelector('img[alt="Logo"]');
             if (logoImg) {
                 const logoSrc = logoImg.getAttribute('src');
-                document.getElementById('logoUrl').value = logoSrc || defaults.logoUrl;
-                
-                // Extraer estilos inline primero
                 const logoStyle = logoImg.getAttribute('style') || '';
                 
-                // Extraer width (prioridad: style inline > atributo width)
-                let width = null;
+                document.getElementById('logoUrl').value = logoSrc || defaults.logoUrl;
+                
+                // Extraer width
                 const widthMatch = logoStyle.match(/width:\s*([^;]+)/);
                 if (widthMatch) {
-                    width = widthMatch[1].trim();
-                } else if (logoImg.hasAttribute('width')) {
-                    const w = logoImg.getAttribute('width');
-                    width = w.includes('px') || w.includes('%') ? w : `${w}px`;
-                }
-                if (width) {
-                    document.getElementById('logoWidth').value = width;
+                    document.getElementById('logoWidth').value = widthMatch[1].trim();
                 }
                 
-                // Extraer height (prioridad: style inline > atributo height)
-                let height = null;
+                // Extraer height
                 const heightMatch = logoStyle.match(/height:\s*([^;]+)/);
                 if (heightMatch) {
-                    height = heightMatch[1].trim();
-                } else if (logoImg.hasAttribute('height')) {
-                    const h = logoImg.getAttribute('height');
-                    height = h.includes('px') || h.includes('%') ? h : `${h}px`;
-                }
-                if (height) {
-                    document.getElementById('logoHeight').value = height;
+                    document.getElementById('logoHeight').value = heightMatch[1].trim();
                 }
                 
                 // Extraer object-fit
@@ -1668,111 +1756,56 @@ ${contentParagraphs}
                 }
             }
 
-            // ===== EXTRAER COLOR DE FONDO (BODY) =====
+            // Extraer colores del body
             const body = doc.querySelector('body');
             if (body) {
                 const bodyStyle = body.getAttribute('style') || '';
-                const bgMatches = [
-                    bodyStyle.match(/background-color:\s*([^;]+)/),
-                    bodyStyle.match(/background:\s*([^;]+)/)
-                ];
-                
-                for (const match of bgMatches) {
-                    if (match) {
-                        const bgColor = match[1].trim();
-                        document.getElementById('bgColor').value = bgColor;
-                        document.getElementById('bgColorValue').value = bgColor;
-                        break;
-                    }
+                const bgColorMatch = bodyStyle.match(/background-color:\s*([^;]+)/);
+                if (bgColorMatch) {
+                    const bgColor = bgColorMatch[1].trim();
+                    document.getElementById('bgColor').value = bgColor;
+                    document.getElementById('bgColorValue').value = bgColor;
                 }
             }
 
-            // ===== EXTRAER COLOR DEL CONTENEDOR (BÚSQUEDA FLEXIBLE) =====
-            // Buscar tabla principal con varios selectores posibles
-            const containerSelectors = [
-                'table[role="presentation"][style*="width:800px"]',
-                'table[role="presentation"][style*="width:600px"]',
-                'table[role="presentation"][style*="border"]',
-                'table[style*="background"]'
-            ];
-            
-            let mainTable = null;
-            for (const selector of containerSelectors) {
-                mainTable = doc.querySelector(selector);
-                if (mainTable) break;
-            }
-            
+            // Extraer colores del contenedor
+            const mainTable = doc.querySelector('table[role="presentation"][style*="width:800px"]');
             if (mainTable) {
                 const tableStyle = mainTable.getAttribute('style') || '';
                 
                 // Color de fondo del contenedor
-                const containerMatches = [
-                    tableStyle.match(/background:\s*([^;]+)/),
-                    tableStyle.match(/background-color:\s*([^;]+)/)
-                ];
-                
-                for (const match of containerMatches) {
-                    if (match) {
-                        const containerColor = match[1].trim();
-                        document.getElementById('containerColor').value = containerColor;
-                        document.getElementById('containerColorValue').value = containerColor;
-                        break;
-                    }
+                const containerColorMatch = tableStyle.match(/background:\s*([^;]+)/);
+                if (containerColorMatch) {
+                    const containerColor = containerColorMatch[1].trim();
+                    document.getElementById('containerColor').value = containerColor;
+                    document.getElementById('containerColorValue').value = containerColor;
                 }
                 
                 // Color del borde
-                const borderMatches = [
-                    tableStyle.match(/border:\s*\d+px\s+solid\s+([^;]+)/),
-                    tableStyle.match(/border-color:\s*([^;]+)/)
-                ];
-                
-                for (const match of borderMatches) {
-                    if (match) {
-                        const borderColor = match[1].trim();
-                        document.getElementById('borderColor').value = borderColor;
-                        document.getElementById('borderColorValue').value = borderColor;
-                        break;
-                    }
+                const borderMatch = tableStyle.match(/border:\s*1px solid ([^;]+)/);
+                if (borderMatch) {
+                    const borderColor = borderMatch[1].trim();
+                    document.getElementById('borderColor').value = borderColor;
+                    document.getElementById('borderColorValue').value = borderColor;
                 }
             }
 
-            // ===== EXTRAER COLOR DEL TEXTO =====
-            const textColorSelectors = [
-                'td[style*="color:"]',
-                'p[style*="color:"]',
-                'div[style*="color:"]'
-            ];
-            
-            for (const selector of textColorSelectors) {
-                const element = doc.querySelector(selector);
-                if (element) {
-                    const elementStyle = element.getAttribute('style') || '';
-                    const textColorMatch = elementStyle.match(/color:\s*([^;]+)/);
-                    if (textColorMatch) {
-                        const textColor = textColorMatch[1].trim();
-                        document.getElementById('textColor').value = textColor;
-                        document.getElementById('textColorValue').value = textColor;
-                        break;
-                    }
+            // Extraer color del texto
+            const contentTd = doc.querySelector('td[style*="color:"]');
+            if (contentTd) {
+                const tdStyle = contentTd.getAttribute('style') || '';
+                const textColorMatch = tdStyle.match(/color:\s*([^;]+)/);
+                if (textColorMatch) {
+                    const textColor = textColorMatch[1].trim();
+                    document.getElementById('textColor').value = textColor;
+                    document.getElementById('textColorValue').value = textColor;
                 }
             }
 
-            // ===== EXTRAER ESTILOS DEL BOTÓN (BÚSQUEDA FLEXIBLE) =====
-            const buttonSelectors = [
-                'table.miboton',
-                'table[align="center"][style*="background"]',
-                'table[style*="border-radius"]',
-                'a[style*="background"]'
-            ];
-            
-            let buttonElement = null;
-            for (const selector of buttonSelectors) {
-                buttonElement = doc.querySelector(selector);
-                if (buttonElement) break;
-            }
-            
-            if (buttonElement) {
-                const buttonStyle = buttonElement.getAttribute('style') || '';
+            // Extraer estilos del botón
+            const buttonTable = doc.querySelector('table.miboton');
+            if (buttonTable) {
+                const buttonStyle = buttonTable.getAttribute('style') || '';
                 
                 // Width
                 const widthMatch = buttonStyle.match(/width:\s*(\d+)px/);
@@ -1781,18 +1814,11 @@ ${contentParagraphs}
                 }
                 
                 // Background color
-                const bgMatches = [
-                    buttonStyle.match(/background:\s*([^;]+)/),
-                    buttonStyle.match(/background-color:\s*([^;]+)/)
-                ];
-                
-                for (const match of bgMatches) {
-                    if (match) {
-                        const buttonColor = match[1].trim();
-                        document.getElementById('buttonColor').value = buttonColor;
-                        document.getElementById('buttonColorValue').value = buttonColor;
-                        break;
-                    }
+                const bgMatch = buttonStyle.match(/background:\s*([^;]+)/);
+                if (bgMatch) {
+                    const buttonColor = bgMatch[1].trim();
+                    document.getElementById('buttonColor').value = buttonColor;
+                    document.getElementById('buttonColorValue').value = buttonColor;
                 }
                 
                 // Border radius
@@ -1802,7 +1828,7 @@ ${contentParagraphs}
                 }
                 
                 // Border
-                const borderMatch = buttonStyle.match(/border:\s*(\d+)px\s+solid\s+([^;]+)/);
+                const borderMatch = buttonStyle.match(/border:\s*(\d+)px solid ([^;]+)/);
                 if (borderMatch) {
                     document.getElementById('buttonBorderWidth').value = borderMatch[1];
                     const borderColor = borderMatch[2].trim();
@@ -1821,13 +1847,13 @@ ${contentParagraphs}
                     document.getElementById('buttonMarginLeft').value = marginMatch[4];
                 }
                 
-                // Padding y color del texto del botón (buscar en td/a child)
-                const buttonInner = buttonElement.querySelector('td') || buttonElement.querySelector('a') || buttonElement;
-                if (buttonInner) {
-                    const innerStyle = buttonInner.getAttribute('style') || '';
+                // Padding y color del texto del botón
+                const buttonTd = buttonTable.querySelector('td');
+                if (buttonTd) {
+                    const tdStyle = buttonTd.getAttribute('style') || '';
                     
                     // Padding
-                    const paddingMatch = innerStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+                    const paddingMatch = tdStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
                     if (paddingMatch) {
                         document.getElementById('buttonPaddingTop').value = paddingMatch[1];
                         document.getElementById('buttonPaddingRight').value = paddingMatch[2];
@@ -1836,11 +1862,11 @@ ${contentParagraphs}
                     }
                 }
                 
-                // Color del texto del botón (buscar en span/a)
-                const buttonText = buttonElement.querySelector('span') || buttonElement.querySelector('a') || buttonElement;
-                if (buttonText) {
-                    const textStyle = buttonText.getAttribute('style') || '';
-                    const colorMatch = textStyle.match(/color:\s*([^;]+)/);
+                // Color del texto del botón
+                const buttonSpan = buttonTable.querySelector('span.mititulo');
+                if (buttonSpan) {
+                    const spanStyle = buttonSpan.getAttribute('style') || '';
+                    const colorMatch = spanStyle.match(/color:\s*([^;]+)/);
                     if (colorMatch) {
                         const textColor = colorMatch[1].trim();
                         document.getElementById('buttonTextColor').value = textColor;
@@ -1849,25 +1875,14 @@ ${contentParagraphs}
                 }
             }
 
-            // ===== EXTRAER CONTENIDO DEL EMAIL (BÚSQUEDA FLEXIBLE) =====
+            // Extraer contenido del email
             let emailContent = '';
-            
-            // Buscar área de contenido con varios selectores
-            const contentSelectors = [
-                'td[style*="padding:0 0 25px 0"]',
-                'td[style*="padding:15px"]',
-                'td[style*="color:"]'
-            ];
-            
-            let contentArea = null;
-            for (const selector of contentSelectors) {
-                contentArea = doc.querySelector(selector);
-                if (contentArea && contentArea.textContent.trim().length > 10) {
-                    break;
-                }
-            }
-            
+            const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]');
             if (contentArea) {
+                const paragraphs = contentArea.querySelectorAll('p');
+                const buttonTables = contentArea.querySelectorAll('table.miboton');
+                
+                // Reconstruir el contenido
                 const children = Array.from(contentArea.children);
                 children.forEach(child => {
                     if (child.tagName === 'P') {
@@ -1875,28 +1890,14 @@ ${contentParagraphs}
                         if (text) {
                             emailContent += text + '\n';
                         }
-                    } else if (child.tagName === 'TABLE' && 
-                              (child.classList.contains('miboton') || 
-                               child.getAttribute('style')?.includes('background'))) {
+                    } else if (child.tagName === 'TABLE' && child.classList.contains('miboton')) {
                         emailContent += '{{sign_button}}\n';
-                    }
-                });
-            }
-            
-            // Si no encontramos contenido estructurado, extraer todo el texto
-            if (!emailContent.trim()) {
-                const allParagraphs = doc.querySelectorAll('p');
-                allParagraphs.forEach(p => {
-                    const text = p.textContent.trim();
-                    if (text && !text.includes('Generador') && text.length < 500) {
-                        emailContent += text + '\n';
                     }
                 });
             }
             
             document.getElementById('emailContent').value = emailContent.trim();
 
-            // ===== FINALIZAR =====
             // Asegurar que la sección de contenido esté abierta
             const contentSection = document.querySelector('.collapsible-section .collapsible-header');
             const contentContent = contentSection.nextElementSibling;
@@ -2069,6 +2070,24 @@ ${contentParagraphs}
                     }
                 });
                 
+                // Actualizar displays de opacidad
+                const opacityIds = [
+                    'bgColorOpacity',
+                    'containerColorOpacity',
+                    'borderColorOpacity',
+                    'textColorOpacity',
+                    'buttonColorOpacity',
+                    'buttonTextColorOpacity',
+                    'buttonBorderColorOpacity'
+                ];
+                
+                opacityIds.forEach(id => {
+                    const valueSpan = document.getElementById(id + 'Value');
+                    if (valueSpan) {
+                        valueSpan.textContent = '100%';
+                    }
+                });
+                
                 // Resetear variables oficiales de Signaturit
                 variables = [
                     'sender_email',
@@ -2103,8 +2122,32 @@ ${contentParagraphs}
         }
 
         // Event listeners
-        document.querySelectorAll('input:not([type="range"]):not([type="checkbox"]), textarea').forEach(element => {
+        document.querySelectorAll('input:not([type="range"]):not([type="checkbox"]):not([type="file"]), textarea, select').forEach(element => {
             element.addEventListener('input', updatePreview);
+        });
+
+        // Event listeners para sliders de opacidad
+        const opacitySliders = [
+            'bgColorOpacity',
+            'containerColorOpacity',
+            'borderColorOpacity',
+            'textColorOpacity',
+            'buttonColorOpacity',
+            'buttonTextColorOpacity',
+            'buttonBorderColorOpacity'
+        ];
+
+        opacitySliders.forEach(sliderId => {
+            const slider = document.getElementById(sliderId);
+            const valueSpan = document.getElementById(sliderId + 'Value');
+            
+            if (slider && valueSpan) {
+                slider.addEventListener('input', function() {
+                    const percentage = Math.round(this.value * 100);
+                    valueSpan.textContent = percentage + '%';
+                    updatePreview();
+                });
+            }
         });
 
         // Event listener para el checkbox de minificar (actualizar vista de código)
