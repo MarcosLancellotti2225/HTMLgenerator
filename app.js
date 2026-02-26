@@ -190,7 +190,9 @@ async function goToEditorExisting(brandingId) {
     selectedBrandingId = brandingId;
     isNewBranding = false;
 
-    document.getElementById('editorBrandingName').textContent = branding.name || 'Sin nombre';
+    const templatesArr = branding.templates || [];
+    const firstTplName = templatesArr.length > 0 ? templatesArr[0].name : null;
+    document.getElementById('editorBrandingName').textContent = branding.name || firstTplName || 'Sin nombre';
     document.getElementById('editorBrandingId').textContent = branding.id;
     document.getElementById('newBrandingNameGroup').style.display = 'none';
 
@@ -208,28 +210,20 @@ async function goToEditorExisting(brandingId) {
     // Cargar template content desde la API
     try {
         const fullBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
-        if (fullBranding.templates) {
-            // Buscar el primer template con contenido
-            const templates = fullBranding.templates;
-            let loadedType = null;
+        const templatesArray = fullBranding.templates || [];
 
-            // Primero intentar con el tipo seleccionado en el dropdown
-            const selectedType = document.getElementById('templateType').value;
-            if (templates[selectedType]) {
-                loadedType = selectedType;
-            } else {
-                // Si no, buscar el primer template que tenga contenido
-                for (const tType of ALL_TEMPLATE_TYPES) {
-                    if (templates[tType]) {
-                        loadedType = tType;
-                        break;
-                    }
-                }
-            }
+        if (templatesArray.length > 0) {
+            // Tomar el primer template del array (generalmente sign_request)
+            const firstTemplate = templatesArray[0];
+            const loadedType = firstTemplate.name;
+            const templateHTML = firstTemplate.content;
 
+            // Setear el dropdown al tipo detectado
             if (loadedType) {
                 document.getElementById('templateType').value = loadedType;
-                const templateHTML = templates[loadedType];
+            }
+
+            if (templateHTML) {
                 try {
                     parseHTMLTemplate(templateHTML);
                 } catch (e) {
@@ -240,16 +234,16 @@ async function goToEditorExisting(brandingId) {
             } else {
                 updatePreview();
             }
-
-            // Actualizar colores desde el branding completo
-            if (fullBranding.text_color) {
-                setColorField('textColor', fullBranding.text_color);
-            }
-            if (fullBranding.layout_color) {
-                setColorField('bgColor', fullBranding.layout_color);
-            }
         } else {
             updatePreview();
+        }
+
+        // Actualizar colores desde el branding completo
+        if (fullBranding.text_color) {
+            setColorField('textColor', fullBranding.text_color);
+        }
+        if (fullBranding.layout_color) {
+            setColorField('bgColor', fullBranding.layout_color);
         }
     } catch (error) {
         console.error('Error loading branding templates:', error);
@@ -343,18 +337,25 @@ function renderBrandingsPage() {
 
     let html = '';
     pageBrandings.forEach(b => {
-        const name = b.name || 'Sin nombre';
+        const templatesArray = b.templates || [];
+        const firstTemplateName = templatesArray.length > 0 ? templatesArray[0].name : null;
+        const name = b.name || firstTemplateName || 'Sin nombre';
         const initial = name.charAt(0).toUpperCase();
-        const templates = b.templates || {};
+
+        // Convertir array [{name, content}] a map {name: content}
+        const templatesMap = {};
+        templatesArray.forEach(t => {
+            if (t && t.name) templatesMap[t.name] = t.content || '';
+        });
 
         // Contar templates con contenido
-        const configuredTemplates = ALL_TEMPLATE_TYPES.filter(t => templates[t]);
+        const configuredTemplates = ALL_TEMPLATE_TYPES.filter(t => templatesMap[t]);
         const totalConfigured = configuredTemplates.length;
 
         // Badges de templates
         let badgesHTML = '';
         ALL_TEMPLATE_TYPES.forEach(t => {
-            const hasContent = !!templates[t];
+            const hasContent = !!templatesMap[t];
             const cls = hasContent ? 'has-content' : 'empty';
             const shortName = t.replace('signatures_', 'sig_').replace('request_expired', 'req_exp').replace('_requester', '_req');
             badgesHTML += '<span class="template-badge ' + cls + '">' + shortName + '</span>';
@@ -426,19 +427,34 @@ async function loadTemplateFromAPI() {
     try {
         const branding = await apiCall('GET', '/brandings/' + selectedBrandingId + '.json');
         const templateType = document.getElementById('templateType').value;
+        const templatesArray = branding.templates || [];
 
-        if (branding.templates && branding.templates[templateType]) {
-            const templateHTML = branding.templates[templateType];
+        // Buscar el template por nombre en el array
+        const found = templatesArray.find(t => t.name === templateType);
+
+        if (found && found.content) {
             try {
-                parseHTMLTemplate(templateHTML);
+                parseHTMLTemplate(found.content);
                 showToast('Template "' + templateType + '" cargado desde branding');
             } catch (e) {
-                document.getElementById('emailContent').value = templateHTML;
+                document.getElementById('emailContent').value = found.content;
                 updatePreview();
                 showToast('Template cargado (sin parsear estructura)');
             }
+        } else if (templatesArray.length > 0) {
+            // Si no existe el tipo seleccionado, cargar el primero disponible
+            const first = templatesArray[0];
+            document.getElementById('templateType').value = first.name;
+            try {
+                parseHTMLTemplate(first.content);
+                showToast('Template "' + first.name + '" cargado (auto-detectado)');
+            } catch (e) {
+                document.getElementById('emailContent').value = first.content;
+                updatePreview();
+                showToast('Template "' + first.name + '" cargado');
+            }
         } else {
-            showToast('Este branding no tiene template "' + templateType + '"');
+            showToast('Este branding no tiene templates');
         }
 
         if (branding.text_color) {
