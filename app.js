@@ -124,7 +124,7 @@ async function connectAPI() {
 
         apiBrandings = await response.json();
 
-        // Populate branding selector
+        // Populate hidden branding selector (used by save/load)
         const select = document.getElementById('brandingSelect');
         select.innerHTML = '<option value="">-- Seleccionar branding --</option>' +
             '<option value="__new__">+ Crear nuevo branding</option>';
@@ -139,6 +139,9 @@ async function connectAPI() {
         document.getElementById('brandingCount').textContent = apiBrandings.length;
         document.getElementById('apiConnectedPanel').style.display = 'block';
         btn.style.display = 'none';
+
+        // Render visual brandings list
+        renderBrandingsList();
 
         showToast('Conectado - ' + apiBrandings.length + ' brandings encontrados');
     } catch (error) {
@@ -158,20 +161,75 @@ function disconnectAPI() {
     document.getElementById('btnConnect').textContent = 'Conectar y cargar brandings';
     document.getElementById('brandingSelect').value = '';
     document.getElementById('newBrandingNameGroup').style.display = 'none';
+    document.getElementById('templateControls').style.display = 'none';
+    document.getElementById('brandingsList').innerHTML = '';
     showToast('Desconectado');
 }
 
 function onBrandingSelected() {
     const val = document.getElementById('brandingSelect').value;
     const newNameGroup = document.getElementById('newBrandingNameGroup');
+    const templateControls = document.getElementById('templateControls');
 
     if (val === '__new__') {
         selectedBrandingId = null;
         newNameGroup.style.display = 'block';
-    } else {
-        selectedBrandingId = val || null;
+        templateControls.style.display = 'block';
+    } else if (val) {
+        selectedBrandingId = val;
         newNameGroup.style.display = 'none';
+        templateControls.style.display = 'block';
+    } else {
+        selectedBrandingId = null;
+        newNameGroup.style.display = 'none';
+        templateControls.style.display = 'none';
     }
+}
+
+// ── Brandings List (visual cards) ──
+
+function renderBrandingsList() {
+    const container = document.getElementById('brandingsList');
+
+    let html = '<div class="brandings-list-header">' +
+        '<h3>Brandings</h3>' +
+        '<span class="brandings-list-count">' + apiBrandings.length + '</span>' +
+        '</div>';
+
+    apiBrandings.forEach(b => {
+        const name = b.name || 'Sin nombre';
+        const initial = name.charAt(0).toUpperCase();
+        const templateCount = b.templates ? Object.keys(b.templates).filter(k => b.templates[k]).length : 0;
+        const isSelected = selectedBrandingId === b.id;
+
+        html += '<div class="branding-card' + (isSelected ? ' selected' : '') + '" onclick="selectBranding(\'' + b.id + '\')">' +
+            '<div class="branding-card-icon">' + initial + '</div>' +
+            '<div class="branding-card-info">' +
+                '<div class="branding-card-name">' + name + '</div>' +
+                '<div class="branding-card-id">ID: ' + b.id + '</div>' +
+            '</div>' +
+            (templateCount > 0 ? '<span class="branding-card-templates">' + templateCount + ' tmpl</span>' : '') +
+            '</div>';
+    });
+
+    // Card para crear nuevo
+    html += '<div class="branding-card branding-card-new" onclick="selectBranding(\'__new__\')">' +
+        '<div class="branding-card-icon">+</div>' +
+        '<div class="branding-card-info">' +
+            '<div class="branding-card-name">Crear nuevo branding</div>' +
+        '</div>' +
+        '</div>';
+
+    container.innerHTML = html;
+}
+
+function selectBranding(id) {
+    // Update hidden select
+    document.getElementById('brandingSelect').value = id;
+    onBrandingSelected();
+
+    // Re-render list to update selection
+    renderBrandingsList();
 }
 
 // ── API: Cargar template desde un branding ──

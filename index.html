@@ -10,8 +10,10 @@
     <div class="container">
         <!-- ── Panel de Controles ── -->
         <div class="controls">
-            <h1>Generador de Emails</h1>
-            <p class="subtitle">Personaliza tu plantilla de firma de Signaturit</p>
+            <div class="app-header">
+                <h1>Generador de Emails</h1>
+                <p class="subtitle">Personaliza tu plantilla de firma de Signaturit</p>
+            </div>
 
             <!-- Sección: API Signaturit (CERRADA) -->
             <div class="collapsible-section">
@@ -45,13 +47,14 @@
                                 Conectado — <span id="brandingCount">0</span> brandings
                             </div>
 
-                            <div class="form-group">
-                                <label>Branding</label>
-                                <select id="brandingSelect" onchange="onBrandingSelected()">
-                                    <option value="">-- Seleccionar branding --</option>
-                                    <option value="__new__">+ Crear nuevo branding</option>
-                                </select>
-                            </div>
+                            <!-- Lista visual de brandings -->
+                            <div id="brandingsList" class="brandings-list"></div>
+
+                            <!-- Select oculto (usado internamente por save/load) -->
+                            <select id="brandingSelect" style="display:none;" onchange="onBrandingSelected()">
+                                <option value="">-- Seleccionar branding --</option>
+                                <option value="__new__">+ Crear nuevo branding</option>
+                            </select>
 
                             <!-- Nombre para nuevo branding -->
                             <div class="form-group" id="newBrandingNameGroup" style="display: none;">
@@ -59,29 +62,32 @@
                                 <input type="text" id="newBrandingName" placeholder="Mi Branding" maxlength="24">
                             </div>
 
-                            <div class="form-group">
-                                <label>Tipo de Template</label>
-                                <select id="templateType">
-                                    <option value="signatures_request">signatures_request (requiere {{sign_button}})</option>
-                                    <option value="signatures_receipt">signatures_receipt</option>
-                                    <option value="request_expired">request_expired</option>
-                                    <option value="pending_sign">pending_sign (requiere {{sign_button}})</option>
-                                    <option value="document_canceled">document_canceled</option>
-                                    <option value="emails_request">emails_request (requiere {{email_button}})</option>
-                                    <option value="validation_request">validation_request (requiere {{validate_button}})</option>
-                                    <option value="signed_document">signed_document</option>
-                                    <option value="document_declined">document_declined</option>
-                                    <option value="request_expired_requester">request_expired_requester</option>
-                                </select>
-                            </div>
+                            <!-- Controles de template (aparecen al seleccionar un branding) -->
+                            <div id="templateControls" style="display: none;">
+                                <div class="form-group">
+                                    <label>Tipo de Template</label>
+                                    <select id="templateType">
+                                        <option value="signatures_request">signatures_request (requiere {{sign_button}})</option>
+                                        <option value="signatures_receipt">signatures_receipt</option>
+                                        <option value="request_expired">request_expired</option>
+                                        <option value="pending_sign">pending_sign (requiere {{sign_button}})</option>
+                                        <option value="document_canceled">document_canceled</option>
+                                        <option value="emails_request">emails_request (requiere {{email_button}})</option>
+                                        <option value="validation_request">validation_request (requiere {{validate_button}})</option>
+                                        <option value="signed_document">signed_document</option>
+                                        <option value="document_declined">document_declined</option>
+                                        <option value="request_expired_requester">request_expired_requester</option>
+                                    </select>
+                                </div>
 
-                            <div class="api-button-row">
-                                <button class="btn-api-action btn-api-load" onclick="loadTemplateFromAPI()">
-                                    Cargar template
-                                </button>
-                                <button class="btn-api-action btn-api-save" onclick="saveTemplateToAPI()">
-                                    Guardar en API
-                                </button>
+                                <div class="api-button-row">
+                                    <button class="btn-api-action btn-api-load" onclick="loadTemplateFromAPI()">
+                                        Cargar template
+                                    </button>
+                                    <button class="btn-api-action btn-api-save" onclick="saveTemplateToAPI()">
+                                        Guardar en API
+                                    </button>
+                                </div>
                             </div>
 
                             <button class="btn-api-disconnect" onclick="disconnectAPI()">
