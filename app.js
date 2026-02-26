@@ -183,7 +183,7 @@ function goToEditorNew() {
     showView('viewEditor');
 }
 
-function goToEditorExisting(brandingId) {
+async function goToEditorExisting(brandingId) {
     const branding = apiBrandings.find(b => b.id === brandingId);
     if (!branding) return;
 
@@ -191,7 +191,7 @@ function goToEditorExisting(brandingId) {
     isNewBranding = false;
 
     document.getElementById('editorBrandingName').textContent = branding.name || 'Sin nombre';
-    document.getElementById('editorBrandingId').textContent = 'ID: ' + branding.id;
+    document.getElementById('editorBrandingId').textContent = branding.id;
     document.getElementById('newBrandingNameGroup').style.display = 'none';
 
     // Cargar colores del branding si existen
@@ -204,7 +204,58 @@ function goToEditorExisting(brandingId) {
 
     initEditorListeners();
     showView('viewEditor');
-    updatePreview();
+
+    // Cargar template content desde la API
+    try {
+        const fullBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
+        if (fullBranding.templates) {
+            // Buscar el primer template con contenido
+            const templates = fullBranding.templates;
+            let loadedType = null;
+
+            // Primero intentar con el tipo seleccionado en el dropdown
+            const selectedType = document.getElementById('templateType').value;
+            if (templates[selectedType]) {
+                loadedType = selectedType;
+            } else {
+                // Si no, buscar el primer template que tenga contenido
+                for (const tType of ALL_TEMPLATE_TYPES) {
+                    if (templates[tType]) {
+                        loadedType = tType;
+                        break;
+                    }
+                }
+            }
+
+            if (loadedType) {
+                document.getElementById('templateType').value = loadedType;
+                const templateHTML = templates[loadedType];
+                try {
+                    parseHTMLTemplate(templateHTML);
+                } catch (e) {
+                    document.getElementById('emailContent').value = templateHTML;
+                    updatePreview();
+                }
+                showToast('Template "' + loadedType + '" cargado');
+            } else {
+                updatePreview();
+            }
+
+            // Actualizar colores desde el branding completo
+            if (fullBranding.text_color) {
+                setColorField('textColor', fullBranding.text_color);
+            }
+            if (fullBranding.layout_color) {
+                setColorField('bgColor', fullBranding.layout_color);
+            }
+        } else {
+            updatePreview();
+        }
+    } catch (error) {
+        console.error('Error loading branding templates:', error);
+        showToast('Branding cargado (sin templates)');
+        updatePreview();
+    }
 }
 
 // ═══════════════════════════════════
@@ -477,7 +528,7 @@ async function createNewBranding(templateType) {
         selectedBrandingId = result.id;
         isNewBranding = false;
         document.getElementById('editorBrandingName').textContent = name;
-        document.getElementById('editorBrandingId').textContent = 'ID: ' + result.id;
+        document.getElementById('editorBrandingId').textContent = result.id;
         document.getElementById('newBrandingNameGroup').style.display = 'none';
 
     } catch (error) {
@@ -522,6 +573,17 @@ function hexToRgba(hex, opacity) {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+function copyBrandingId() {
+    const idEl = document.getElementById('editorBrandingId');
+    const id = idEl.textContent.trim();
+    if (!id) return;
+    navigator.clipboard.writeText(id).then(() => {
+        showToast('ID copiado: ' + id);
+    }).catch(() => {
+        showToast('No se pudo copiar');
+    });
 }
 
 function showToast(message) {
