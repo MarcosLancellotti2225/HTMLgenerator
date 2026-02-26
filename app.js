@@ -85,9 +85,9 @@ const REQUIRED_MAGIC_WORDS = {
 let apiBrandings = [];
 let selectedBrandingId = null;
 
-// La Edge Function vive en el mismo proyecto de Supabase
+// Edge Function en Supabase (proxy para evitar CORS)
 function getAPIBase() {
-    return window.location.origin + '/functions/v1/signaturit-proxy';
+    return 'https://plejrqzzxnypnxxnamxj.supabase.co/functions/v1/signaturit-proxy';
 }
 
 function getAuthHeaders() {
