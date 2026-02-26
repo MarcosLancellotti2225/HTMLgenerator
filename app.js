@@ -487,11 +487,73 @@ async function saveTemplateToAPI() {
     }
 
     if (isNewBranding) {
-        await createNewBranding(templateType);
+        const name = document.getElementById('newBrandingName').value.trim();
+        if (!name) {
+            showToast('Ingresa un nombre para el nuevo branding');
+            return;
+        }
+        showConfirmPushModal('POST', templateType, name, null);
     } else if (selectedBrandingId) {
-        await updateExistingBranding(selectedBrandingId, templateType);
+        const brandingName = document.getElementById('editorBrandingName').textContent;
+        showConfirmPushModal('PATCH', templateType, brandingName, selectedBrandingId);
     } else {
         showToast('Selecciona un branding o crea uno nuevo');
+    }
+}
+
+function showConfirmPushModal(method, templateType, brandingName, brandingId) {
+    const env = document.getElementById('apiEnvironment').value;
+    const envLabel = env === 'production' ? 'PRODUCTION' : 'Sandbox';
+    const methodClass = method.toLowerCase();
+
+    let details = '<div style="margin-bottom: 10px;">' +
+        '<span class="confirm-label">Accion:</span> ' +
+        '<span class="confirm-method ' + methodClass + '">' + method + '</span> ' +
+        (method === 'POST' ? 'Crear nuevo branding' : 'Actualizar branding existente') +
+        '</div>';
+
+    details += '<div style="margin-bottom: 6px;">' +
+        '<span class="confirm-label">Branding:</span> ' + escapeHTML(brandingName) +
+        '</div>';
+
+    if (brandingId) {
+        details += '<div style="margin-bottom: 6px;">' +
+            '<span class="confirm-label">ID:</span> <span class="confirm-value">' + brandingId + '</span>' +
+            '</div>';
+    }
+
+    details += '<div style="margin-bottom: 6px;">' +
+        '<span class="confirm-label">Template:</span> <span class="confirm-value">' + templateType + '</span>' +
+        '</div>';
+
+    details += '<div>' +
+        '<span class="confirm-label">Entorno:</span> <span style="font-weight:600;' +
+        (env === 'production' ? 'color:#dc2626;"' : 'color:#2563eb;"') + '>' + envLabel + '</span>' +
+        '</div>';
+
+    document.getElementById('confirmPushDetails').innerHTML = details;
+
+    // Guardar datos para ejecutar despues
+    window._pendingPush = { method, templateType, brandingId };
+
+    document.getElementById('confirmPushModal').classList.add('show');
+}
+
+function closeConfirmPushModal() {
+    document.getElementById('confirmPushModal').classList.remove('show');
+    window._pendingPush = null;
+}
+
+async function executeConfirmedPush() {
+    const pending = window._pendingPush;
+    if (!pending) return;
+
+    closeConfirmPushModal();
+
+    if (pending.method === 'POST') {
+        await createNewBranding(pending.templateType);
+    } else {
+        await updateExistingBranding(pending.brandingId, pending.templateType);
     }
 }
 
