@@ -32,8 +32,13 @@
                         <div class="form-group">
                             <label>Access Token</label>
                             <input type="password" id="apiToken" placeholder="Bearer token de Signaturit">
+                        </div>
+
+                        <div class="form-group">
+                            <label>URL del Proxy (Supabase Edge Function)</label>
+                            <input type="url" id="proxyUrl" placeholder="https://tu-proyecto.supabase.co/functions/v1/signaturit-proxy">
                             <small style="color: #6c757d; display: block; margin-top: 4px;">
-                                El token no se almacena. Solo se usa en esta sesion.
+                                Las llamadas a la API pasan por tu Edge Function para evitar CORS.
                             </small>
                         </div>
 

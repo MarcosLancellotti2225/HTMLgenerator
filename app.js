@@ -74,11 +74,6 @@ const defaults = {
 
 // ── Estado de la API ──
 
-const API_URLS = {
-    sandbox: 'https://api.sandbox.signaturit.com/v3',
-    production: 'https://api.signaturit.com/v3'
-};
-
 // Magic words obligatorias por tipo de template
 const REQUIRED_MAGIC_WORDS = {
     signatures_request: ['{{sign_button}}'],
@@ -90,15 +85,25 @@ const REQUIRED_MAGIC_WORDS = {
 let apiBrandings = [];
 let selectedBrandingId = null;
 
+// Construye la URL base: usa el proxy de Supabase si está configurado
 function getAPIBase() {
+    const proxyUrl = (document.getElementById('proxyUrl').value || '').trim().replace(/\/+$/, '');
+    if (proxyUrl) {
+        return proxyUrl;
+    }
+    // Fallback directo (puede fallar por CORS en producción)
     const env = document.getElementById('apiEnvironment').value;
-    return API_URLS[env];
+    return env === 'production'
+        ? 'https://api.signaturit.com/v3'
+        : 'https://api.sandbox.signaturit.com/v3';
 }
 
 function getAuthHeaders() {
     const token = document.getElementById('apiToken').value.trim();
+    const env = document.getElementById('apiEnvironment').value;
     return {
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+        'X-Signaturit-Environment': env
     };
 }
 
