@@ -72,6 +72,288 @@ const defaults = {
     buttonWidth: '200'
 };
 
+// ── Estado de la API ──
+
+const API_URLS = {
+    sandbox: 'https://api.sandbox.signaturit.com/v3',
+    production: 'https://api.signaturit.com/v3'
+};
+
+// Magic words obligatorias por tipo de template
+const REQUIRED_MAGIC_WORDS = {
+    signatures_request: ['{{sign_button}}'],
+    pending_sign: ['{{sign_button}}'],
+    emails_request: ['{{email_button}}'],
+    validation_request: ['{{validate_button}}']
+};
+
+let apiBrandings = [];
+let selectedBrandingId = null;
+
+function getAPIBase() {
+    const env = document.getElementById('apiEnvironment').value;
+    return API_URLS[env];
+}
+
+function getAuthHeaders() {
+    const token = document.getElementById('apiToken').value.trim();
+    return {
+        'Authorization': 'Bearer ' + token
+    };
+}
+
+// ── API: Conectar y cargar brandings ──
+
+async function connectAPI() {
+    const token = document.getElementById('apiToken').value.trim();
+    if (!token) {
+        showToast('Ingresa un access token');
+        return;
+    }
+
+    const btn = document.getElementById('btnConnect');
+    btn.disabled = true;
+    btn.textContent = 'Conectando...';
+
+    try {
+        const response = await fetch(getAPIBase() + '/brandings.json', {
+            method: 'GET',
+            headers: getAuthHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status + ': ' + (response.statusText || 'Error de autenticación'));
+        }
+
+        apiBrandings = await response.json();
+
+        // Populate branding selector
+        const select = document.getElementById('brandingSelect');
+        select.innerHTML = '<option value="">-- Seleccionar branding --</option>' +
+            '<option value="__new__">+ Crear nuevo branding</option>';
+
+        apiBrandings.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = (b.name || 'Sin nombre') + ' (' + b.id.substring(0, 8) + '...)';
+            select.appendChild(opt);
+        });
+
+        document.getElementById('brandingCount').textContent = apiBrandings.length;
+        document.getElementById('apiConnectedPanel').style.display = 'block';
+        btn.style.display = 'none';
+
+        showToast('Conectado - ' + apiBrandings.length + ' brandings encontrados');
+    } catch (error) {
+        console.error('API Error:', error);
+        showToast('Error de conexión: ' + error.message);
+        btn.disabled = false;
+        btn.textContent = 'Conectar y cargar brandings';
+    }
+}
+
+function disconnectAPI() {
+    apiBrandings = [];
+    selectedBrandingId = null;
+    document.getElementById('apiConnectedPanel').style.display = 'none';
+    document.getElementById('btnConnect').style.display = 'block';
+    document.getElementById('btnConnect').disabled = false;
+    document.getElementById('btnConnect').textContent = 'Conectar y cargar brandings';
+    document.getElementById('brandingSelect').value = '';
+    document.getElementById('newBrandingNameGroup').style.display = 'none';
+    showToast('Desconectado');
+}
+
+function onBrandingSelected() {
+    const val = document.getElementById('brandingSelect').value;
+    const newNameGroup = document.getElementById('newBrandingNameGroup');
+
+    if (val === '__new__') {
+        selectedBrandingId = null;
+        newNameGroup.style.display = 'block';
+    } else {
+        selectedBrandingId = val || null;
+        newNameGroup.style.display = 'none';
+    }
+}
+
+// ── API: Cargar template desde un branding ──
+
+async function loadTemplateFromAPI() {
+    const brandingId = document.getElementById('brandingSelect').value;
+
+    if (!brandingId || brandingId === '__new__') {
+        showToast('Selecciona un branding existente para cargar');
+        return;
+    }
+
+    try {
+        const response = await fetch(getAPIBase() + '/brandings/' + brandingId + '.json', {
+            method: 'GET',
+            headers: getAuthHeaders()
+        });
+
+        if (!response.ok) {
+            throw new Error('HTTP ' + response.status);
+        }
+
+        const branding = await response.json();
+        const templateType = document.getElementById('templateType').value;
+
+        // Cargar template HTML si existe
+        if (branding.templates && branding.templates[templateType]) {
+            const templateHTML = branding.templates[templateType];
+            try {
+                parseHTMLTemplate(templateHTML);
+                showToast('Template "' + templateType + '" cargado desde branding');
+            } catch (e) {
+                // Si parseHTMLTemplate falla, al menos poner el contenido en el textarea
+                document.getElementById('emailContent').value = templateHTML;
+                updatePreview();
+                showToast('Template cargado (sin parsear estructura)');
+            }
+        } else {
+            showToast('Este branding no tiene template "' + templateType + '"');
+        }
+
+        // Cargar colores del branding al editor si existen
+        if (branding.text_color) {
+            setColorField('textColor', branding.text_color);
+        }
+        if (branding.layout_color) {
+            setColorField('bgColor', branding.layout_color);
+        }
+
+    } catch (error) {
+        console.error('Error loading template:', error);
+        showToast('Error al cargar template: ' + error.message);
+    }
+}
+
+function setColorField(fieldId, hexColor) {
+    const picker = document.getElementById(fieldId);
+    const textInput = document.getElementById(fieldId + 'Value');
+    if (picker && hexColor && hexColor.startsWith('#')) {
+        picker.value = hexColor;
+        if (textInput) textInput.value = hexColor;
+    }
+}
+
+// ── API: Guardar template (crear o actualizar branding) ──
+
+async function saveTemplateToAPI() {
+    const brandingSelectVal = document.getElementById('brandingSelect').value;
+    const templateType = document.getElementById('templateType').value;
+    const isNew = brandingSelectVal === '__new__';
+
+    // Validar magic words obligatorias
+    const requiredWords = REQUIRED_MAGIC_WORDS[templateType];
+    if (requiredWords) {
+        let html = generateHTML();
+        const shouldMinify = document.getElementById('minifyHTML').checked;
+        if (shouldMinify) {
+            html = minifyHTML(html);
+        }
+
+        const missing = requiredWords.filter(w => !html.includes(w));
+        if (missing.length > 0) {
+            showToast('Faltan variables obligatorias: ' + missing.join(', '));
+            return;
+        }
+    }
+
+    if (isNew) {
+        await createNewBranding(templateType);
+    } else if (brandingSelectVal) {
+        await updateExistingBranding(brandingSelectVal, templateType);
+    } else {
+        showToast('Selecciona un branding o crea uno nuevo');
+    }
+}
+
+async function createNewBranding(templateType) {
+    const name = document.getElementById('newBrandingName').value.trim();
+    if (!name) {
+        showToast('Ingresa un nombre para el nuevo branding');
+        return;
+    }
+
+    let html = generateHTML();
+    const shouldMinify = document.getElementById('minifyHTML').checked;
+    if (shouldMinify) {
+        html = minifyHTML(html);
+    }
+
+    const body = new URLSearchParams();
+    body.append('name', name);
+    body.append('templates[' + templateType + ']', html);
+
+    // Agregar colores del editor como colores del branding
+    body.append('text_color', document.getElementById('textColor').value);
+    body.append('layout_color', document.getElementById('bgColor').value);
+
+    try {
+        const response = await fetch(getAPIBase() + '/brandings.json', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: body
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error('HTTP ' + response.status + ': ' + errorText);
+        }
+
+        const result = await response.json();
+        showToast('Branding "' + name + '" creado con ID: ' + result.id.substring(0, 8) + '...');
+
+        // Recargar brandings para actualizar el selector
+        await connectAPI();
+
+        // Seleccionar el branding recién creado
+        document.getElementById('brandingSelect').value = result.id;
+        onBrandingSelected();
+
+    } catch (error) {
+        console.error('Error creating branding:', error);
+        showToast('Error al crear branding: ' + error.message);
+    }
+}
+
+async function updateExistingBranding(brandingId, templateType) {
+    let html = generateHTML();
+    const shouldMinify = document.getElementById('minifyHTML').checked;
+    if (shouldMinify) {
+        html = minifyHTML(html);
+    }
+
+    const body = new URLSearchParams();
+    body.append('templates[' + templateType + ']', html);
+
+    // Actualizar colores del branding también
+    body.append('text_color', document.getElementById('textColor').value);
+    body.append('layout_color', document.getElementById('bgColor').value);
+
+    try {
+        const response = await fetch(getAPIBase() + '/brandings/' + brandingId + '.json', {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: body
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error('HTTP ' + response.status + ': ' + errorText);
+        }
+
+        showToast('Template "' + templateType + '" actualizado en branding');
+
+    } catch (error) {
+        console.error('Error updating branding:', error);
+        showToast('Error al actualizar: ' + error.message);
+    }
+}
+
 // ── Utilidades ──
 
 function hexToRgba(hex, opacity) {

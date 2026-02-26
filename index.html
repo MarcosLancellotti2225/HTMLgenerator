@@ -13,6 +13,88 @@
             <h1>Generador de Emails</h1>
             <p class="subtitle">Personaliza tu plantilla de firma de Signaturit</p>
 
+            <!-- Sección: API Signaturit (CERRADA) -->
+            <div class="collapsible-section">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <h2>API Signaturit</h2>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <div class="form-group">
+                            <label>Entorno</label>
+                            <select id="apiEnvironment">
+                                <option value="sandbox">Sandbox (pruebas)</option>
+                                <option value="production">Production</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Access Token</label>
+                            <input type="password" id="apiToken" placeholder="Bearer token de Signaturit">
+                            <small style="color: #6c757d; display: block; margin-top: 4px;">
+                                El token no se almacena. Solo se usa en esta sesion.
+                            </small>
+                        </div>
+
+                        <button class="btn-api-connect" id="btnConnect" onclick="connectAPI()">
+                            Conectar y cargar brandings
+                        </button>
+
+                        <!-- Panel que aparece después de conectar -->
+                        <div id="apiConnectedPanel" style="display: none;">
+                            <div class="api-status connected" id="apiStatus">
+                                <span class="api-status-dot"></span>
+                                Conectado — <span id="brandingCount">0</span> brandings
+                            </div>
+
+                            <div class="form-group">
+                                <label>Branding</label>
+                                <select id="brandingSelect" onchange="onBrandingSelected()">
+                                    <option value="">-- Seleccionar branding --</option>
+                                    <option value="__new__">+ Crear nuevo branding</option>
+                                </select>
+                            </div>
+
+                            <!-- Nombre para nuevo branding -->
+                            <div class="form-group" id="newBrandingNameGroup" style="display: none;">
+                                <label>Nombre del nuevo branding (max 24 chars)</label>
+                                <input type="text" id="newBrandingName" placeholder="Mi Branding" maxlength="24">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tipo de Template</label>
+                                <select id="templateType">
+                                    <option value="signatures_request">signatures_request (requiere {{sign_button}})</option>
+                                    <option value="signatures_receipt">signatures_receipt</option>
+                                    <option value="request_expired">request_expired</option>
+                                    <option value="pending_sign">pending_sign (requiere {{sign_button}})</option>
+                                    <option value="document_canceled">document_canceled</option>
+                                    <option value="emails_request">emails_request (requiere {{email_button}})</option>
+                                    <option value="validation_request">validation_request (requiere {{validate_button}})</option>
+                                    <option value="signed_document">signed_document</option>
+                                    <option value="document_declined">document_declined</option>
+                                    <option value="request_expired_requester">request_expired_requester</option>
+                                </select>
+                            </div>
+
+                            <div class="api-button-row">
+                                <button class="btn-api-action btn-api-load" onclick="loadTemplateFromAPI()">
+                                    Cargar template
+                                </button>
+                                <button class="btn-api-action btn-api-save" onclick="saveTemplateToAPI()">
+                                    Guardar en API
+                                </button>
+                            </div>
+
+                            <button class="btn-api-disconnect" onclick="disconnectAPI()">
+                                Desconectar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <h2>Variables</h2>
             <div class="info-box">
                 Incluye las <strong>14 variables oficiales de Signaturit</strong> + las tuyas personalizadas. Haz clic para gestionar e insertar donde quieras.
