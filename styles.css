@@ -368,17 +368,18 @@ body {
 .editor-topbar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #e1e4e8;
+    padding: 14px 16px;
+    background: #1a1a2e;
+    border-radius: 10px;
 }
 
 .btn-back {
-    background: #f3f4f6;
-    color: #374151;
+    background: rgba(255,255,255,0.1);
+    color: #e5e7eb;
     padding: 7px 14px;
-    border: 1px solid #d1d5db;
+    border: 1px solid rgba(255,255,255,0.15);
     border-radius: 6px;
     cursor: pointer;
     font-size: 13px;
@@ -389,7 +390,8 @@ body {
 }
 
 .btn-back:hover {
-    background: #e5e7eb;
+    background: rgba(255,255,255,0.18);
+    color: #ffffff;
 }
 
 .editor-branding-info {
@@ -397,33 +399,53 @@ body {
     flex: 1;
 }
 
-.editor-branding-name {
+.editor-branding-name-input {
     display: block;
-    font-size: 20px;
-    font-weight: 700;
-    color: #1a1a2e;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    width: 100%;
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 4px 8px;
+    margin: -4px -8px;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.editor-branding-name-input::placeholder {
+    color: rgba(255,255,255,0.4);
+}
+
+.editor-branding-name-input:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.15);
+}
+
+.editor-branding-name-input:focus {
+    background: rgba(255,255,255,0.12);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 .editor-branding-id {
     display: inline-block;
-    font-size: 13px;
-    color: #6b7280;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
     font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
     margin-top: 4px;
-    background: #f3f4f6;
+    background: rgba(255,255,255,0.06);
     padding: 3px 10px;
     border-radius: 6px;
     cursor: pointer;
     user-select: all;
-    transition: background 0.2s;
+    transition: all 0.2s;
 }
 
 .editor-branding-id:hover {
-    background: #e5e7eb;
-    color: #374151;
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.7);
 }
 
 /* ── Preview ── */
@@ -435,23 +457,34 @@ body {
 
 .preview-toolbar {
     display: flex;
-    gap: 8px;
-    padding: 12px 20px;
-    background: white;
-    border-bottom: 1px solid #e1e4e8;
-    flex-wrap: wrap;
+    justify-content: space-between;
     align-items: center;
+    padding: 14px 20px;
+    background: #1a1a2e;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.preview-toolbar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.3px;
+}
+
+.preview-toolbar-actions {
+    display: flex;
+    gap: 8px;
 }
 
 .toolbar-btn {
     padding: 7px 14px;
-    border: 1px solid #d1d5db;
-    background: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
     border-radius: 6px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
-    color: #374151;
+    color: #e5e7eb;
     transition: all 0.15s;
     display: flex;
     align-items: center;
@@ -459,8 +492,21 @@ body {
 }
 
 .toolbar-btn:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.3);
+    color: #ffffff;
+}
+
+.toolbar-btn-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+.toolbar-btn-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: white;
 }
 
 .preview {
