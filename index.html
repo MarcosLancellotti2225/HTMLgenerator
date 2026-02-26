@@ -4,908 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador de Plantillas HTML - Signaturit</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1800px;
-            width: 95%;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 420px 1fr;
-            gap: 0;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-            min-height: 85vh;
-        }
-
-        .controls {
-            background: #f8f9fa;
-            padding: 25px;
-            overflow-y: auto;
-            max-height: 85vh;
-            border-right: 1px solid #e9ecef;
-        }
-
-        .preview-section {
-            display: flex;
-            flex-direction: column;
-            background: white;
-        }
-
-        .preview-toolbar {
-            display: flex;
-            gap: 10px;
-            padding: 15px 20px;
-            background: #f8f9fa;
-            border-bottom: 2px solid #e9ecef;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .toolbar-btn {
-            padding: 8px 12px;
-            border: 2px solid #e9ecef;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .toolbar-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .toolbar-btn.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .zoom-control {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: white;
-            border: 2px solid #e9ecef;
-            border-radius: 6px;
-        }
-
-        .zoom-control input {
-            width: 80px;
-            border: none;
-            background: transparent;
-        }
-
-        .preview {
-            padding: 30px;
-            background: white;
-            overflow-y: auto;
-            flex: 1;
-            position: relative;
-            max-height: 85vh;
-        }
-
-        .preview.fullscreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 9999;
-            max-height: 100vh;
-            background: white;
-        }
-
-        .fullscreen-close {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .fullscreen-close:hover {
-            background: #c82333;
-            transform: scale(1.1);
-        }
-
-        .fullscreen-close.show {
-            display: flex;
-        }
-
-        .preview.mobile-view .preview-frame {
-            max-width: 375px;
-            margin: 0 auto;
-            border: 3px solid #333;
-            border-radius: 30px;
-            padding: 20px 10px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            background: white;
-        }
-
-        h1 {
-            color: #667eea;
-            margin-bottom: 10px;
-            font-size: 26px;
-            font-weight: 700;
-        }
-
-        h2 {
-            color: #495057;
-            margin: 20px 0 12px 0;
-            font-size: 15px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .subtitle {
-            color: #6c757d;
-            margin-bottom: 20px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .collapsible-section {
-            margin-bottom: 18px;
-        }
-
-        .collapsible-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 15px;
-            cursor: pointer;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-            user-select: none;
-        }
-
-        .collapsible-header:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .collapsible-header h2 {
-            margin: 0;
-            color: white;
-            font-size: 15px;
-        }
-
-        .collapsible-icon {
-            font-size: 20px;
-            transition: transform 0.3s;
-        }
-
-        .collapsible-header.active .collapsible-icon {
-            transform: rotate(180deg);
-        }
-
-        .collapsible-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            background: white;
-            border-radius: 0 0 8px 8px;
-        }
-
-        .collapsible-content.active {
-            max-height: 2000px;
-            transition: max-height 0.5s ease-in;
-        }
-
-        .collapsible-inner {
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-        }
-
-        select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-            transition: border-color 0.3s;
-        }
-
-        select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .accordion-section {
-            margin-bottom: 20px;
-        }
-
-        .accordion-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-            font-weight: 600;
-            font-size: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .accordion-header:hover {
-            transform: translateX(2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .accordion-header .icon {
-            transition: transform 0.3s;
-            font-size: 18px;
-        }
-
-        .accordion-header.active .icon {
-            transform: rotate(180deg);
-        }
-
-        .accordion-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            padding: 0 10px;
-        }
-
-        .accordion-content.active {
-            max-height: 1500px;
-            padding: 15px 10px;
-            transition: max-height 0.5s ease-in;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #495057;
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        input[type="text"],
-        input[type="url"],
-        input[type="number"],
-        textarea,
-        input[type="color"] {
-            width: 100%;
-            padding: 10px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        input[type="text"]:focus,
-        input[type="url"]:focus,
-        input[type="number"]:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        input[type="number"]::placeholder {
-            font-size: 11px;
-            color: #adb5bd;
-        }
-
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
-            outline: none;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        }
-
-        input[type="range"]:hover {
-            opacity: 1;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #667eea;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #667eea;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-            font-family: inherit;
-        }
-
-        .color-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        input[type="color"] {
-            width: 60px;
-            height: 40px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-        }
-
-        .color-value {
-            flex: 1;
-            padding: 10px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 13px;
-            font-family: 'Courier New', monospace;
-            background: #f8f9fa;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 30px;
-        }
-
-        button {
-            flex: 1;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-2px);
-        }
-
-        .preview-title {
-            color: #495057;
-            margin-bottom: 20px;
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .preview-frame {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 20px;
-            background: #f8f9fa;
-            transform-origin: top center;
-            transition: transform 0.3s;
-            width: 100%;
-            overflow: auto;
-        }
-
-        .code-view {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 20px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            max-height: 70vh;
-            display: none;
-        }
-
-        .code-view.active {
-            display: block;
-        }
-
-        .info-box {
-            background: #e7f3ff;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #495057;
-        }
-
-        .info-box code {
-            background: #fff3cd;
-            color: #856404;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-        }
-
-        .variable-tag {
-            display: inline-block;
-            background: #fff3cd;
-            color: #856404;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            margin: 2px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .variable-tag:hover {
-            background: #ffc107;
-            transform: scale(1.05);
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #28a745;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            z-index: 10000;
-            animation: slideIn 0.3s, slideOut 0.3s 2.7s;
-            display: none;
-        }
-
-        .toast.show {
-            display: block;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 10000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            animation: fadeIn 0.3s;
-        }
-
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            animation: slideUp 0.3s;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-            color: #667eea;
-        }
-
-        .close-modal {
-            font-size: 28px;
-            font-weight: bold;
-            color: #aaa;
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 0;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .close-modal:hover {
-            color: #000;
-        }
-
-        .variables-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            min-height: 60px;
-        }
-
-        .variable-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 13px;
-            font-weight: 500;
-            position: relative;
-        }
-
-        .variable-pill:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .variable-pill:active {
-            transform: translateY(0);
-        }
-
-        .variable-pill .delete-var {
-            background: rgba(255,255,255,0.3);
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            transition: background 0.2s;
-        }
-
-        .variable-pill .delete-var:hover {
-            background: rgba(255,255,255,0.5);
-        }
-
-        .variable-tooltip {
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-8px);
-            background: #1a1a1a;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s;
-            z-index: 1000;
-            max-width: 300px;
-            white-space: normal;
-            text-align: center;
-        }
-
-        .variable-tooltip::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 5px solid transparent;
-            border-top-color: #1a1a1a;
-        }
-
-        .variable-pill:hover .variable-tooltip {
-            opacity: 1;
-        }
-
-        .add-variable-form {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .add-variable-form input {
-            flex: 1;
-            padding: 10px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .add-variable-form input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .btn-small {
-            padding: 8px 12px;
-            font-size: 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .btn-add {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-add:hover {
-            background: #218838;
-        }
-
-        .btn-open-modal {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            width: 100%;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-open-modal:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .variable-hint {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-size: 13px;
-            color: #856404;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #6c757d;
-            padding: 20px;
-            font-size: 14px;
-        }
-
-        .btn-logo {
-            background: #ff6b6b;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-
-        .btn-logo:hover {
-            background: #ee5a52;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
-        }
-
-        .variables-inline {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            min-height: 60px;
-            margin-bottom: 10px;
-        }
-
-        .variable-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            transition: all 0.2s;
-            font-family: 'Courier New', monospace;
-        }
-
-        .variable-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-        }
-
-        .variable-btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-manage-vars {
-            background: #6c757d;
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            width: 100%;
-            transition: all 0.2s;
-        }
-
-        .btn-manage-vars:hover {
-            background: #5a6268;
-        }
-
-        @media (max-width: 1200px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-
-            .controls, .preview {
-                max-height: none;
-            }
-
-            .modal-content {
-                width: 95%;
-                padding: 20px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
+        <!-- ── Panel de Controles ── -->
         <div class="controls">
-            <h1>🎨 Generador de Emails</h1>
+            <h1>Generador de Emails</h1>
             <p class="subtitle">Personaliza tu plantilla de firma de Signaturit</p>
 
-            <h2>🏷️ Variables</h2>
+            <!-- Sección: API Signaturit (CERRADA) -->
+            <div class="collapsible-section">
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <h2>API Signaturit</h2>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="collapsible-inner">
+                        <div class="form-group">
+                            <label>Entorno</label>
+                            <select id="apiEnvironment">
+                                <option value="sandbox">Sandbox (pruebas)</option>
+                                <option value="production">Production</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Access Token</label>
+                            <input type="password" id="apiToken" placeholder="Bearer token de Signaturit">
+                            <small style="color: #6c757d; display: block; margin-top: 4px;">
+                                El token no se almacena. Solo se usa en esta sesion.
+                            </small>
+                        </div>
+
+                        <button class="btn-api-connect" id="btnConnect" onclick="connectAPI()">
+                            Conectar y cargar brandings
+                        </button>
+
+                        <!-- Panel que aparece después de conectar -->
+                        <div id="apiConnectedPanel" style="display: none;">
+                            <div class="api-status connected" id="apiStatus">
+                                <span class="api-status-dot"></span>
+                                Conectado — <span id="brandingCount">0</span> brandings
+                            </div>
+
+                            <div class="form-group">
+                                <label>Branding</label>
+                                <select id="brandingSelect" onchange="onBrandingSelected()">
+                                    <option value="">-- Seleccionar branding --</option>
+                                    <option value="__new__">+ Crear nuevo branding</option>
+                                </select>
+                            </div>
+
+                            <!-- Nombre para nuevo branding -->
+                            <div class="form-group" id="newBrandingNameGroup" style="display: none;">
+                                <label>Nombre del nuevo branding (max 24 chars)</label>
+                                <input type="text" id="newBrandingName" placeholder="Mi Branding" maxlength="24">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tipo de Template</label>
+                                <select id="templateType">
+                                    <option value="signatures_request">signatures_request (requiere {{sign_button}})</option>
+                                    <option value="signatures_receipt">signatures_receipt</option>
+                                    <option value="request_expired">request_expired</option>
+                                    <option value="pending_sign">pending_sign (requiere {{sign_button}})</option>
+                                    <option value="document_canceled">document_canceled</option>
+                                    <option value="emails_request">emails_request (requiere {{email_button}})</option>
+                                    <option value="validation_request">validation_request (requiere {{validate_button}})</option>
+                                    <option value="signed_document">signed_document</option>
+                                    <option value="document_declined">document_declined</option>
+                                    <option value="request_expired_requester">request_expired_requester</option>
+                                </select>
+                            </div>
+
+                            <div class="api-button-row">
+                                <button class="btn-api-action btn-api-load" onclick="loadTemplateFromAPI()">
+                                    Cargar template
+                                </button>
+                                <button class="btn-api-action btn-api-save" onclick="saveTemplateToAPI()">
+                                    Guardar en API
+                                </button>
+                            </div>
+
+                            <button class="btn-api-disconnect" onclick="disconnectAPI()">
+                                Desconectar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>Variables</h2>
             <div class="info-box">
                 Incluye las <strong>14 variables oficiales de Signaturit</strong> + las tuyas personalizadas. Haz clic para gestionar e insertar donde quieras.
             </div>
-            
+
             <button class="btn-open-modal" onclick="openVariableModal()">
-                ✨ Gestionar Variables
+                Gestionar Variables
                 <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; font-size: 12px;" id="variableCount">14</span>
             </button>
 
+            <!-- Sección: Contenido del Email (CERRADA) -->
             <div class="collapsible-section">
-                <div class="collapsible-header active" onclick="toggleCollapsible(this)">
-                    <h2>📝 Contenido del Email</h2>
+                <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                    <h2>Contenido del Email</h2>
                     <span class="collapsible-icon">▼</span>
                 </div>
-                <div class="collapsible-content active">
+                <div class="collapsible-content">
                     <div class="collapsible-inner">
                         <div class="form-group">
                             <label>URL del Logo</label>
                             <div style="display: flex; gap: 10px;">
                                 <input type="url" id="logoUrl" placeholder="https://ejemplo.com/logo.png" style="flex: 1;">
-                                <button class="btn-logo" onclick="insertLogoVariable()">🖼️ Logo</button>
+                                <button class="btn-logo" onclick="insertLogoVariable()">Logo</button>
                             </div>
                         </div>
 
@@ -939,16 +151,17 @@
                             <label>Variables Disponibles (Haz clic para insertar)</label>
                             <div class="variables-inline" id="variablesInline"></div>
                             <button class="btn-manage-vars" onclick="openVariableModal()">
-                                ⚙️ Gestionar Variables
+                                Gestionar Variables
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Sección: Colores Generales (CERRADA) -->
             <div class="collapsible-section">
                 <div class="collapsible-header" onclick="toggleCollapsible(this)">
-                    <h2>🎨 Colores Generales</h2>
+                    <h2>Colores Generales</h2>
                     <span class="collapsible-icon">▼</span>
                 </div>
                 <div class="collapsible-content">
@@ -1008,9 +221,10 @@
                 </div>
             </div>
 
+            <!-- Sección: Estilo del Botón (CERRADA) -->
             <div class="collapsible-section">
                 <div class="collapsible-header" onclick="toggleCollapsible(this)">
-                    <h2>🔘 Estilo del Botón</h2>
+                    <h2>Estilo del Botón</h2>
                     <span class="collapsible-icon">▼</span>
                 </div>
                 <div class="collapsible-content">
@@ -1092,11 +306,12 @@
                 </div>
             </div>
 
+            <!-- Botones de acción -->
             <div class="button-group">
-                <button class="btn-primary" onclick="downloadHTML()">⬇️ Descargar</button>
-                <button class="btn-secondary" onclick="resetToDefault()">🔄 Reset</button>
-                <button class="btn-secondary" onclick="document.getElementById('importHTML').click()">📂 Importar</button>
-                <button class="btn-secondary" onclick="openPasteHTMLModal()">📋 Pegar HTML</button>
+                <button class="btn-primary" onclick="downloadHTML()">Descargar</button>
+                <button class="btn-secondary" onclick="resetToDefault()">Reset</button>
+                <button class="btn-secondary" onclick="document.getElementById('importHTML').click()">Importar</button>
+                <button class="btn-secondary" onclick="openPasteHTMLModal()">Pegar HTML</button>
                 <input type="file" id="importHTML" accept=".html,.htm" style="display:none;" onchange="importHTMLFile(event)">
             </div>
 
@@ -1106,40 +321,25 @@
                     <span>Minificar HTML (para API - quita espacios)</span>
                 </label>
                 <small style="color: #6c757d; display: block; margin-top: 5px;">
-                    ✅ Recomendado para envío via API. Reduce el tamaño del HTML.
+                    Recomendado para envío via API. Reduce el tamaño del HTML.
                 </small>
             </div>
         </div>
 
+        <!-- ── Preview ── -->
         <div class="preview-section">
             <div class="preview-toolbar">
-                <button class="toolbar-btn" onclick="toggleView()" id="viewToggle">
-                    📱 Vista Mobile
-                </button>
-                <button class="toolbar-btn" onclick="toggleFullscreen()" id="fullscreenBtn">
-                    ⛶ Pantalla Completa
-                </button>
-                <button class="toolbar-btn" onclick="toggleCodeView()" id="codeViewBtn">
-                    👁️ Ver Código
-                </button>
                 <button class="toolbar-btn" onclick="copyToClipboard()">
-                    📋 Copiar HTML
+                    Copiar HTML
                 </button>
                 <button class="toolbar-btn" onclick="updatePreview()">
-                    🔄 Refrescar
+                    Refrescar
                 </button>
-                <div class="zoom-control">
-                    🔍
-                    <input type="range" id="zoomSlider" min="50" max="150" value="100" oninput="updateZoom(this.value)">
-                    <span id="zoomValue">100%</span>
-                </div>
             </div>
 
             <div class="preview" id="previewContainer">
                 <div class="preview-frame" id="previewFrame"></div>
-                <pre class="code-view" id="codeView"></pre>
             </div>
-            <button class="fullscreen-close" id="fullscreenCloseBtn" onclick="toggleFullscreen()">✕</button>
         </div>
     </div>
 
@@ -1149,39 +349,37 @@
     <div class="modal" id="variableModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>🏷️ Gestionar Variables</h2>
+                <h2>Gestionar Variables</h2>
                 <button class="close-modal" onclick="closeVariableModal()">&times;</button>
             </div>
 
             <div class="variable-hint">
-                💡 <strong>Tip:</strong> Haz clic en una variable para insertarla. Pasa el mouse sobre cada una para ver su descripción.
+                <strong>Tip:</strong> Haz clic en una variable para insertarla. Pasa el mouse sobre cada una para ver su descripción.
             </div>
 
-            <div class="variables-grid" id="variablesGrid">
-                <!-- Las variables se renderizan aquí -->
-            </div>
+            <div class="variables-grid" id="variablesGrid"></div>
 
             <div class="add-variable-form">
                 <input type="text" id="newVariableName" placeholder="nombre_variable" onkeypress="handleVariableKeyPress(event)">
-                <button class="btn-small btn-add" onclick="addVariableFromModal()">➕ Agregar</button>
+                <button class="btn-small btn-add" onclick="addVariableFromModal()">Agregar</button>
             </div>
         </div>
     </div>
 
-    <!-- Paste HTML Modal -->
+    <!-- Modal Pegar HTML -->
     <div class="modal" id="pasteHTMLModal">
         <div class="modal-content" style="max-width: 700px;">
             <div class="modal-header">
-                <h2>📋 Pegar HTML</h2>
+                <h2>Pegar HTML</h2>
                 <button class="close-modal" onclick="closePasteHTMLModal()">&times;</button>
             </div>
 
             <div class="variable-hint">
-                💡 <strong>Pega aquí cualquier HTML de email</strong> 
+                <strong>Pega aquí cualquier HTML de email</strong>
                 <br><br>
-                ✅ <strong>Acepta:</strong> Cualquier formato de HTML de email, con o sin `\n`, con o sin estructura específica
+                <strong>Acepta:</strong> Cualquier formato de HTML de email, con o sin estructura específica
                 <br>
-                ❌ <strong>No pegues:</strong> El código del generador mismo
+                <strong>No pegues:</strong> El código del generador mismo
             </div>
 
             <div style="margin: 20px 0;">
@@ -1190,1040 +388,11 @@
 
             <div style="text-align: right; margin-top: 15px;">
                 <button class="btn-secondary" onclick="closePasteHTMLModal()" style="margin-right: 10px;">Cancelar</button>
-                <button class="btn-primary" onclick="loadPastedHTML()">✓ Cargar HTML</button>
+                <button class="btn-primary" onclick="loadPastedHTML()">Cargar HTML</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // Variables oficiales de Signaturit
-        let variables = [
-            'sender_email',
-            'sign_button',
-            'validate_button',
-            'signer_name',
-            'signer_email',
-            'filename',
-            'logo',
-            'remaining_time',
-            'email_button',
-            'email_body',
-            'code',
-            'reason',
-            'dashboard_button',
-            'signers'
-        ];
-
-        // Descripciones de variables oficiales
-        const variableDescriptions = {
-            'sender_email': 'Email del remitente',
-            'sign_button': 'Botón de Signaturit (solo signatures_request y pending_sign)',
-            'validate_button': 'Botón de validar documento (solo validation_request)',
-            'signer_name': 'Nombre del firmante',
-            'signer_email': 'Email del firmante',
-            'filename': 'Nombre del archivo (o archivos)',
-            'logo': 'Logo actual',
-            'remaining_time': 'Fecha de expiración del documento (solo pending_sign)',
-            'email_button': 'Botón de Signaturit (solo emails_request)',
-            'email_body': 'Texto del parámetro body (solo signatures_request)',
-            'code': 'Código SMS (solo sms_verify y sms_validate)',
-            'reason': 'Razón por la que se rechazó la firma (solo document_declined)',
-            'dashboard_button': 'Botón para ver detalles en dashboard (solo document_declined)',
-            'signers': 'Nombre y email del firmante en formato NOMBRE - EMAIL (solo signed_document)'
-        };
-
-        // Valores por defecto de la plantilla
-        const defaults = {
-            logoUrl: '',
-            logoWidth: '300px',
-            logoHeight: 'auto',
-            logoObjectFit: 'none',
-            emailContent: 'Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para firmar:\n\n{{filename}}\n\nPara proceder con la revisión de la documentación presione el siguiente botón:\n\n{{sign_button}}\n\n{{email_body}}',
-            bgColor: '#ffffff',
-            bgColorOpacity: '1',
-            containerColor: '#ffffff',
-            containerColorOpacity: '1',
-            borderColor: '#cccccc',
-            borderColorOpacity: '1',
-            textColor: '#153643',
-            textColorOpacity: '1',
-            buttonColor: '#070707',
-            buttonColorOpacity: '1',
-            buttonTextColor: '#ffffff',
-            buttonTextColorOpacity: '1',
-            buttonBorderColor: '#070707',
-            buttonBorderColorOpacity: '1',
-            buttonBorderWidth: '0',
-            buttonBorderRadius: '20',
-            buttonPaddingTop: '15',
-            buttonPaddingRight: '15',
-            buttonPaddingBottom: '15',
-            buttonPaddingLeft: '15',
-            buttonMarginTop: '10',
-            buttonMarginRight: '0',
-            buttonMarginBottom: '10',
-            buttonMarginLeft: '0',
-            buttonWidth: '200'
-        };
-
-        let currentZoom = 100;
-        let isMobileView = false;
-        let isFullscreen = false;
-        let showCodeView = false;
-
-        // Convertir hex a rgba
-        function hexToRgba(hex, opacity) {
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-        }
-
-        // Toggle collapsible sections
-        function toggleCollapsible(header) {
-            header.classList.toggle('active');
-            const content = header.nextElementSibling;
-            content.classList.toggle('active');
-        }
-
-        // Renderizar variables inline como botones
-        function renderVariablesInline() {
-            const container = document.getElementById('variablesInline');
-            
-            if (variables.length === 0) {
-                container.innerHTML = '<div class="empty-state">No hay variables disponibles</div>';
-                return;
-            }
-            
-            container.innerHTML = variables.map(varName => `
-                <button class="variable-btn" onclick="insertVariableInline('${varName}')">{{${varName}}}</button>
-            `).join('');
-        }
-
-        // Insertar variable desde los botones inline
-        function insertVariableInline(varName) {
-            const textarea = document.getElementById('emailContent');
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const text = textarea.value;
-            const variable = `{{${varName}}}`;
-
-            // Insertar la variable en la posición del cursor
-            textarea.value = text.substring(0, start) + variable + text.substring(end);
-            
-            // Colocar el cursor después de la variable insertada
-            const newPosition = start + variable.length;
-            textarea.setSelectionRange(newPosition, newPosition);
-            
-            // Mantener el foco en el textarea
-            textarea.focus();
-            
-            // Actualizar la previsualización
-            updatePreview();
-            
-            showToast(`✓ Variable {{${varName}}} insertada`);
-        }
-
-        // Insertar variable {{logo}}
-        function insertLogoVariable() {
-            insertVariableInline('logo');
-        }
-
-        // Renderizar lista de variables como pills clicables
-        function renderVariables() {
-            const container = document.getElementById('variablesGrid');
-            
-            if (variables.length === 0) {
-                container.innerHTML = '<div class="empty-state">No hay variables. Agrega una usando el campo de abajo.</div>';
-                updateVariableCount();
-                renderVariablesInline();
-                return;
-            }
-            
-            container.innerHTML = variables.map((varName, index) => {
-                const description = variableDescriptions[varName] || 'Variable personalizada';
-                return `
-                    <div class="variable-pill" onclick="insertVariableAtCursor('${varName}')">
-                        <span>{{${varName}}}</span>
-                        <span class="delete-var" onclick="event.stopPropagation(); deleteVariable(${index})">×</span>
-                        <div class="variable-tooltip">${description}</div>
-                    </div>
-                `;
-            }).join('');
-            
-            updateVariableCount();
-            renderVariablesInline();
-        }
-
-        // Actualizar contador de variables en el botón
-        function updateVariableCount() {
-            const btn = document.getElementById('variableCount');
-            if (btn) {
-                btn.textContent = variables.length;
-            }
-        }
-
-        // Agregar variable desde el modal
-        function addVariableFromModal() {
-            const input = document.getElementById('newVariableName');
-            const varName = input.value.trim();
-            
-            if (!varName) {
-                showToast('⚠️ Ingresa un nombre de variable');
-                return;
-            }
-            
-            if (variables.includes(varName)) {
-                showToast('⚠️ Esta variable ya existe');
-                return;
-            }
-            
-            variables.push(varName);
-            renderVariables();
-            input.value = '';
-            showToast('✓ Variable agregada');
-        }
-
-        // Manejar Enter en el input de nueva variable
-        function handleVariableKeyPress(event) {
-            if (event.key === 'Enter') {
-                addVariableFromModal();
-            }
-        }
-
-        // Abrir modal de variables
-        function openVariableModal() {
-            document.getElementById('variableModal').classList.add('show');
-            renderVariables();
-        }
-
-        // Cerrar modal de variables
-        function closeVariableModal() {
-            document.getElementById('variableModal').classList.remove('show');
-        }
-
-        // Funciones del modal de pegar HTML
-        function openPasteHTMLModal() {
-            document.getElementById('pasteHTMLModal').classList.add('show');
-            document.getElementById('pasteHTMLTextarea').value = '';
-            document.getElementById('pasteHTMLTextarea').focus();
-        }
-
-        function closePasteHTMLModal() {
-            document.getElementById('pasteHTMLModal').classList.remove('show');
-        }
-
-        function loadPastedHTML() {
-            let htmlContent = document.getElementById('pasteHTMLTextarea').value.trim();
-            if (!htmlContent) {
-                showToast('⚠️ Por favor pega código HTML primero');
-                return;
-            }
-
-            // Detectar y limpiar HTML escapado como JSON
-            if (htmlContent.includes('\\"') || htmlContent.includes('\\n')) {
-                try {
-                    // Intentar parsear como JSON string
-                    htmlContent = JSON.parse('"' + htmlContent + '"');
-                    showToast('🔧 HTML desescapado automáticamente');
-                } catch (e) {
-                    // Si falla, intentar reemplazo simple
-                    htmlContent = htmlContent
-                        .replace(/\\"/g, '"')
-                        .replace(/\\n/g, '\n')
-                        .replace(/\\t/g, '\t')
-                        .replace(/\\\\/g, '\\');
-                    showToast('🔧 HTML limpiado automáticamente');
-                }
-            }
-
-            // Verificar que no sea el generador mismo
-            if (htmlContent.includes('Generador de Plantillas HTML') || htmlContent.includes('class="controls"')) {
-                showToast('⚠️ Parece que pegaste el generador mismo. Pega un email template.');
-                return;
-            }
-
-            try {
-                parseHTMLTemplate(htmlContent);
-                closePasteHTMLModal();
-                showToast('✓ HTML cargado - Edita el contenido arriba');
-            } catch (error) {
-                console.error('Error parsing HTML:', error);
-                showToast('✗ Error: HTML no es un template de email válido');
-            }
-        }
-
-        // Cerrar modal al hacer clic fuera
-        window.onclick = function(event) {
-            const variableModal = document.getElementById('variableModal');
-            const pasteModal = document.getElementById('pasteHTMLModal');
-            
-            if (event.target === variableModal) {
-                closeVariableModal();
-            }
-            if (event.target === pasteModal) {
-                closePasteHTMLModal();
-            }
-        }
-
-        // Variables para tracking del cursor
-        let lastFocusedTextarea = null;
-        let lastCursorPosition = 0;
-
-        // Insertar variable en la posición del cursor (desde modal)
-        function insertVariableAtCursor(varName) {
-            const textarea = document.getElementById('emailContent');
-            const start = textarea.selectionStart || 0;
-            const end = textarea.selectionEnd || 0;
-            const text = textarea.value;
-            const variable = `{{${varName}}}`;
-
-            // Insertar la variable en la posición del cursor
-            textarea.value = text.substring(0, start) + variable + text.substring(end);
-            
-            // Colocar el cursor después de la variable insertada
-            const newPosition = start + variable.length;
-            textarea.setSelectionRange(newPosition, newPosition);
-            
-            // Mantener el foco en el textarea
-            textarea.focus();
-            
-            // Actualizar la previsualización
-            updatePreview();
-            
-            showToast(`✓ Variable {{${varName}}} insertada`);
-            
-            // No cerrar el modal para permitir insertar múltiples variables
-        }
-
-        // Eliminar variable
-        function deleteVariable(index) {
-            if (confirm(`¿Eliminar la variable {{${variables[index]}}}?`)) {
-                variables.splice(index, 1);
-                renderVariables();
-                showToast('✓ Variable eliminada');
-            }
-        }
-
-        // Actualizar variable
-        function updateVariable(index, value) {
-            variables[index] = value;
-            updateVariableCount();
-        }
-
-        // Sincronizar inputs de color
-        function syncColorInputs() {
-            const colorPairs = [
-                ['bgColor', 'bgColorValue'],
-                ['containerColor', 'containerColorValue'],
-                ['borderColor', 'borderColorValue'],
-                ['buttonColor', 'buttonColorValue'],
-                ['buttonTextColor', 'buttonTextColorValue'],
-                ['buttonBorderColor', 'buttonBorderColorValue'],
-                ['textColor', 'textColorValue']
-            ];
-
-            colorPairs.forEach(([pickerId, valueId]) => {
-                const picker = document.getElementById(pickerId);
-                const value = document.getElementById(valueId);
-
-                picker.addEventListener('input', (e) => {
-                    value.value = e.target.value;
-                    updatePreview();
-                });
-
-                value.addEventListener('input', (e) => {
-                    if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
-                        picker.value = e.target.value;
-                        updatePreview();
-                    }
-                });
-            });
-        }
-
-        // Generar HTML (las variables quedan vacías para que Signaturit las complete)
-        function generateHTML() {
-            const logoUrl = document.getElementById('logoUrl').value || defaults.logoUrl;
-            const logoWidth = document.getElementById('logoWidth').value || defaults.logoWidth;
-            const logoHeight = document.getElementById('logoHeight').value || defaults.logoHeight;
-            const logoObjectFit = document.getElementById('logoObjectFit').value || defaults.logoObjectFit;
-            const emailContent = document.getElementById('emailContent').value;
-            
-            // Colores con opacidad
-            const bgColorHex = document.getElementById('bgColor').value;
-            const bgColorOpacity = document.getElementById('bgColorOpacity').value;
-            const bgColor = hexToRgba(bgColorHex, bgColorOpacity);
-            
-            const containerColorHex = document.getElementById('containerColor').value;
-            const containerColorOpacity = document.getElementById('containerColorOpacity').value;
-            const containerColor = hexToRgba(containerColorHex, containerColorOpacity);
-            
-            const borderColorHex = document.getElementById('borderColor').value;
-            const borderColorOpacity = document.getElementById('borderColorOpacity').value;
-            const borderColor = hexToRgba(borderColorHex, borderColorOpacity);
-            
-            const textColorHex = document.getElementById('textColor').value;
-            const textColorOpacity = document.getElementById('textColorOpacity').value;
-            const textColor = hexToRgba(textColorHex, textColorOpacity);
-            
-            const buttonColorHex = document.getElementById('buttonColor').value;
-            const buttonColorOpacity = document.getElementById('buttonColorOpacity').value;
-            const buttonColor = hexToRgba(buttonColorHex, buttonColorOpacity);
-            
-            const buttonTextColorHex = document.getElementById('buttonTextColor').value;
-            const buttonTextColorOpacity = document.getElementById('buttonTextColorOpacity').value;
-            const buttonTextColor = hexToRgba(buttonTextColorHex, buttonTextColorOpacity);
-            
-            const buttonBorderColorHex = document.getElementById('buttonBorderColor').value;
-            const buttonBorderColorOpacity = document.getElementById('buttonBorderColorOpacity').value;
-            const buttonBorderColor = hexToRgba(buttonBorderColorHex, buttonBorderColorOpacity);
-            
-            const buttonBorderWidth = document.getElementById('buttonBorderWidth').value || '0';
-            const buttonBorderRadius = document.getElementById('buttonBorderRadius').value || '20';
-            const buttonPaddingTop = document.getElementById('buttonPaddingTop').value || '15';
-            const buttonPaddingRight = document.getElementById('buttonPaddingRight').value || '15';
-            const buttonPaddingBottom = document.getElementById('buttonPaddingBottom').value || '15';
-            const buttonPaddingLeft = document.getElementById('buttonPaddingLeft').value || '15';
-            const buttonMarginTop = document.getElementById('buttonMarginTop').value || '10';
-            const buttonMarginRight = document.getElementById('buttonMarginRight').value || '0';
-            const buttonMarginBottom = document.getElementById('buttonMarginBottom').value || '10';
-            const buttonMarginLeft = document.getElementById('buttonMarginLeft').value || '0';
-            const buttonWidth = document.getElementById('buttonWidth').value || '200';
-
-            // Crear estilos del logo
-            const logoObjectFitStyle = logoObjectFit !== 'none' ? `object-fit:${logoObjectFit};` : '';
-            const logoStyles = `width:${logoWidth};height:${logoHeight};${logoObjectFitStyle}display:block;`;
-            
-            // Generar sección del logo solo si hay URL
-            const logoSection = logoUrl ? `\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td align="center" style="padding:30px 0 20px 0;">
-\t\t\t\t\t\t\t<img style="${logoStyles}" alt="Logo" src="${logoUrl}">
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>` : '';
-
-            // Crear el HTML del botón estilizado
-            const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
-            const buttonPaddingStyle = `padding:${buttonPaddingTop}px ${buttonPaddingRight}px ${buttonPaddingBottom}px ${buttonPaddingLeft}px;`;
-            const buttonMarginStyle = `margin:${buttonMarginTop}px ${buttonMarginRight}px ${buttonMarginBottom}px ${buttonMarginLeft}px;`;
-            const buttonHTML = `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:12px'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:18px;font-family:"Arial";color:${buttonTextColor};'>{{sign_button}}</span>
-\t\t\t\t\t\t\t\t\t\t\t\t\t</p>
-\t\t\t\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t\t\t\t</table>`;
-
-            // Convertir el contenido a párrafos HTML y reemplazar {{sign_button}} con el HTML del botón
-            const contentParagraphs = emailContent
-                .split('\n')
-                .filter(line => line.trim() !== '')
-                .map(line => {
-                    // Si la línea contiene {{sign_button}}, reemplazarla con el HTML del botón
-                    if (line.includes('{{sign_button}}')) {
-                        return line.replace('{{sign_button}}', buttonHTML);
-                    }
-                    return `\t\t\t\t\t\t\t\t\t\t<p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:'Helvetica Neue', Helvetica, Arial;">\n\t\t\t\t\t\t\t\t\t\t${line}</p>`;
-                })
-                .join('\n');
-
-            return `<!DOCTYPE html>
-<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
-<head>
-\t<meta charset="UTF-8">
-\t<meta name="viewport" content="width=device-width,initial-scale=1">
-\t<meta name="x-apple-disable-message-reformatting">
-\t<title>Solicitud de Firma</title>
-\t<!--[if mso]>
-\t<noscript>
-\t\t<xml>
-\t\t\t<o:OfficeDocumentSettings>
-\t\t\t\t<o:PixelsPerInch>96</o:PixelsPerInch>
-\t\t\t</o:OfficeDocumentSettings>
-\t\t</xml>
-\t</noscript>
-\t<![endif]-->
-\t<style>
-\t\ttable, td, div, h1, p {font-family: 'Helvetica Neue', Helvetica, Arial;}
-\t</style>
-</head>
-<body style="margin:0;padding:0;background-color: ${bgColor};">
-\t<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;margin:30px 0px;">
-\t\t<tr>
-\t\t\t<td align="center" style="padding:0;">
-\t\t\t\t<table role="presentation" style="width:800px;border-collapse:collapse;border:1px solid ${borderColor};border-spacing:0;text-align:left;background:${containerColor}">
-${logoSection}
-\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td style="padding:10px 25px 0px 25px;">
-\t\t\t\t\t\t\t<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;">
-\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t<td style="padding:0 0 25px 0;color:${textColor};">
-${contentParagraphs}
-\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t</table>
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>
-\t\t\t\t</table>
-\t\t\t</td>
-\t\t</tr>
-\t</table>
-</body>
-</html>`;
-        }
-
-        // Importar HTML existente
-        function importHTMLFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                let htmlContent = e.target.result;
-                
-                // Detectar y limpiar HTML escapado como JSON
-                if (htmlContent.includes('\\"') || htmlContent.includes('\\n')) {
-                    try {
-                        // Intentar parsear como JSON string
-                        htmlContent = JSON.parse('"' + htmlContent + '"');
-                        showToast('🔧 HTML desescapado automáticamente');
-                    } catch (err) {
-                        // Si falla, intentar reemplazo simple
-                        htmlContent = htmlContent
-                            .replace(/\\"/g, '"')
-                            .replace(/\\n/g, '\n')
-                            .replace(/\\t/g, '\t')
-                            .replace(/\\\\/g, '\\');
-                        showToast('🔧 HTML limpiado automáticamente');
-                    }
-                }
-                
-                // Verificar que no sea el generador mismo
-                if (htmlContent.includes('Generador de Plantillas HTML') || htmlContent.includes('class="controls"')) {
-                    showToast('⚠️ Archivo no válido: Es el generador mismo, no un template');
-                    return;
-                }
-
-                try {
-                    parseHTMLTemplate(htmlContent);
-                    showToast('✓ HTML cargado - Edita el contenido arriba');
-                } catch (error) {
-                    console.error('Error parsing HTML:', error);
-                    showToast('✗ Error: Archivo no es un template de email válido');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // Parsear HTML template y extraer valores
-        function parseHTMLTemplate(htmlString) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlString, 'text/html');
-
-            // Validar que NO sea el generador mismo
-            if (htmlString.includes('Generador de Plantillas HTML') || 
-                htmlString.includes('class="controls"') ||
-                htmlString.includes('id="previewFrame"')) {
-                showToast('⚠️ HTML no válido - Es el generador mismo');
-                throw new Error('Cannot import generator code');
-            }
-
-            // Si tiene estructura básica de HTML, intentar extraer lo que podamos
-            let extractedSomething = false;
-
-            // Extraer logo (múltiples formatos)
-            const logoImg = doc.querySelector('img[alt="Logo"]') || 
-                           doc.querySelector('img[alt="logo"]') ||
-                           doc.querySelector('img');
-            
-            if (logoImg) {
-                const logoSrc = logoImg.getAttribute('src');
-                const logoStyle = logoImg.getAttribute('style') || '';
-                
-                if (logoSrc && !logoSrc.includes('data:image')) {
-                    document.getElementById('logoUrl').value = logoSrc;
-                    extractedSomething = true;
-                }
-                
-                // Extraer width
-                const widthMatch = logoStyle.match(/width:\s*([^;]+)/) || 
-                                 logoImg.getAttribute('width');
-                if (widthMatch) {
-                    const width = typeof widthMatch === 'string' ? widthMatch : widthMatch[1].trim();
-                    document.getElementById('logoWidth').value = width.includes('px') || width.includes('%') ? width : width + 'px';
-                }
-                
-                // Extraer height
-                const heightMatch = logoStyle.match(/height:\s*([^;]+)/) ||
-                                  logoImg.getAttribute('height');
-                if (heightMatch) {
-                    const height = typeof heightMatch === 'string' ? heightMatch : heightMatch[1].trim();
-                    document.getElementById('logoHeight').value = height.includes('px') || height.includes('%') || height === 'auto' ? height : height + 'px';
-                }
-                
-                // Extraer object-fit
-                const objectFitMatch = logoStyle.match(/object-fit:\s*([^;]+)/);
-                if (objectFitMatch) {
-                    document.getElementById('logoObjectFit').value = objectFitMatch[1].trim();
-                } else {
-                    document.getElementById('logoObjectFit').value = 'none';
-                }
-            } else {
-                // No hay logo en el HTML - limpiar el campo para evitar confusión
-                document.getElementById('logoUrl').value = '';
-            }
-
-            // Extraer colores del body
-            const body = doc.querySelector('body');
-            if (body) {
-                const bodyStyle = body.getAttribute('style') || '';
-                const bgColorMatch = bodyStyle.match(/background-color:\s*([^;]+)/);
-                if (bgColorMatch) {
-                    const bgColor = bgColorMatch[1].trim();
-                    document.getElementById('bgColor').value = bgColor.startsWith('#') ? bgColor : '#ffffff';
-                    document.getElementById('bgColorValue').value = bgColor.startsWith('#') ? bgColor : '#ffffff';
-                    extractedSomething = true;
-                }
-            }
-
-            // Extraer colores del contenedor (buscar tables con background)
-            const tables = doc.querySelectorAll('table[bgcolor], table[style*="background"]');
-            if (tables.length > 0) {
-                for (let table of tables) {
-                    const bgcolor = table.getAttribute('bgcolor');
-                    const style = table.getAttribute('style') || '';
-                    
-                    if (bgcolor && bgcolor.startsWith('#')) {
-                        document.getElementById('containerColor').value = bgcolor;
-                        document.getElementById('containerColorValue').value = bgcolor;
-                        extractedSomething = true;
-                        break;
-                    }
-                    
-                    const bgMatch = style.match(/background(?:-color)?:\s*([^;]+)/);
-                    if (bgMatch && bgMatch[1].trim().startsWith('#')) {
-                        document.getElementById('containerColor').value = bgMatch[1].trim();
-                        document.getElementById('containerColorValue').value = bgMatch[1].trim();
-                        extractedSomething = true;
-                        break;
-                    }
-                }
-            }
-
-            // Extraer estilos del botón (buscar .miboton o cualquier table/button)
-            const buttonTable = doc.querySelector('table.miboton') || 
-                               doc.querySelector('table[align="center"][style*="background"]');
-            
-            if (buttonTable) {
-                const buttonStyle = buttonTable.getAttribute('style') || '';
-                
-                // Width
-                const widthMatch = buttonStyle.match(/width:\s*(\d+)px/);
-                if (widthMatch) {
-                    document.getElementById('buttonWidth').value = widthMatch[1];
-                    extractedSomething = true;
-                }
-                
-                // Background color
-                const bgMatch = buttonStyle.match(/background(?:-color)?:\s*([^;]+)/);
-                if (bgMatch) {
-                    const buttonColor = bgMatch[1].trim();
-                    if (buttonColor.startsWith('#')) {
-                        document.getElementById('buttonColor').value = buttonColor;
-                        document.getElementById('buttonColorValue').value = buttonColor;
-                        extractedSomething = true;
-                    }
-                }
-                
-                // Border radius
-                const radiusMatch = buttonStyle.match(/border-radius:\s*(\d+)px/);
-                if (radiusMatch) {
-                    document.getElementById('buttonBorderRadius').value = radiusMatch[1];
-                }
-                
-                // Border
-                const borderMatch = buttonStyle.match(/border:\s*(\d+)px solid ([^;]+)/);
-                if (borderMatch) {
-                    document.getElementById('buttonBorderWidth').value = borderMatch[1];
-                    const borderColor = borderMatch[2].trim();
-                    if (borderColor.startsWith('#')) {
-                        document.getElementById('buttonBorderColor').value = borderColor;
-                        document.getElementById('buttonBorderColorValue').value = borderColor;
-                    }
-                } else {
-                    document.getElementById('buttonBorderWidth').value = '0';
-                }
-                
-                // Margin
-                const marginMatch = buttonStyle.match(/margin:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
-                if (marginMatch) {
-                    document.getElementById('buttonMarginTop').value = marginMatch[1];
-                    document.getElementById('buttonMarginRight').value = marginMatch[2];
-                    document.getElementById('buttonMarginBottom').value = marginMatch[3];
-                    document.getElementById('buttonMarginLeft').value = marginMatch[4];
-                }
-                
-                // Padding y color del texto del botón
-                const buttonTd = buttonTable.querySelector('td');
-                if (buttonTd) {
-                    const tdStyle = buttonTd.getAttribute('style') || '';
-                    
-                    // Padding
-                    const paddingMatch = tdStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
-                    if (paddingMatch) {
-                        document.getElementById('buttonPaddingTop').value = paddingMatch[1];
-                        document.getElementById('buttonPaddingRight').value = paddingMatch[2];
-                        document.getElementById('buttonPaddingBottom').value = paddingMatch[3];
-                        document.getElementById('buttonPaddingLeft').value = paddingMatch[4];
-                    }
-                }
-                
-                // Color del texto del botón
-                const buttonSpan = buttonTable.querySelector('span.mititulo') || 
-                                 buttonTable.querySelector('span') ||
-                                 buttonTable.querySelector('a');
-                if (buttonSpan) {
-                    const spanStyle = buttonSpan.getAttribute('style') || '';
-                    const colorMatch = spanStyle.match(/color:\s*([^;]+)/);
-                    if (colorMatch && colorMatch[1].trim().startsWith('#')) {
-                        const textColor = colorMatch[1].trim();
-                        document.getElementById('buttonTextColor').value = textColor;
-                        document.getElementById('buttonTextColorValue').value = textColor;
-                    }
-                }
-            }
-
-            // Extraer contenido del email
-            let emailContent = '';
-            
-            // Intentar extraer de múltiples formas
-            const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
-                               doc.querySelector('.note') ||
-                               doc.querySelector('table[bgcolor="#ffffff"] td') ||
-                               doc.querySelector('body');
-            
-            if (contentArea) {
-                // Extraer texto y variables
-                const extractTextAndVariables = (element) => {
-                    let content = '';
-                    const walker = document.createTreeWalker(
-                        element,
-                        NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-                        null,
-                        false
-                    );
-                    
-                    let node;
-                    while (node = walker.nextNode()) {
-                        if (node.nodeType === Node.TEXT_NODE) {
-                            const text = node.textContent.trim();
-                            if (text) {
-                                content += text + '\n';
-                            }
-                        } else if (node.nodeName === 'BR') {
-                            content += '\n';
-                        } else if (node.classList && node.classList.contains('miboton')) {
-                            content += '{{sign_button}}\n';
-                        }
-                    }
-                    return content;
-                };
-                
-                emailContent = extractTextAndVariables(contentArea);
-                
-                // Si no hay contenido, extraer el texto plano
-                if (!emailContent.trim()) {
-                    emailContent = contentArea.textContent || '';
-                }
-                
-                extractedSomething = true;
-            }
-            
-            // Limpiar contenido
-            emailContent = emailContent
-                .replace(/\n{3,}/g, '\n\n')  // Múltiples saltos a máximo 2
-                .trim();
-            
-            if (emailContent) {
-                document.getElementById('emailContent').value = emailContent;
-            }
-
-            // Si no se extrajo nada, mostrar advertencia pero no fallar
-            if (!extractedSomething) {
-                showToast('⚠️ No se pudo extraer información - Edita manualmente');
-            }
-
-            // Asegurar que la sección de contenido esté abierta
-            const contentSection = document.querySelector('.collapsible-section .collapsible-header');
-            const contentContent = contentSection.nextElementSibling;
-            if (!contentSection.classList.contains('active')) {
-                contentSection.classList.add('active');
-                contentContent.classList.add('active');
-            }
-
-            // Scroll suave al inicio del panel de controles
-            const controlsPanel = document.querySelector('.controls');
-            if (controlsPanel) {
-                controlsPanel.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-
-            // Hacer scroll al textarea de contenido y darle foco
-            const textarea = document.getElementById('emailContent');
-            textarea.scrollTop = 0;
-            setTimeout(() => {
-                textarea.focus();
-                textarea.setSelectionRange(0, 0);
-            }, 300);
-
-            // Actualizar sincronización de colores y vista previa
-            syncColorInputs();
-            updatePreview();
-        }
-
-        // Minificar HTML (quitar espacios y saltos de línea innecesarios)
-        function minifyHTML(html) {
-            return html
-                // Quitar comentarios HTML
-                .replace(/<!--[\s\S]*?-->/g, '')
-                // Quitar espacios entre tags
-                .replace(/>\s+</g, '><')
-                // Quitar espacios múltiples
-                .replace(/\s{2,}/g, ' ')
-                // Quitar espacios al inicio y final
-                .trim();
-        }
-
-        // Actualizar vista previa
-        function updatePreview() {
-            const html = generateHTML();
-            document.getElementById('previewFrame').innerHTML = html;
-            updateCodeView();
-        }
-
-        // Actualizar vista de código
-        function updateCodeView() {
-            let html = generateHTML();
-            const shouldMinify = document.getElementById('minifyHTML') && document.getElementById('minifyHTML').checked;
-            
-            if (shouldMinify) {
-                html = minifyHTML(html);
-            }
-            
-            document.getElementById('codeView').textContent = html;
-        }
-
-        // Controles de vista
-        function toggleView() {
-            isMobileView = !isMobileView;
-            const preview = document.getElementById('previewContainer');
-            const btn = document.getElementById('viewToggle');
-            
-            if (isMobileView) {
-                preview.classList.add('mobile-view');
-                btn.classList.add('active');
-                btn.innerHTML = '💻 Vista Desktop';
-            } else {
-                preview.classList.remove('mobile-view');
-                btn.classList.remove('active');
-                btn.innerHTML = '📱 Vista Mobile';
-            }
-        }
-
-        function toggleFullscreen() {
-            isFullscreen = !isFullscreen;
-            const preview = document.getElementById('previewContainer');
-            const btn = document.getElementById('fullscreenBtn');
-            const closeBtn = document.getElementById('fullscreenCloseBtn');
-            
-            if (isFullscreen) {
-                preview.classList.add('fullscreen');
-                btn.classList.add('active');
-                btn.innerHTML = '⛶ Salir Pantalla Completa';
-                closeBtn.classList.add('show');
-            } else {
-                preview.classList.remove('fullscreen');
-                btn.classList.remove('active');
-                btn.innerHTML = '⛶ Pantalla Completa';
-                closeBtn.classList.remove('show');
-            }
-        }
-
-        function toggleCodeView() {
-            showCodeView = !showCodeView;
-            const codeView = document.getElementById('codeView');
-            const previewFrame = document.getElementById('previewFrame');
-            const btn = document.getElementById('codeViewBtn');
-            
-            if (showCodeView) {
-                codeView.classList.add('active');
-                previewFrame.style.display = 'none';
-                btn.classList.add('active');
-                btn.innerHTML = '👁️ Ver Preview';
-            } else {
-                codeView.classList.remove('active');
-                previewFrame.style.display = 'block';
-                btn.classList.remove('active');
-                btn.innerHTML = '👁️ Ver Código';
-            }
-        }
-
-        function updateZoom(value) {
-            currentZoom = value;
-            document.getElementById('zoomValue').textContent = value + '%';
-            document.getElementById('previewFrame').style.transform = `scale(${value / 100})`;
-        }
-
-        // Copiar al portapapeles
-        async function copyToClipboard() {
-            let html = generateHTML();
-            const shouldMinify = document.getElementById('minifyHTML').checked;
-            
-            if (shouldMinify) {
-                html = minifyHTML(html);
-            }
-            
-            try {
-                await navigator.clipboard.writeText(html);
-                showToast(shouldMinify ? '✓ HTML minificado copiado' : '✓ HTML copiado al portapapeles');
-            } catch (err) {
-                showToast('✗ Error al copiar');
-            }
-        }
-
-        // Descargar HTML
-        function downloadHTML() {
-            let html = generateHTML();
-            const shouldMinify = document.getElementById('minifyHTML').checked;
-            
-            if (shouldMinify) {
-                html = minifyHTML(html);
-            }
-            
-            const blob = new Blob([html], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `signaturit-email-template-${Date.now()}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast(shouldMinify ? '✓ HTML minificado descargado' : '✓ HTML descargado');
-        }
-
-        // Reset
-        function resetToDefault() {
-            if (confirm('¿Estás seguro de que quieres resetear todos los valores?')) {
-                Object.keys(defaults).forEach(key => {
-                    const element = document.getElementById(key);
-                    if (element) {
-                        element.value = defaults[key];
-                    }
-                    const valueElement = document.getElementById(key + 'Value');
-                    if (valueElement) {
-                        valueElement.value = defaults[key];
-                    }
-                });
-                
-                // Actualizar displays de opacidad
-                const opacityIds = [
-                    'bgColorOpacity',
-                    'containerColorOpacity',
-                    'borderColorOpacity',
-                    'textColorOpacity',
-                    'buttonColorOpacity',
-                    'buttonTextColorOpacity',
-                    'buttonBorderColorOpacity'
-                ];
-                
-                opacityIds.forEach(id => {
-                    const valueSpan = document.getElementById(id + 'Value');
-                    if (valueSpan) {
-                        valueSpan.textContent = '100%';
-                    }
-                });
-                
-                // Resetear variables oficiales de Signaturit
-                variables = [
-                    'sender_email',
-                    'sign_button',
-                    'validate_button',
-                    'signer_name',
-                    'signer_email',
-                    'filename',
-                    'logo',
-                    'remaining_time',
-                    'email_button',
-                    'email_body',
-                    'code',
-                    'reason',
-                    'dashboard_button',
-                    'signers'
-                ];
-                renderVariables();
-                updatePreview();
-                showToast('✓ Valores reseteados');
-            }
-        }
-
-        // Mostrar toast
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-
-        // Event listeners
-        document.querySelectorAll('input:not([type="range"]):not([type="checkbox"]):not([type="file"]), textarea, select').forEach(element => {
-            element.addEventListener('input', updatePreview);
-        });
-
-        // Event listeners para sliders de opacidad
-        const opacitySliders = [
-            'bgColorOpacity',
-            'containerColorOpacity',
-            'borderColorOpacity',
-            'textColorOpacity',
-            'buttonColorOpacity',
-            'buttonTextColorOpacity',
-            'buttonBorderColorOpacity'
-        ];
-
-        opacitySliders.forEach(sliderId => {
-            const slider = document.getElementById(sliderId);
-            const valueSpan = document.getElementById(sliderId + 'Value');
-            
-            if (slider && valueSpan) {
-                slider.addEventListener('input', function() {
-                    const percentage = Math.round(this.value * 100);
-                    valueSpan.textContent = percentage + '%';
-                    updatePreview();
-                });
-            }
-        });
-
-        // Event listener para el checkbox de minificar (actualizar vista de código)
-        const minifyCheckbox = document.getElementById('minifyHTML');
-        if (minifyCheckbox) {
-            minifyCheckbox.addEventListener('change', updateCodeView);
-        }
-
-        // Event listener para cerrar modales con Escape
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeVariableModal();
-                closePasteHTMLModal();
-            }
-        });
-
-        // Inicializar
-        syncColorInputs();
-        renderVariables();
-        resetToDefault();
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
