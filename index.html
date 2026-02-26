@@ -78,7 +78,7 @@
                     <button class="btn-back" onclick="goToDashboard()">&larr; Brandings</button>
                     <div class="editor-branding-info">
                         <span class="editor-branding-name" id="editorBrandingName">Nuevo Branding</span>
-                        <span class="editor-branding-id" id="editorBrandingId"></span>
+                        <span class="editor-branding-id" id="editorBrandingId" onclick="copyBrandingId()" title="Click para copiar ID"></span>
                     </div>
                 </div>
 
@@ -422,6 +422,23 @@
         </div>
     </div>
 
-    <script src="app.js?v=2"></script>
+    <!-- Modal Confirmar Push a API -->
+    <div class="modal" id="confirmPushModal">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <h2>Confirmar envio a API</h2>
+                <button class="close-modal" onclick="closeConfirmPushModal()">&times;</button>
+            </div>
+
+            <div class="confirm-push-details" id="confirmPushDetails"></div>
+
+            <div class="confirm-push-buttons">
+                <button class="btn-secondary" onclick="closeConfirmPushModal()">Cancelar</button>
+                <button class="btn-confirm-push" id="btnConfirmPush" onclick="executeConfirmedPush()">Confirmar y Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=4"></script>
 </body>
 </html>

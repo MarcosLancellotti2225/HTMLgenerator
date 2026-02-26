@@ -183,7 +183,7 @@ function goToEditorNew() {
     showView('viewEditor');
 }
 
-function goToEditorExisting(brandingId) {
+async function goToEditorExisting(brandingId) {
     const branding = apiBrandings.find(b => b.id === brandingId);
     if (!branding) return;
 
@@ -191,7 +191,7 @@ function goToEditorExisting(brandingId) {
     isNewBranding = false;
 
     document.getElementById('editorBrandingName').textContent = branding.name || 'Sin nombre';
-    document.getElementById('editorBrandingId').textContent = 'ID: ' + branding.id;
+    document.getElementById('editorBrandingId').textContent = branding.id;
     document.getElementById('newBrandingNameGroup').style.display = 'none';
 
     // Cargar colores del branding si existen
@@ -204,7 +204,58 @@ function goToEditorExisting(brandingId) {
 
     initEditorListeners();
     showView('viewEditor');
-    updatePreview();
+
+    // Cargar template content desde la API
+    try {
+        const fullBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
+        if (fullBranding.templates) {
+            // Buscar el primer template con contenido
+            const templates = fullBranding.templates;
+            let loadedType = null;
+
+            // Primero intentar con el tipo seleccionado en el dropdown
+            const selectedType = document.getElementById('templateType').value;
+            if (templates[selectedType]) {
+                loadedType = selectedType;
+            } else {
+                // Si no, buscar el primer template que tenga contenido
+                for (const tType of ALL_TEMPLATE_TYPES) {
+                    if (templates[tType]) {
+                        loadedType = tType;
+                        break;
+                    }
+                }
+            }
+
+            if (loadedType) {
+                document.getElementById('templateType').value = loadedType;
+                const templateHTML = templates[loadedType];
+                try {
+                    parseHTMLTemplate(templateHTML);
+                } catch (e) {
+                    document.getElementById('emailContent').value = templateHTML;
+                    updatePreview();
+                }
+                showToast('Template "' + loadedType + '" cargado');
+            } else {
+                updatePreview();
+            }
+
+            // Actualizar colores desde el branding completo
+            if (fullBranding.text_color) {
+                setColorField('textColor', fullBranding.text_color);
+            }
+            if (fullBranding.layout_color) {
+                setColorField('bgColor', fullBranding.layout_color);
+            }
+        } else {
+            updatePreview();
+        }
+    } catch (error) {
+        console.error('Error loading branding templates:', error);
+        showToast('Branding cargado (sin templates)');
+        updatePreview();
+    }
 }
 
 // ═══════════════════════════════════
@@ -436,11 +487,73 @@ async function saveTemplateToAPI() {
     }
 
     if (isNewBranding) {
-        await createNewBranding(templateType);
+        const name = document.getElementById('newBrandingName').value.trim();
+        if (!name) {
+            showToast('Ingresa un nombre para el nuevo branding');
+            return;
+        }
+        showConfirmPushModal('POST', templateType, name, null);
     } else if (selectedBrandingId) {
-        await updateExistingBranding(selectedBrandingId, templateType);
+        const brandingName = document.getElementById('editorBrandingName').textContent;
+        showConfirmPushModal('PATCH', templateType, brandingName, selectedBrandingId);
     } else {
         showToast('Selecciona un branding o crea uno nuevo');
+    }
+}
+
+function showConfirmPushModal(method, templateType, brandingName, brandingId) {
+    const env = document.getElementById('apiEnvironment').value;
+    const envLabel = env === 'production' ? 'PRODUCTION' : 'Sandbox';
+    const methodClass = method.toLowerCase();
+
+    let details = '<div style="margin-bottom: 10px;">' +
+        '<span class="confirm-label">Accion:</span> ' +
+        '<span class="confirm-method ' + methodClass + '">' + method + '</span> ' +
+        (method === 'POST' ? 'Crear nuevo branding' : 'Actualizar branding existente') +
+        '</div>';
+
+    details += '<div style="margin-bottom: 6px;">' +
+        '<span class="confirm-label">Branding:</span> ' + escapeHTML(brandingName) +
+        '</div>';
+
+    if (brandingId) {
+        details += '<div style="margin-bottom: 6px;">' +
+            '<span class="confirm-label">ID:</span> <span class="confirm-value">' + brandingId + '</span>' +
+            '</div>';
+    }
+
+    details += '<div style="margin-bottom: 6px;">' +
+        '<span class="confirm-label">Template:</span> <span class="confirm-value">' + templateType + '</span>' +
+        '</div>';
+
+    details += '<div>' +
+        '<span class="confirm-label">Entorno:</span> <span style="font-weight:600;' +
+        (env === 'production' ? 'color:#dc2626;"' : 'color:#2563eb;"') + '>' + envLabel + '</span>' +
+        '</div>';
+
+    document.getElementById('confirmPushDetails').innerHTML = details;
+
+    // Guardar datos para ejecutar despues
+    window._pendingPush = { method, templateType, brandingId };
+
+    document.getElementById('confirmPushModal').classList.add('show');
+}
+
+function closeConfirmPushModal() {
+    document.getElementById('confirmPushModal').classList.remove('show');
+    window._pendingPush = null;
+}
+
+async function executeConfirmedPush() {
+    const pending = window._pendingPush;
+    if (!pending) return;
+
+    closeConfirmPushModal();
+
+    if (pending.method === 'POST') {
+        await createNewBranding(pending.templateType);
+    } else {
+        await updateExistingBranding(pending.brandingId, pending.templateType);
     }
 }
 
@@ -477,7 +590,7 @@ async function createNewBranding(templateType) {
         selectedBrandingId = result.id;
         isNewBranding = false;
         document.getElementById('editorBrandingName').textContent = name;
-        document.getElementById('editorBrandingId').textContent = 'ID: ' + result.id;
+        document.getElementById('editorBrandingId').textContent = result.id;
         document.getElementById('newBrandingNameGroup').style.display = 'none';
 
     } catch (error) {
@@ -522,6 +635,17 @@ function hexToRgba(hex, opacity) {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+function copyBrandingId() {
+    const idEl = document.getElementById('editorBrandingId');
+    const id = idEl.textContent.trim();
+    if (!id) return;
+    navigator.clipboard.writeText(id).then(() => {
+        showToast('ID copiado: ' + id);
+    }).catch(() => {
+        showToast('No se pudo copiar');
+    });
 }
 
 function showToast(message) {
