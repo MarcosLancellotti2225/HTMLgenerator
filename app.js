@@ -85,17 +85,9 @@ const REQUIRED_MAGIC_WORDS = {
 let apiBrandings = [];
 let selectedBrandingId = null;
 
-// Construye la URL base: usa el proxy de Supabase si está configurado
+// La Edge Function vive en el mismo proyecto de Supabase
 function getAPIBase() {
-    const proxyUrl = (document.getElementById('proxyUrl').value || '').trim().replace(/\/+$/, '');
-    if (proxyUrl) {
-        return proxyUrl;
-    }
-    // Fallback directo (puede fallar por CORS en producción)
-    const env = document.getElementById('apiEnvironment').value;
-    return env === 'production'
-        ? 'https://api.signaturit.com/v3'
-        : 'https://api.sandbox.signaturit.com/v3';
+    return window.location.origin + '/functions/v1/signaturit-proxy';
 }
 
 function getAuthHeaders() {
