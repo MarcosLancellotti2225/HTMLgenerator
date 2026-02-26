@@ -23,18 +23,18 @@ let variables = [
 // Descripciones de variables oficiales
 const variableDescriptions = {
     'sender_email': 'Email del remitente',
-    'sign_button': 'Botón de Signaturit (solo signatures_request y pending_sign)',
-    'validate_button': 'Botón de validar documento (solo validation_request)',
+    'sign_button': 'Boton de Signaturit (solo signatures_request y pending_sign)',
+    'validate_button': 'Boton de validar documento (solo validation_request)',
     'signer_name': 'Nombre del firmante',
     'signer_email': 'Email del firmante',
     'filename': 'Nombre del archivo (o archivos)',
     'logo': 'Logo actual',
-    'remaining_time': 'Fecha de expiración del documento (solo pending_sign)',
-    'email_button': 'Botón de Signaturit (solo emails_request)',
-    'email_body': 'Texto del parámetro body (solo signatures_request)',
-    'code': 'Código SMS (solo sms_verify y sms_validate)',
-    'reason': 'Razón por la que se rechazó la firma (solo document_declined)',
-    'dashboard_button': 'Botón para ver detalles en dashboard (solo document_declined)',
+    'remaining_time': 'Fecha de expiracion del documento (solo pending_sign)',
+    'email_button': 'Boton de Signaturit (solo emails_request)',
+    'email_body': 'Texto del parametro body (solo signatures_request)',
+    'code': 'Codigo SMS (solo sms_verify y sms_validate)',
+    'reason': 'Razon por la que se rechazo la firma (solo document_declined)',
+    'dashboard_button': 'Boton para ver detalles en dashboard (solo document_declined)',
     'signers': 'Nombre y email del firmante en formato NOMBRE - EMAIL (solo signed_document)'
 };
 
@@ -44,7 +44,7 @@ const defaults = {
     logoWidth: '300px',
     logoHeight: 'auto',
     logoObjectFit: 'none',
-    emailContent: 'Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para firmar:\n\n{{filename}}\n\nPara proceder con la revisión de la documentación presione el siguiente botón:\n\n{{sign_button}}\n\n{{email_body}}',
+    emailContent: 'Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentacion para firmar:\n\n{{filename}}\n\nPara proceder con la revision de la documentacion presione el siguiente boton:\n\n{{sign_button}}\n\n{{email_body}}',
     bgColor: '#ffffff',
     bgColorOpacity: '1',
     containerColor: '#ffffff',
@@ -72,7 +72,19 @@ const defaults = {
     buttonWidth: '200'
 };
 
-// ── Estado de la API ──
+// Todos los tipos de template posibles
+const ALL_TEMPLATE_TYPES = [
+    'signatures_request',
+    'signatures_receipt',
+    'request_expired',
+    'pending_sign',
+    'document_canceled',
+    'emails_request',
+    'validation_request',
+    'signed_document',
+    'document_declined',
+    'request_expired_requester'
+];
 
 // Magic words obligatorias por tipo de template
 const REQUIRED_MAGIC_WORDS = {
@@ -82,10 +94,14 @@ const REQUIRED_MAGIC_WORDS = {
     validation_request: ['{{validate_button}}']
 };
 
+// ── Estado global ──
 let apiBrandings = [];
 let selectedBrandingId = null;
+let isNewBranding = false;
+let currentPage = 1;
+const ITEMS_PER_PAGE = 10;
 
-// Edge Function en Supabase (proxy para evitar CORS)
+// ── Proxy (Edge Function en Supabase) ──
 function getAPIBase() {
     return 'https://plejrqzzxnypnxxnamxj.supabase.co/functions/v1/signaturit-proxy';
 }
@@ -99,18 +115,75 @@ function getAuthHeaders() {
     };
 }
 
-// ── API: Conectar y cargar brandings ──
+// ═══════════════════════════════════
+//  NAVEGACION DE VISTAS
+// ═══════════════════════════════════
+
+function showView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
+    document.getElementById(viewId).style.display = '';
+}
+
+function goToDashboard() {
+    selectedBrandingId = null;
+    isNewBranding = false;
+    renderBrandingsPage();
+    showView('viewDashboard');
+}
+
+function goToEditorNew() {
+    selectedBrandingId = null;
+    isNewBranding = true;
+
+    document.getElementById('editorBrandingName').textContent = 'Nuevo Branding';
+    document.getElementById('editorBrandingId').textContent = '';
+    document.getElementById('newBrandingNameGroup').style.display = 'block';
+    document.getElementById('newBrandingName').value = '';
+
+    resetToDefault(true);
+    initEditorListeners();
+    showView('viewEditor');
+}
+
+function goToEditorExisting(brandingId) {
+    const branding = apiBrandings.find(b => b.id === brandingId);
+    if (!branding) return;
+
+    selectedBrandingId = brandingId;
+    isNewBranding = false;
+
+    document.getElementById('editorBrandingName').textContent = branding.name || 'Sin nombre';
+    document.getElementById('editorBrandingId').textContent = 'ID: ' + branding.id;
+    document.getElementById('newBrandingNameGroup').style.display = 'none';
+
+    // Cargar colores del branding si existen
+    if (branding.text_color) {
+        setColorField('textColor', branding.text_color);
+    }
+    if (branding.layout_color) {
+        setColorField('bgColor', branding.layout_color);
+    }
+
+    initEditorListeners();
+    showView('viewEditor');
+    updatePreview();
+}
+
+// ═══════════════════════════════════
+//  API: CONECTAR
+// ═══════════════════════════════════
 
 async function connectAPI() {
     const token = document.getElementById('apiToken').value.trim();
     if (!token) {
-        showToast('Ingresa un access token');
+        showLoginError('Ingresa un access token');
         return;
     }
 
     const btn = document.getElementById('btnConnect');
     btn.disabled = true;
     btn.textContent = 'Conectando...';
+    hideLoginError();
 
     try {
         const response = await fetch(getAPIBase() + '/brandings.json', {
@@ -119,131 +192,159 @@ async function connectAPI() {
         });
 
         if (!response.ok) {
-            throw new Error('HTTP ' + response.status + ': ' + (response.statusText || 'Error de autenticación'));
+            throw new Error('HTTP ' + response.status + ': ' + (response.statusText || 'Error de autenticacion'));
         }
 
         apiBrandings = await response.json();
+        currentPage = 1;
 
-        // Populate hidden branding selector (used by save/load)
-        const select = document.getElementById('brandingSelect');
-        select.innerHTML = '<option value="">-- Seleccionar branding --</option>' +
-            '<option value="__new__">+ Crear nuevo branding</option>';
+        // Update dashboard info
+        const env = document.getElementById('apiEnvironment').value;
+        document.getElementById('dashboardEnv').textContent = env === 'sandbox' ? 'Sandbox' : 'Production';
+        document.getElementById('dashboardCount').textContent = apiBrandings.length;
 
-        apiBrandings.forEach(b => {
-            const opt = document.createElement('option');
-            opt.value = b.id;
-            opt.textContent = (b.name || 'Sin nombre') + ' (' + b.id.substring(0, 8) + '...)';
-            select.appendChild(opt);
-        });
-
-        document.getElementById('brandingCount').textContent = apiBrandings.length;
-        document.getElementById('apiConnectedPanel').style.display = 'block';
-        btn.style.display = 'none';
-
-        // Render visual brandings list
-        renderBrandingsList();
-
+        renderBrandingsPage();
+        showView('viewDashboard');
         showToast('Conectado - ' + apiBrandings.length + ' brandings encontrados');
     } catch (error) {
         console.error('API Error:', error);
-        showToast('Error de conexión: ' + error.message);
+        showLoginError('Error de conexion: ' + error.message);
         btn.disabled = false;
-        btn.textContent = 'Conectar y cargar brandings';
+        btn.textContent = 'Conectar';
     }
 }
 
 function disconnectAPI() {
     apiBrandings = [];
     selectedBrandingId = null;
-    document.getElementById('apiConnectedPanel').style.display = 'none';
-    document.getElementById('btnConnect').style.display = 'block';
-    document.getElementById('btnConnect').disabled = false;
-    document.getElementById('btnConnect').textContent = 'Conectar y cargar brandings';
-    document.getElementById('brandingSelect').value = '';
-    document.getElementById('newBrandingNameGroup').style.display = 'none';
-    document.getElementById('templateControls').style.display = 'none';
-    document.getElementById('brandingsList').innerHTML = '';
+    isNewBranding = false;
+    currentPage = 1;
+
+    const btn = document.getElementById('btnConnect');
+    btn.disabled = false;
+    btn.textContent = 'Conectar';
+
+    showView('viewLogin');
     showToast('Desconectado');
 }
 
-function onBrandingSelected() {
-    const val = document.getElementById('brandingSelect').value;
-    const newNameGroup = document.getElementById('newBrandingNameGroup');
-    const templateControls = document.getElementById('templateControls');
-
-    if (val === '__new__') {
-        selectedBrandingId = null;
-        newNameGroup.style.display = 'block';
-        templateControls.style.display = 'block';
-    } else if (val) {
-        selectedBrandingId = val;
-        newNameGroup.style.display = 'none';
-        templateControls.style.display = 'block';
-    } else {
-        selectedBrandingId = null;
-        newNameGroup.style.display = 'none';
-        templateControls.style.display = 'none';
-    }
+function showLoginError(msg) {
+    const el = document.getElementById('loginError');
+    el.textContent = msg;
+    el.style.display = 'block';
 }
 
-// ── Brandings List (visual cards) ──
+function hideLoginError() {
+    document.getElementById('loginError').style.display = 'none';
+}
 
-function renderBrandingsList() {
-    const container = document.getElementById('brandingsList');
+// ═══════════════════════════════════
+//  DASHBOARD: RENDER BRANDINGS
+// ═══════════════════════════════════
 
-    let html = '<div class="brandings-list-header">' +
-        '<h3>Brandings</h3>' +
-        '<span class="brandings-list-count">' + apiBrandings.length + '</span>' +
-        '</div>';
+function renderBrandingsPage() {
+    const grid = document.getElementById('brandingsGrid');
+    const totalPages = Math.max(1, Math.ceil(apiBrandings.length / ITEMS_PER_PAGE));
 
-    apiBrandings.forEach(b => {
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const end = start + ITEMS_PER_PAGE;
+    const pageBrandings = apiBrandings.slice(start, end);
+
+    if (pageBrandings.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #9ca3af;">' +
+            '<p style="font-size: 16px; margin-bottom: 8px;">No hay brandings</p>' +
+            '<p style="font-size: 13px;">Crea uno nuevo para empezar</p>' +
+            '</div>';
+        renderPagination(totalPages);
+        return;
+    }
+
+    let html = '';
+    pageBrandings.forEach(b => {
         const name = b.name || 'Sin nombre';
         const initial = name.charAt(0).toUpperCase();
-        const templateCount = b.templates ? Object.keys(b.templates).filter(k => b.templates[k]).length : 0;
-        const isSelected = selectedBrandingId === b.id;
+        const templates = b.templates || {};
 
-        html += '<div class="branding-card' + (isSelected ? ' selected' : '') + '" onclick="selectBranding(\'' + b.id + '\')">' +
-            '<div class="branding-card-icon">' + initial + '</div>' +
-            '<div class="branding-card-info">' +
-                '<div class="branding-card-name">' + name + '</div>' +
-                '<div class="branding-card-id">ID: ' + b.id + '</div>' +
+        // Contar templates con contenido
+        const configuredTemplates = ALL_TEMPLATE_TYPES.filter(t => templates[t]);
+        const totalConfigured = configuredTemplates.length;
+
+        // Badges de templates
+        let badgesHTML = '';
+        ALL_TEMPLATE_TYPES.forEach(t => {
+            const hasContent = !!templates[t];
+            const cls = hasContent ? 'has-content' : 'empty';
+            const shortName = t.replace('signatures_', 'sig_').replace('request_expired', 'req_exp').replace('_requester', '_req');
+            badgesHTML += '<span class="template-badge ' + cls + '">' + shortName + '</span>';
+        });
+
+        html += '<div class="branding-card" onclick="goToEditorExisting(\'' + b.id + '\')">' +
+            '<div class="branding-card-header">' +
+                '<div class="branding-card-icon">' + initial + '</div>' +
+                '<div class="branding-card-title">' +
+                    '<div class="branding-card-name">' + escapeHTML(name) + '</div>' +
+                    '<div class="branding-card-id">' + b.id + '</div>' +
+                '</div>' +
             '</div>' +
-            (templateCount > 0 ? '<span class="branding-card-templates">' + templateCount + ' tmpl</span>' : '') +
-            '</div>';
+            '<div class="branding-card-templates">' + badgesHTML + '</div>' +
+            '<div class="branding-card-footer">' +
+                '<span class="branding-card-meta">' + totalConfigured + '/' + ALL_TEMPLATE_TYPES.length + ' templates</span>' +
+                '<span class="branding-card-action">Editar &rarr;</span>' +
+            '</div>' +
+        '</div>';
     });
 
-    // Card para crear nuevo
-    html += '<div class="branding-card branding-card-new" onclick="selectBranding(\'__new__\')">' +
-        '<div class="branding-card-icon">+</div>' +
-        '<div class="branding-card-info">' +
-            '<div class="branding-card-name">Crear nuevo branding</div>' +
-        '</div>' +
-        '</div>';
+    grid.innerHTML = html;
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const container = document.getElementById('pagination');
+
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '<button class="pagination-btn" onclick="changePage(' + (currentPage - 1) + ')"' +
+        (currentPage === 1 ? ' disabled' : '') + '>&laquo; Anterior</button>';
+
+    for (let i = 1; i <= totalPages; i++) {
+        html += '<button class="pagination-btn' + (i === currentPage ? ' active' : '') + '" onclick="changePage(' + i + ')">' + i + '</button>';
+    }
+
+    html += '<button class="pagination-btn" onclick="changePage(' + (currentPage + 1) + ')"' +
+        (currentPage === totalPages ? ' disabled' : '') + '>Siguiente &raquo;</button>';
 
     container.innerHTML = html;
 }
 
-function selectBranding(id) {
-    // Update hidden select
-    document.getElementById('brandingSelect').value = id;
-    onBrandingSelected();
-
-    // Re-render list to update selection
-    renderBrandingsList();
+function changePage(page) {
+    currentPage = page;
+    renderBrandingsPage();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ── API: Cargar template desde un branding ──
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// ═══════════════════════════════════
+//  API: CARGAR TEMPLATE
+// ═══════════════════════════════════
 
 async function loadTemplateFromAPI() {
-    const brandingId = document.getElementById('brandingSelect').value;
-
-    if (!brandingId || brandingId === '__new__') {
+    if (isNewBranding || !selectedBrandingId) {
         showToast('Selecciona un branding existente para cargar');
         return;
     }
 
     try {
-        const response = await fetch(getAPIBase() + '/brandings/' + brandingId + '.json', {
+        const response = await fetch(getAPIBase() + '/brandings/' + selectedBrandingId + '.json', {
             method: 'GET',
             headers: getAuthHeaders()
         });
@@ -255,14 +356,12 @@ async function loadTemplateFromAPI() {
         const branding = await response.json();
         const templateType = document.getElementById('templateType').value;
 
-        // Cargar template HTML si existe
         if (branding.templates && branding.templates[templateType]) {
             const templateHTML = branding.templates[templateType];
             try {
                 parseHTMLTemplate(templateHTML);
                 showToast('Template "' + templateType + '" cargado desde branding');
             } catch (e) {
-                // Si parseHTMLTemplate falla, al menos poner el contenido en el textarea
                 document.getElementById('emailContent').value = templateHTML;
                 updatePreview();
                 showToast('Template cargado (sin parsear estructura)');
@@ -271,7 +370,6 @@ async function loadTemplateFromAPI() {
             showToast('Este branding no tiene template "' + templateType + '"');
         }
 
-        // Cargar colores del branding al editor si existen
         if (branding.text_color) {
             setColorField('textColor', branding.text_color);
         }
@@ -294,12 +392,12 @@ function setColorField(fieldId, hexColor) {
     }
 }
 
-// ── API: Guardar template (crear o actualizar branding) ──
+// ═══════════════════════════════════
+//  API: GUARDAR TEMPLATE (POST / PATCH)
+// ═══════════════════════════════════
 
 async function saveTemplateToAPI() {
-    const brandingSelectVal = document.getElementById('brandingSelect').value;
     const templateType = document.getElementById('templateType').value;
-    const isNew = brandingSelectVal === '__new__';
 
     // Validar magic words obligatorias
     const requiredWords = REQUIRED_MAGIC_WORDS[templateType];
@@ -317,10 +415,10 @@ async function saveTemplateToAPI() {
         }
     }
 
-    if (isNew) {
+    if (isNewBranding) {
         await createNewBranding(templateType);
-    } else if (brandingSelectVal) {
-        await updateExistingBranding(brandingSelectVal, templateType);
+    } else if (selectedBrandingId) {
+        await updateExistingBranding(selectedBrandingId, templateType);
     } else {
         showToast('Selecciona un branding o crea uno nuevo');
     }
@@ -342,8 +440,6 @@ async function createNewBranding(templateType) {
     const body = new URLSearchParams();
     body.append('name', name);
     body.append('templates[' + templateType + ']', html);
-
-    // Agregar colores del editor como colores del branding
     body.append('text_color', document.getElementById('textColor').value);
     body.append('layout_color', document.getElementById('bgColor').value);
 
@@ -362,12 +458,22 @@ async function createNewBranding(templateType) {
         const result = await response.json();
         showToast('Branding "' + name + '" creado con ID: ' + result.id.substring(0, 8) + '...');
 
-        // Recargar brandings para actualizar el selector
-        await connectAPI();
+        // Recargar lista de brandings
+        const listResponse = await fetch(getAPIBase() + '/brandings.json', {
+            method: 'GET',
+            headers: getAuthHeaders()
+        });
+        if (listResponse.ok) {
+            apiBrandings = await listResponse.json();
+            document.getElementById('dashboardCount').textContent = apiBrandings.length;
+        }
 
-        // Seleccionar el branding recién creado
-        document.getElementById('brandingSelect').value = result.id;
-        onBrandingSelected();
+        // Cambiar a modo edicion del branding recien creado
+        selectedBrandingId = result.id;
+        isNewBranding = false;
+        document.getElementById('editorBrandingName').textContent = name;
+        document.getElementById('editorBrandingId').textContent = 'ID: ' + result.id;
+        document.getElementById('newBrandingNameGroup').style.display = 'none';
 
     } catch (error) {
         console.error('Error creating branding:', error);
@@ -384,8 +490,6 @@ async function updateExistingBranding(brandingId, templateType) {
 
     const body = new URLSearchParams();
     body.append('templates[' + templateType + ']', html);
-
-    // Actualizar colores del branding también
     body.append('text_color', document.getElementById('textColor').value);
     body.append('layout_color', document.getElementById('bgColor').value);
 
@@ -401,7 +505,16 @@ async function updateExistingBranding(brandingId, templateType) {
             throw new Error('HTTP ' + response.status + ': ' + errorText);
         }
 
-        showToast('Template "' + templateType + '" actualizado en branding');
+        showToast('Template "' + templateType + '" actualizado en branding (PATCH)');
+
+        // Recargar la lista para reflejar cambios
+        const listResponse = await fetch(getAPIBase() + '/brandings.json', {
+            method: 'GET',
+            headers: getAuthHeaders()
+        });
+        if (listResponse.ok) {
+            apiBrandings = await listResponse.json();
+        }
 
     } catch (error) {
         console.error('Error updating branding:', error);
@@ -409,7 +522,9 @@ async function updateExistingBranding(brandingId, templateType) {
     }
 }
 
-// ── Utilidades ──
+// ═══════════════════════════════════
+//  UTILIDADES
+// ═══════════════════════════════════
 
 function hexToRgba(hex, opacity) {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -435,10 +550,13 @@ function toggleCollapsible(header) {
     content.classList.toggle('active');
 }
 
-// ── Variables ──
+// ═══════════════════════════════════
+//  VARIABLES
+// ═══════════════════════════════════
 
 function renderVariablesInline() {
     const container = document.getElementById('variablesInline');
+    if (!container) return;
 
     if (variables.length === 0) {
         container.innerHTML = '<div class="empty-state">No hay variables disponibles</div>';
@@ -472,6 +590,7 @@ function insertLogoVariable() {
 
 function renderVariables() {
     const container = document.getElementById('variablesGrid');
+    if (!container) return;
 
     if (variables.length === 0) {
         container.innerHTML = '<div class="empty-state">No hay variables. Agrega una usando el campo de abajo.</div>';
@@ -485,7 +604,7 @@ function renderVariables() {
         return `
             <div class="variable-pill" onclick="insertVariableAtCursor('${varName}')">
                 <span>{{${varName}}}</span>
-                <span class="delete-var" onclick="event.stopPropagation(); deleteVariable(${index})">×</span>
+                <span class="delete-var" onclick="event.stopPropagation(); deleteVariable(${index})">x</span>
                 <div class="variable-tooltip">${description}</div>
             </div>
         `;
@@ -552,7 +671,9 @@ function deleteVariable(index) {
     }
 }
 
-// ── Modales ──
+// ═══════════════════════════════════
+//  MODALES
+// ═══════════════════════════════════
 
 function openVariableModal() {
     document.getElementById('variableModal').classList.add('show');
@@ -585,9 +706,16 @@ window.onclick = function(event) {
     }
 };
 
-// ── Sincronizar Colores ──
+// ═══════════════════════════════════
+//  SINCRONIZAR COLORES
+// ═══════════════════════════════════
+
+let colorListenersAttached = false;
 
 function syncColorInputs() {
+    if (colorListenersAttached) return;
+    colorListenersAttached = true;
+
     const colorPairs = [
         ['bgColor', 'bgColorValue'],
         ['containerColor', 'containerColorValue'],
@@ -616,7 +744,9 @@ function syncColorInputs() {
     });
 }
 
-// ── Generar HTML ──
+// ═══════════════════════════════════
+//  GENERAR HTML
+// ═══════════════════════════════════
 
 function generateHTML() {
     const logoUrl = document.getElementById('logoUrl').value || defaults.logoUrl;
@@ -723,7 +853,9 @@ ${contentParagraphs}
 </html>`;
 }
 
-// ── Import / Parse HTML ──
+// ═══════════════════════════════════
+//  IMPORT / PARSE HTML
+// ═══════════════════════════════════
 
 function importHTMLFile(event) {
     const file = event.target.files[0];
@@ -746,7 +878,7 @@ function importHTMLFile(event) {
         }
 
         if (htmlContent.includes('Generador de Plantillas HTML') || htmlContent.includes('class="controls"')) {
-            showToast('Archivo no válido: Es el generador mismo, no un template');
+            showToast('Archivo no valido: Es el generador mismo, no un template');
             return;
         }
 
@@ -755,7 +887,7 @@ function importHTMLFile(event) {
             showToast('HTML cargado - Edita el contenido arriba');
         } catch (error) {
             console.error('Error parsing HTML:', error);
-            showToast('Error: Archivo no es un template de email válido');
+            showToast('Error: Archivo no es un template de email valido');
         }
     };
     reader.readAsText(file);
@@ -764,7 +896,7 @@ function importHTMLFile(event) {
 function loadPastedHTML() {
     let htmlContent = document.getElementById('pasteHTMLTextarea').value.trim();
     if (!htmlContent) {
-        showToast('Por favor pega código HTML primero');
+        showToast('Por favor pega codigo HTML primero');
         return;
     }
 
@@ -791,7 +923,7 @@ function loadPastedHTML() {
         showToast('HTML cargado - Edita el contenido arriba');
     } catch (error) {
         console.error('Error parsing HTML:', error);
-        showToast('Error: HTML no es un template de email válido');
+        showToast('Error: HTML no es un template de email valido');
     }
 }
 
@@ -802,7 +934,7 @@ function parseHTMLTemplate(htmlString) {
     if (htmlString.includes('Generador de Plantillas HTML') ||
         htmlString.includes('class="controls"') ||
         htmlString.includes('id="previewFrame"')) {
-        showToast('HTML no válido - Es el generador mismo');
+        showToast('HTML no valido - Es el generador mismo');
         throw new Error('Cannot import generator code');
     }
 
@@ -1006,16 +1138,20 @@ function parseHTMLTemplate(htmlString) {
     }
 
     if (!extractedSomething) {
-        showToast('No se pudo extraer información - Edita manualmente');
+        showToast('No se pudo extraer informacion - Edita manualmente');
     }
 
-    // Abrir la sección de contenido para que el usuario vea lo importado
-    const contentSection = document.querySelector('.collapsible-section .collapsible-header');
-    const contentContent = contentSection.nextElementSibling;
-    if (!contentSection.classList.contains('active')) {
-        contentSection.classList.add('active');
-        contentContent.classList.add('active');
-    }
+    // Abrir la seccion de contenido
+    const allHeaders = document.querySelectorAll('#viewEditor .collapsible-header');
+    allHeaders.forEach(header => {
+        const content = header.nextElementSibling;
+        if (header.closest('.collapsible-section') && header.textContent.includes('Contenido')) {
+            if (!header.classList.contains('active')) {
+                header.classList.add('active');
+                content.classList.add('active');
+            }
+        }
+    });
 
     const controlsPanel = document.querySelector('.controls');
     if (controlsPanel) {
@@ -1033,7 +1169,9 @@ function parseHTMLTemplate(htmlString) {
     updatePreview();
 }
 
-// ── Minificar HTML ──
+// ═══════════════════════════════════
+//  MINIFICAR HTML
+// ═══════════════════════════════════
 
 function minifyHTML(html) {
     return html
@@ -1043,14 +1181,21 @@ function minifyHTML(html) {
         .trim();
 }
 
-// ── Preview ──
+// ═══════════════════════════════════
+//  PREVIEW
+// ═══════════════════════════════════
 
 function updatePreview() {
-    const html = generateHTML();
-    document.getElementById('previewFrame').innerHTML = html;
+    const frame = document.getElementById('previewFrame');
+    if (frame) {
+        const html = generateHTML();
+        frame.innerHTML = html;
+    }
 }
 
-// ── Copiar al portapapeles ──
+// ═══════════════════════════════════
+//  COPIAR / DESCARGAR
+// ═══════════════════════════════════
 
 async function copyToClipboard() {
     let html = generateHTML();
@@ -1067,8 +1212,6 @@ async function copyToClipboard() {
         showToast('Error al copiar');
     }
 }
-
-// ── Descargar HTML ──
 
 function downloadHTML() {
     let html = generateHTML();
@@ -1090,68 +1233,79 @@ function downloadHTML() {
     showToast(shouldMinify ? 'HTML minificado descargado' : 'HTML descargado');
 }
 
-// ── Reset ──
+// ═══════════════════════════════════
+//  RESET
+// ═══════════════════════════════════
 
-function resetToDefault() {
-    if (confirm('Resetear todos los valores a los defaults?')) {
-        Object.keys(defaults).forEach(key => {
-            const element = document.getElementById(key);
-            if (element) {
-                element.value = defaults[key];
-            }
-            const valueElement = document.getElementById(key + 'Value');
-            if (valueElement) {
-                valueElement.value = defaults[key];
-            }
-        });
+function resetToDefault(silent) {
+    if (!silent && !confirm('Resetear todos los valores a los defaults?')) return;
 
-        const opacityIds = [
-            'bgColorOpacity',
-            'containerColorOpacity',
-            'borderColorOpacity',
-            'textColorOpacity',
-            'buttonColorOpacity',
-            'buttonTextColorOpacity',
-            'buttonBorderColorOpacity'
-        ];
+    Object.keys(defaults).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            element.value = defaults[key];
+        }
+        const valueElement = document.getElementById(key + 'Value');
+        if (valueElement) {
+            valueElement.value = defaults[key];
+        }
+    });
 
-        opacityIds.forEach(id => {
-            const slider = document.getElementById(id);
-            if (slider) {
-                slider.value = '1';
-            }
-            const valueSpan = document.getElementById(id + 'Value');
-            if (valueSpan) {
-                valueSpan.textContent = '100%';
-            }
-        });
+    const opacityIds = [
+        'bgColorOpacity',
+        'containerColorOpacity',
+        'borderColorOpacity',
+        'textColorOpacity',
+        'buttonColorOpacity',
+        'buttonTextColorOpacity',
+        'buttonBorderColorOpacity'
+    ];
 
-        variables = [
-            'sender_email', 'sign_button', 'validate_button', 'signer_name',
-            'signer_email', 'filename', 'logo', 'remaining_time',
-            'email_button', 'email_body', 'code', 'reason',
-            'dashboard_button', 'signers'
-        ];
-        renderVariables();
-        updatePreview();
+    opacityIds.forEach(id => {
+        const slider = document.getElementById(id);
+        if (slider) {
+            slider.value = '1';
+        }
+        const valueSpan = document.getElementById(id + 'Value');
+        if (valueSpan) {
+            valueSpan.textContent = '100%';
+        }
+    });
+
+    variables = [
+        'sender_email', 'sign_button', 'validate_button', 'signer_name',
+        'signer_email', 'filename', 'logo', 'remaining_time',
+        'email_button', 'email_body', 'code', 'reason',
+        'dashboard_button', 'signers'
+    ];
+    renderVariables();
+    updatePreview();
+
+    if (!silent) {
         showToast('Valores reseteados');
     }
 }
 
-// ── Inicialización ──
+// ═══════════════════════════════════
+//  INICIALIZACION
+// ═══════════════════════════════════
 
-function initApp() {
-    // Sincronizar color pickers con inputs de texto
+let editorListenersAttached = false;
+
+function initEditorListeners() {
     syncColorInputs();
-
-    // Renderizar variables
     renderVariables();
 
-    // Cargar defaults en el textarea
-    document.getElementById('emailContent').value = defaults.emailContent;
+    document.getElementById('emailContent').value = document.getElementById('emailContent').value || defaults.emailContent;
 
-    // Event listeners para todos los inputs
-    document.querySelectorAll('input:not([type="range"]):not([type="checkbox"]):not([type="file"]), textarea, select').forEach(element => {
+    if (editorListenersAttached) {
+        updatePreview();
+        return;
+    }
+    editorListenersAttached = true;
+
+    // Event listeners para todos los inputs del editor
+    document.querySelectorAll('#viewEditor input:not([type="range"]):not([type="checkbox"]):not([type="file"]), #viewEditor textarea, #viewEditor select').forEach(element => {
         element.addEventListener('input', updatePreview);
     });
 
@@ -1175,6 +1329,10 @@ function initApp() {
         }
     });
 
+    updatePreview();
+}
+
+function initApp() {
     // Cerrar modales con Escape
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
@@ -1183,9 +1341,9 @@ function initApp() {
         }
     });
 
-    // Preview inicial
-    updatePreview();
+    // Empezar en la vista de login
+    showView('viewLogin');
 }
 
-// Arrancar cuando el DOM esté listo
+// Arrancar cuando el DOM este listo
 document.addEventListener('DOMContentLoaded', initApp);
