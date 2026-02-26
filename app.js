@@ -74,6 +74,7 @@ const defaults = {
 
 // Todos los tipos de template posibles
 const ALL_TEMPLATE_TYPES = [
+    'sign_request',
     'signatures_request',
     'signatures_receipt',
     'request_expired',
@@ -173,10 +174,11 @@ function goToEditorNew() {
     selectedBrandingId = null;
     isNewBranding = true;
 
-    document.getElementById('editorBrandingName').textContent = 'Nuevo Branding';
+    document.getElementById('editorBrandingName').value = 'Nuevo Branding';
     document.getElementById('editorBrandingId').textContent = '';
     document.getElementById('newBrandingNameGroup').style.display = 'block';
     document.getElementById('newBrandingName').value = '';
+    document.getElementById('templateTypeGroup').style.display = 'block';
 
     resetToDefault(true);
     initEditorListeners();
@@ -192,9 +194,10 @@ async function goToEditorExisting(brandingId) {
 
     const templatesArr = branding.templates || [];
     const firstTplName = templatesArr.length > 0 ? templatesArr[0].name : null;
-    document.getElementById('editorBrandingName').textContent = branding.name || firstTplName || 'Sin nombre';
+    document.getElementById('editorBrandingName').value = branding.name || firstTplName || 'Sin nombre';
     document.getElementById('editorBrandingId').textContent = branding.id;
     document.getElementById('newBrandingNameGroup').style.display = 'none';
+    document.getElementById('templateTypeGroup').style.display = 'none';
 
     // Cargar colores del branding si existen
     if (branding.text_color) {
@@ -510,7 +513,7 @@ async function saveTemplateToAPI() {
         }
         showConfirmPushModal('POST', templateType, name, null);
     } else if (selectedBrandingId) {
-        const brandingName = document.getElementById('editorBrandingName').textContent;
+        const brandingName = document.getElementById('editorBrandingName').value;
         showConfirmPushModal('PATCH', templateType, brandingName, selectedBrandingId);
     } else {
         showToast('Selecciona un branding o crea uno nuevo');
@@ -605,9 +608,10 @@ async function createNewBranding(templateType) {
         // Cambiar a modo edicion del branding recien creado
         selectedBrandingId = result.id;
         isNewBranding = false;
-        document.getElementById('editorBrandingName').textContent = name;
+        document.getElementById('editorBrandingName').value = name;
         document.getElementById('editorBrandingId').textContent = result.id;
         document.getElementById('newBrandingNameGroup').style.display = 'none';
+        document.getElementById('templateTypeGroup').style.display = 'none';
 
     } catch (error) {
         console.error('Error creating branding:', error);
