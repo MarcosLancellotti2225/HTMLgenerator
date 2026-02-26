@@ -1,77 +1,82 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+// Signaturit API Proxy — Edge Function
+// Supports POST (signatures, emails, SMS) and GET via x-method-override (templates)
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const SIGNATURIT_URLS: Record<string, string> = {
-  sandbox: "https://api.sandbox.signaturit.com/v3",
-  production: "https://api.signaturit.com/v3",
-};
-
-const CORS_HEADERS = {
+const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PATCH, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Signaturit-Environment",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "*",
 };
 
 serve(async (req: Request) => {
-  // Preflight CORS
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    const token = req.headers.get("x-signaturit-token");
+    const apiUrl = req.headers.get("x-api-url");
+    const methodOverride = req.headers.get("x-method-override");
+
+    if (!token || !apiUrl) {
       return new Response(
-        JSON.stringify({ error: "Missing or invalid Authorization header" }),
-        { status: 401, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "Missing x-signaturit-token or x-api-url" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Determinar entorno (sandbox por defecto)
-    const env = req.headers.get("X-Signaturit-Environment") || "sandbox";
-    const baseUrl = SIGNATURIT_URLS[env] || SIGNATURIT_URLS.sandbox;
+    // Determine HTTP method: default POST, or override with GET/PATCH etc.
+    const method = methodOverride?.toUpperCase() || "POST";
 
-    // Extraer el path después de /signaturit-proxy
-    const url = new URL(req.url);
-    const proxyPath = url.pathname.replace(/^\/signaturit-proxy/, "");
-    const targetUrl = baseUrl + proxyPath + url.search;
+    let apiResponse;
 
-    // Preparar headers para Signaturit
-    const headers: Record<string, string> = {
-      Authorization: authHeader,
-    };
-
-    // Leer body si no es GET
-    let body: string | null = null;
-    if (req.method !== "GET") {
-      body = await req.text();
-      // Mantener el Content-Type original
-      const contentType = req.headers.get("Content-Type");
-      if (contentType) {
-        headers["Content-Type"] = contentType;
-      }
+    if (method === "GET") {
+      apiResponse = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+    } else if (method === "PATCH") {
+      const body = await req.arrayBuffer();
+      apiResponse = await fetch(apiUrl, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": req.headers.get("content-type") || "application/x-www-form-urlencoded",
+        },
+        body: body,
+      });
+    } else {
+      // POST request (signatures, emails, SMS, create branding)
+      const body = await req.arrayBuffer();
+      apiResponse = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": req.headers.get("content-type") || "",
+        },
+        body: body,
+      });
     }
 
-    // Proxy request a Signaturit
-    const response = await fetch(targetUrl, {
-      method: req.method,
-      headers,
-      body,
-    });
+    const data = await apiResponse.text();
 
-    const responseBody = await response.text();
-
-    return new Response(responseBody, {
-      status: response.status,
-      headers: {
-        ...CORS_HEADERS,
-        "Content-Type": response.headers.get("Content-Type") || "application/json",
-      },
+    return new Response(data, {
+      status: apiResponse.status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error("Proxy error:", error);
+  } catch (err) {
     return new Response(
-      JSON.stringify({ error: "Proxy error: " + (error as Error).message }),
-      { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      JSON.stringify({ error: err.message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });

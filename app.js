@@ -102,17 +102,55 @@ let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
 
 // ── Proxy (Edge Function en Supabase) ──
-function getAPIBase() {
-    return 'https://plejrqzzxnypnxxnamxj.supabase.co/functions/v1/signaturit-proxy';
+// La Edge Function solo acepta POST. Para GET/PATCH se usa x-method-override.
+const PROXY_URL = 'https://plejrqzzxnypnxxnamxj.supabase.co/functions/v1/signaturit-proxy';
+
+const SIGNATURIT_URLS = {
+    sandbox: 'https://api.sandbox.signaturit.com/v3',
+    production: 'https://api.signaturit.com/v3'
+};
+
+function getSignaturitUrl(path) {
+    const env = document.getElementById('apiEnvironment').value;
+    const base = SIGNATURIT_URLS[env] || SIGNATURIT_URLS.sandbox;
+    return base + path;
 }
 
-function getAuthHeaders() {
-    const token = document.getElementById('apiToken').value.trim();
-    const env = document.getElementById('apiEnvironment').value;
-    return {
-        'Authorization': 'Bearer ' + token,
-        'X-Signaturit-Environment': env
+function getToken() {
+    return document.getElementById('apiToken').value.trim();
+}
+
+// Wrapper: todas las llamadas pasan por POST al proxy
+async function apiCall(method, path, body) {
+    const headers = {
+        'x-signaturit-token': getToken(),
+        'x-api-url': getSignaturitUrl(path),
     };
+
+    if (method !== 'POST') {
+        headers['x-method-override'] = method;
+    }
+
+    const fetchOptions = {
+        method: 'POST',
+        headers: headers
+    };
+
+    if (body) {
+        fetchOptions.body = body;
+        if (body instanceof URLSearchParams) {
+            headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        }
+    }
+
+    const response = await fetch(PROXY_URL, fetchOptions);
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error('HTTP ' + response.status + ': ' + errorText);
+    }
+
+    return response.json();
 }
 
 // ═══════════════════════════════════
@@ -186,16 +224,7 @@ async function connectAPI() {
     hideLoginError();
 
     try {
-        const response = await fetch(getAPIBase() + '/brandings.json', {
-            method: 'GET',
-            headers: getAuthHeaders()
-        });
-
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status + ': ' + (response.statusText || 'Error de autenticacion'));
-        }
-
-        apiBrandings = await response.json();
+        apiBrandings = await apiCall('GET', '/brandings.json');
         currentPage = 1;
 
         // Update dashboard info
@@ -344,16 +373,7 @@ async function loadTemplateFromAPI() {
     }
 
     try {
-        const response = await fetch(getAPIBase() + '/brandings/' + selectedBrandingId + '.json', {
-            method: 'GET',
-            headers: getAuthHeaders()
-        });
-
-        if (!response.ok) {
-            throw new Error('HTTP ' + response.status);
-        }
-
-        const branding = await response.json();
+        const branding = await apiCall('GET', '/brandings/' + selectedBrandingId + '.json');
         const templateType = document.getElementById('templateType').value;
 
         if (branding.templates && branding.templates[templateType]) {
@@ -444,29 +464,14 @@ async function createNewBranding(templateType) {
     body.append('layout_color', document.getElementById('bgColor').value);
 
     try {
-        const response = await fetch(getAPIBase() + '/brandings.json', {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: body
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error('HTTP ' + response.status + ': ' + errorText);
-        }
-
-        const result = await response.json();
+        const result = await apiCall('POST', '/brandings.json', body);
         showToast('Branding "' + name + '" creado con ID: ' + result.id.substring(0, 8) + '...');
 
         // Recargar lista de brandings
-        const listResponse = await fetch(getAPIBase() + '/brandings.json', {
-            method: 'GET',
-            headers: getAuthHeaders()
-        });
-        if (listResponse.ok) {
-            apiBrandings = await listResponse.json();
+        try {
+            apiBrandings = await apiCall('GET', '/brandings.json');
             document.getElementById('dashboardCount').textContent = apiBrandings.length;
-        }
+        } catch (e) { /* silenciar error de recarga */ }
 
         // Cambiar a modo edicion del branding recien creado
         selectedBrandingId = result.id;
@@ -494,27 +499,13 @@ async function updateExistingBranding(brandingId, templateType) {
     body.append('layout_color', document.getElementById('bgColor').value);
 
     try {
-        const response = await fetch(getAPIBase() + '/brandings/' + brandingId + '.json', {
-            method: 'PATCH',
-            headers: getAuthHeaders(),
-            body: body
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error('HTTP ' + response.status + ': ' + errorText);
-        }
-
-        showToast('Template "' + templateType + '" actualizado en branding (PATCH)');
+        await apiCall('PATCH', '/brandings/' + brandingId + '.json', body);
+        showToast('Template "' + templateType + '" actualizado en branding');
 
         // Recargar la lista para reflejar cambios
-        const listResponse = await fetch(getAPIBase() + '/brandings.json', {
-            method: 'GET',
-            headers: getAuthHeaders()
-        });
-        if (listResponse.ok) {
-            apiBrandings = await listResponse.json();
-        }
+        try {
+            apiBrandings = await apiCall('GET', '/brandings.json');
+        } catch (e) { /* silenciar error de recarga */ }
 
     } catch (error) {
         console.error('Error updating branding:', error);
