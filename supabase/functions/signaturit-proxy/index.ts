@@ -30,10 +30,13 @@ serve(async (req: Request) => {
     const env = req.headers.get("X-Signaturit-Environment") || "sandbox";
     const baseUrl = SIGNATURIT_URLS[env] || SIGNATURIT_URLS.sandbox;
 
-    // Extraer el path después de /signaturit-proxy
+    // Extraer el path después de /signaturit-proxy (funciona con o sin prefijo /functions/v1/)
     const url = new URL(req.url);
-    const proxyPath = url.pathname.replace(/^\/signaturit-proxy/, "");
+    const idx = url.pathname.indexOf("/signaturit-proxy");
+    const proxyPath = idx !== -1 ? url.pathname.substring(idx + "/signaturit-proxy".length) : url.pathname;
     const targetUrl = baseUrl + proxyPath + url.search;
+
+    console.log("Proxy →", req.method, targetUrl);
 
     // Preparar headers para Signaturit
     const headers: Record<string, string> = {
