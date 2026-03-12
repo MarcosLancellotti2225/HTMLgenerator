@@ -95,6 +95,157 @@ const REQUIRED_MAGIC_WORDS = {
     validation_request: ['{{validate_button}}']
 };
 
+// ═══════════════════════════════════
+//  TEMPLATES PREDEFINIDOS POR IDIOMA
+// ═══════════════════════════════════
+
+const EMAIL_TEMPLATES = {
+    es: {
+        sign_request: {
+            subject: 'Solicitud de firma',
+            content: 'Estimado/a {{signer_name}},\n\nLe hacemos llegar la siguiente documentacion para su firma:\n\n{{filename}}\n\nPor favor, revise el documento y proceda a firmarlo haciendo clic en el siguiente boton:\n\n{{sign_button}}\n\nSi tiene alguna duda, puede contactarnos en {{sender_email}}.\n\nSaludos cordiales.'
+        },
+        signatures_request: {
+            subject: 'Solicitud de firmas',
+            content: 'Estimado/a {{signer_name}},\n\nTiene documentacion pendiente de firma:\n\n{{filename}}\n\n{{email_body}}\n\nPara firmar, haga clic en el siguiente boton:\n\n{{sign_button}}\n\nPara cualquier consulta, contacte con {{sender_email}}.\n\nSaludos cordiales.'
+        },
+        signatures_receipt: {
+            subject: 'Confirmacion de firma',
+            content: 'Estimado/a {{signer_name}},\n\nLe confirmamos que el siguiente documento ha sido firmado correctamente:\n\n{{filename}}\n\nTodos los firmantes han completado el proceso.\n\nPuede descargar el documento firmado desde su panel.\n\nSaludos cordiales.'
+        },
+        request_expired: {
+            subject: 'Solicitud expirada',
+            content: 'Estimado/a {{signer_name}},\n\nLe informamos que la solicitud de firma del siguiente documento ha expirado:\n\n{{filename}}\n\nLa fecha limite era: {{remaining_time}}\n\nSi aun necesita firmar, contacte con {{sender_email}} para solicitar un nuevo envio.\n\nSaludos cordiales.'
+        },
+        pending_sign: {
+            subject: 'Recordatorio de firma pendiente',
+            content: 'Estimado/a {{signer_name}},\n\nLe recordamos que tiene pendiente la firma del siguiente documento:\n\n{{filename}}\n\nFecha limite: {{remaining_time}}\n\nPor favor, proceda a firmarlo cuanto antes haciendo clic en:\n\n{{sign_button}}\n\nSaludos cordiales.'
+        },
+        document_canceled: {
+            subject: 'Documento cancelado',
+            content: 'Estimado/a {{signer_name}},\n\nLe informamos que la solicitud de firma del siguiente documento ha sido cancelada:\n\n{{filename}}\n\nSi tiene alguna pregunta, contacte con {{sender_email}}.\n\nSaludos cordiales.'
+        },
+        emails_request: {
+            subject: 'Solicitud por email',
+            content: 'Estimado/a {{signer_name}},\n\nTiene una nueva solicitud pendiente:\n\n{{filename}}\n\n{{email_body}}\n\nPara proceder, haga clic en el siguiente boton:\n\n{{email_button}}\n\nSaludos cordiales.'
+        },
+        validation_request: {
+            subject: 'Solicitud de validacion',
+            content: 'Estimado/a {{signer_name}},\n\nSe requiere la validacion del siguiente documento:\n\n{{filename}}\n\nPor favor, revise y valide el documento haciendo clic en:\n\n{{validate_button}}\n\nSaludos cordiales.'
+        },
+        signed_document: {
+            subject: 'Documento firmado',
+            content: 'Le informamos que el siguiente documento ha sido firmado:\n\n{{filename}}\n\nFirmantes:\n{{signers}}\n\nPuede descargar el documento firmado desde su panel de control.\n\nSaludos cordiales.'
+        },
+        document_declined: {
+            subject: 'Documento rechazado',
+            content: 'Le informamos que el siguiente documento ha sido rechazado:\n\n{{filename}}\n\nMotivo del rechazo: {{reason}}\n\nPara mas detalles, acceda a su panel:\n\n{{dashboard_button}}\n\nSaludos cordiales.'
+        },
+        request_expired_requester: {
+            subject: 'Su solicitud ha expirado',
+            content: 'Le informamos que la solicitud de firma que envio ha expirado:\n\n{{filename}}\n\nLos siguientes firmantes no completaron la firma a tiempo:\n{{signers}}\n\nPuede reenviar la solicitud desde su panel de control:\n\n{{dashboard_button}}\n\nSaludos cordiales.'
+        }
+    },
+    en: {
+        sign_request: {
+            subject: 'Signature request',
+            content: 'Dear {{signer_name}},\n\nPlease find attached the following document for your signature:\n\n{{filename}}\n\nPlease review the document and proceed to sign it by clicking the button below:\n\n{{sign_button}}\n\nIf you have any questions, please contact us at {{sender_email}}.\n\nBest regards.'
+        },
+        signatures_request: {
+            subject: 'Signatures request',
+            content: 'Dear {{signer_name}},\n\nYou have documentation pending signature:\n\n{{filename}}\n\n{{email_body}}\n\nTo sign, please click the button below:\n\n{{sign_button}}\n\nFor any questions, please contact {{sender_email}}.\n\nBest regards.'
+        },
+        signatures_receipt: {
+            subject: 'Signature confirmation',
+            content: 'Dear {{signer_name}},\n\nWe confirm that the following document has been successfully signed:\n\n{{filename}}\n\nAll signers have completed the process.\n\nYou can download the signed document from your dashboard.\n\nBest regards.'
+        },
+        request_expired: {
+            subject: 'Request expired',
+            content: 'Dear {{signer_name}},\n\nWe inform you that the signature request for the following document has expired:\n\n{{filename}}\n\nThe deadline was: {{remaining_time}}\n\nIf you still need to sign, please contact {{sender_email}} to request a new submission.\n\nBest regards.'
+        },
+        pending_sign: {
+            subject: 'Pending signature reminder',
+            content: 'Dear {{signer_name}},\n\nThis is a reminder that you have a pending signature for the following document:\n\n{{filename}}\n\nDeadline: {{remaining_time}}\n\nPlease proceed to sign as soon as possible by clicking:\n\n{{sign_button}}\n\nBest regards.'
+        },
+        document_canceled: {
+            subject: 'Document canceled',
+            content: 'Dear {{signer_name}},\n\nWe inform you that the signature request for the following document has been canceled:\n\n{{filename}}\n\nIf you have any questions, please contact {{sender_email}}.\n\nBest regards.'
+        },
+        emails_request: {
+            subject: 'Email request',
+            content: 'Dear {{signer_name}},\n\nYou have a new pending request:\n\n{{filename}}\n\n{{email_body}}\n\nTo proceed, please click the button below:\n\n{{email_button}}\n\nBest regards.'
+        },
+        validation_request: {
+            subject: 'Validation request',
+            content: 'Dear {{signer_name}},\n\nValidation is required for the following document:\n\n{{filename}}\n\nPlease review and validate the document by clicking:\n\n{{validate_button}}\n\nBest regards.'
+        },
+        signed_document: {
+            subject: 'Document signed',
+            content: 'We inform you that the following document has been signed:\n\n{{filename}}\n\nSigners:\n{{signers}}\n\nYou can download the signed document from your control panel.\n\nBest regards.'
+        },
+        document_declined: {
+            subject: 'Document declined',
+            content: 'We inform you that the following document has been declined:\n\n{{filename}}\n\nReason for rejection: {{reason}}\n\nFor more details, access your dashboard:\n\n{{dashboard_button}}\n\nBest regards.'
+        },
+        request_expired_requester: {
+            subject: 'Your request has expired',
+            content: 'We inform you that the signature request you sent has expired:\n\n{{filename}}\n\nThe following signers did not complete the signature in time:\n{{signers}}\n\nYou can resend the request from your control panel:\n\n{{dashboard_button}}\n\nBest regards.'
+        }
+    },
+    ca: {
+        sign_request: {
+            subject: 'Sol·licitud de signatura',
+            content: 'Benvolgut/da {{signer_name}},\n\nLi fem arribar la seguent documentacio per a la seva signatura:\n\n{{filename}}\n\nSi us plau, revisi el document i procedeixi a signar-lo fent clic al seguent boto:\n\n{{sign_button}}\n\nSi te algun dubte, pot contactar-nos a {{sender_email}}.\n\nSalutacions cordials.'
+        },
+        signatures_request: {
+            subject: 'Sol·licitud de signatures',
+            content: 'Benvolgut/da {{signer_name}},\n\nTe documentacio pendent de signatura:\n\n{{filename}}\n\n{{email_body}}\n\nPer signar, faci clic al seguent boto:\n\n{{sign_button}}\n\nPer a qualsevol consulta, contacti amb {{sender_email}}.\n\nSalutacions cordials.'
+        },
+        signatures_receipt: {
+            subject: 'Confirmacio de signatura',
+            content: 'Benvolgut/da {{signer_name}},\n\nLi confirmem que el seguent document ha estat signat correctament:\n\n{{filename}}\n\nTots els signants han completat el proces.\n\nPot descarregar el document signat des del seu panell.\n\nSalutacions cordials.'
+        },
+        request_expired: {
+            subject: 'Sol·licitud expirada',
+            content: 'Benvolgut/da {{signer_name}},\n\nL\'informem que la sol·licitud de signatura del seguent document ha expirat:\n\n{{filename}}\n\nLa data limit era: {{remaining_time}}\n\nSi encara necessita signar, contacti amb {{sender_email}} per sol·licitar un nou enviament.\n\nSalutacions cordials.'
+        },
+        pending_sign: {
+            subject: 'Recordatori de signatura pendent',
+            content: 'Benvolgut/da {{signer_name}},\n\nLi recordem que te pendent la signatura del seguent document:\n\n{{filename}}\n\nData limit: {{remaining_time}}\n\nSi us plau, procedeixi a signar-lo com mes aviat millor fent clic a:\n\n{{sign_button}}\n\nSalutacions cordials.'
+        },
+        document_canceled: {
+            subject: 'Document cancel·lat',
+            content: 'Benvolgut/da {{signer_name}},\n\nL\'informem que la sol·licitud de signatura del seguent document ha estat cancel·lada:\n\n{{filename}}\n\nSi te alguna pregunta, contacti amb {{sender_email}}.\n\nSalutacions cordials.'
+        },
+        emails_request: {
+            subject: 'Sol·licitud per email',
+            content: 'Benvolgut/da {{signer_name}},\n\nTe una nova sol·licitud pendent:\n\n{{filename}}\n\n{{email_body}}\n\nPer procedir, faci clic al seguent boto:\n\n{{email_button}}\n\nSalutacions cordials.'
+        },
+        validation_request: {
+            subject: 'Sol·licitud de validacio',
+            content: 'Benvolgut/da {{signer_name}},\n\nEs requereix la validacio del seguent document:\n\n{{filename}}\n\nSi us plau, revisi i validi el document fent clic a:\n\n{{validate_button}}\n\nSalutacions cordials.'
+        },
+        signed_document: {
+            subject: 'Document signat',
+            content: 'L\'informem que el seguent document ha estat signat:\n\n{{filename}}\n\nSignants:\n{{signers}}\n\nPot descarregar el document signat des del seu panell de control.\n\nSalutacions cordials.'
+        },
+        document_declined: {
+            subject: 'Document rebutjat',
+            content: 'L\'informem que el seguent document ha estat rebutjat:\n\n{{filename}}\n\nMotiu del rebuig: {{reason}}\n\nPer mes detalls, accedeixi al seu panell:\n\n{{dashboard_button}}\n\nSalutacions cordials.'
+        },
+        request_expired_requester: {
+            subject: 'La seva sol·licitud ha expirat',
+            content: 'L\'informem que la sol·licitud de signatura que va enviar ha expirat:\n\n{{filename}}\n\nEls seguents signants no van completar la signatura a temps:\n{{signers}}\n\nPot reenviar la sol·licitud des del seu panell de control:\n\n{{dashboard_button}}\n\nSalutacions cordials.'
+        }
+    }
+};
+
+const TEMPLATE_LANGUAGE_NAMES = {
+    es: 'Espanol',
+    en: 'English',
+    ca: 'Catala'
+};
+
 // ── Estado global ──
 let apiBrandings = [];
 let selectedBrandingId = null;
@@ -832,12 +983,16 @@ function closePasteHTMLModal() {
 window.onclick = function(event) {
     const variableModal = document.getElementById('variableModal');
     const pasteModal = document.getElementById('pasteHTMLModal');
+    const confirmModal = document.getElementById('confirmPushModal');
 
     if (event.target === variableModal) {
         closeVariableModal();
     }
     if (event.target === pasteModal) {
         closePasteHTMLModal();
+    }
+    if (event.target === confirmModal) {
+        closeConfirmPushModal();
     }
 };
 
@@ -858,7 +1013,11 @@ function syncColorInputs() {
         ['buttonColor', 'buttonColorValue'],
         ['buttonTextColor', 'buttonTextColorValue'],
         ['buttonBorderColor', 'buttonBorderColorValue'],
-        ['textColor', 'textColorValue']
+        ['textColor', 'textColorValue'],
+        ['brandingHeaderColor', 'brandingHeaderColorValue'],
+        ['brandingFooterColor', 'brandingFooterColorValue'],
+        ['brandingLayoutColor', 'brandingLayoutColorValue'],
+        ['brandingTextColor', 'brandingTextColorValue']
     ];
 
     colorPairs.forEach(([pickerId, valueId]) => {
@@ -1305,6 +1464,213 @@ function parseHTMLTemplate(htmlString) {
 }
 
 // ═══════════════════════════════════
+//  CARGAR TEMPLATE PREDEFINIDO
+// ═══════════════════════════════════
+
+function loadPresetTemplate() {
+    const lang = document.getElementById('templateLanguage').value;
+    const templateType = document.getElementById('templateType').value;
+
+    if (!lang) {
+        showToast('Selecciona un idioma primero');
+        return;
+    }
+
+    const templates = EMAIL_TEMPLATES[lang];
+    if (!templates || !templates[templateType]) {
+        showToast('No hay template predefinido para este tipo e idioma');
+        return;
+    }
+
+    const template = templates[templateType];
+    document.getElementById('emailContent').value = template.content;
+
+    // Abrir seccion de contenido del email
+    const allHeaders = document.querySelectorAll('#viewEditor .collapsible-header');
+    allHeaders.forEach(header => {
+        const content = header.nextElementSibling;
+        if (header.closest('.collapsible-section') && header.textContent.includes('Contenido')) {
+            if (!header.classList.contains('active')) {
+                header.classList.add('active');
+                content.classList.add('active');
+            }
+        }
+    });
+
+    updatePreview();
+    showToast('Template "' + templateType + '" (' + TEMPLATE_LANGUAGE_NAMES[lang] + ') cargado');
+}
+
+// ═══════════════════════════════════
+//  BRANDING APP PREVIEW
+// ═══════════════════════════════════
+
+function updateBrandingPreview() {
+    const frame = document.getElementById('brandingPreviewFrame');
+    if (!frame) return;
+
+    const headerColor = document.getElementById('brandingHeaderColor').value;
+    const footerColor = document.getElementById('brandingFooterColor').value;
+    const layoutColor = document.getElementById('brandingLayoutColor').value;
+    const appTextColor = document.getElementById('brandingTextColor').value;
+    const logoUrl = document.getElementById('logoUrl').value || '';
+    const termsText = document.getElementById('brandingTermsText').value || '';
+    const showWelcome = document.getElementById('brandingShowWelcome').checked;
+
+    // Determinar color de texto para contraste
+    const isDarkBg = isColorDark(layoutColor);
+    const btnTextColor = isDarkBg ? '#ffffff' : '#333333';
+
+    const isDarkHeader = isColorDark(headerColor);
+    const headerTextColor = isDarkHeader ? '#ffffff' : '#333333';
+
+    const isDarkFooter = isColorDark(footerColor);
+    const footerTextColor = isDarkFooter ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.5)';
+
+    const logoHTML = logoUrl
+        ? '<img src="' + escapeHTML(logoUrl) + '" alt="Logo" style="max-height: 36px; max-width: 180px; object-fit: contain;">'
+        : '<div style="font-family: \'Brush Script MT\', cursive; font-size: 22px; color: ' + headerTextColor + ';">Signaturit</div>';
+
+    const termsHTML = termsText
+        ? '<div style="margin-top: 12px; padding: 10px 14px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 11px; color: #6b7280; max-height: 80px; overflow-y: auto;">' +
+          '<strong style="color: #374151;">Terminos y condiciones:</strong><br>' +
+          escapeHTML(termsText) +
+          '</div>'
+        : '';
+
+    // Welcome page preview
+    const welcomePageHTML = showWelcome ? `
+        <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; background: white; margin-bottom: 16px; max-width: 320px; margin-left: auto; margin-right: auto;">
+            <div style="text-align: center; margin-bottom: 16px;">
+                ${logoUrl ? '<img src="' + escapeHTML(logoUrl) + '" alt="Logo" style="max-height: 50px; max-width: 200px; object-fit: contain;">' : '<div style="font-family: \'Brush Script MT\', cursive; font-size: 28px; color: #333;">Signaturit</div><div style="font-size: 10px; color: #999; margin-top: -4px;">Sign anywhere, anytime</div>'}
+            </div>
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;">
+                <h4 style="margin: 0 0 14px 0; font-size: 14px; color: #333; text-align: center;">Como funciona?</h4>
+                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background: ${layoutColor}15; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; color: ${layoutColor};">1</div>
+                    <div>
+                        <div style="font-size: 12px; font-weight: 600; color: #333;">Revisa el documento</div>
+                        <div style="font-size: 11px; color: #888;">Si no estas de acuerdo, contacta con el remitente.</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background: ${layoutColor}15; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; color: ${layoutColor};">2</div>
+                    <div>
+                        <div style="font-size: 12px; font-weight: 600; color: #333;">Firma el documento</div>
+                        <div style="font-size: 11px; color: #888;">Pulsa el boton "Firmar" o el campo de firma.</div>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px;">
+                    <div style="width: 24px; height: 24px; border-radius: 50%; background: ${layoutColor}15; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; color: ${layoutColor};">3</div>
+                    <div>
+                        <div style="font-size: 12px; font-weight: 600; color: #333;">Terminos y condiciones</div>
+                        <div style="font-size: 11px; color: #888;">Acepta los terminos y pulsa "Enviar documento".</div>
+                    </div>
+                </div>
+                <button style="width: 100%; padding: 10px; background: ${layoutColor}; color: ${btnTextColor}; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: default;">Empezar</button>
+            </div>
+        </div>
+    ` : '';
+
+    const previewHTML = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #f5f5f5; min-height: 100%; overflow: auto;">
+        <!-- Header -->
+        <div style="background: ${headerColor}; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 4px; font-size: 12px; color: ${headerTextColor}; cursor: default;">Acciones</div>
+                <span style="font-size: 12px; color: ${headerTextColor}; opacity: 0.8;">Tienes 3 campos a rellenar</span>
+            </div>
+            <button style="background: ${layoutColor}; color: ${btnTextColor}; border: none; padding: 8px 20px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: default;">Rellenar</button>
+        </div>
+
+        <div style="padding: 20px;">
+            ${welcomePageHTML}
+
+            <!-- Document area -->
+            <div style="background: white; border-radius: 8px; padding: 30px; max-width: 500px; margin: 0 auto; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    ${logoUrl ? '<img src="' + escapeHTML(logoUrl) + '" alt="Logo" style="max-height: 60px; max-width: 250px; object-fit: contain;">' : '<div style="font-family: \'Brush Script MT\', cursive; font-size: 32px; color: #333;">Signaturit</div><div style="font-size: 11px; color: #999; margin-top: -4px; text-align: center;">Sign anywhere, anytime</div>'}
+                </div>
+
+                <h3 style="text-align: center; font-size: 16px; color: ${appTextColor}; margin: 20px 0 16px;">Sample document template</h3>
+
+                <p style="font-size: 13px; color: #666; font-style: italic; line-height: 1.5; text-align: center; margin-bottom: 20px;">
+                    This is an example of a document created with Signaturit, the fastest way to get documents signed with legal validity.
+                </p>
+
+                <div style="border: 2px dashed ${layoutColor}; border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 20px;">
+                    <div style="background: ${layoutColor}; color: ${btnTextColor}; display: inline-block; padding: 6px 14px; border-radius: 4px; font-size: 11px; font-weight: 500;">Pulsa para rellenar campo en la pagina 1</div>
+                </div>
+
+                ${termsHTML}
+
+                <div style="margin-top: 16px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #555; cursor: default; margin-bottom: 8px;">
+                        <input type="checkbox" disabled style="width: 14px; height: 14px; accent-color: ${layoutColor};">
+                        Acepto los <a style="color: ${layoutColor}; text-decoration: underline;">terminos y condiciones</a>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: #555; cursor: default;">
+                        <input type="checkbox" disabled style="width: 14px; height: 14px; accent-color: ${layoutColor};">
+                        Acepto que se encripte la biometria de la firma
+                    </label>
+                </div>
+
+                <button style="margin-top: 16px; padding: 10px 28px; background: ${layoutColor}; color: ${btnTextColor}; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: default;">Acepto</button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="background: ${footerColor}; padding: 14px 20px; text-align: center; margin-top: 20px;">
+            <div style="font-size: 11px; color: ${footerTextColor};">Powered by Signaturit - Firma electronica con validez legal</div>
+        </div>
+    </div>`;
+
+    frame.innerHTML = previewHTML;
+}
+
+function isColorDark(hexColor) {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance < 0.5;
+}
+
+// ── Preview Tabs ──
+let currentPreviewTab = 'email';
+
+function switchPreviewTab(tab) {
+    currentPreviewTab = tab;
+    const emailContainer = document.getElementById('previewContainer');
+    const brandingContainer = document.getElementById('brandingPreviewContainer');
+    const tabEmail = document.getElementById('tabEmailPreview');
+    const tabBranding = document.getElementById('tabBrandingPreview');
+
+    if (tab === 'email') {
+        emailContainer.style.display = '';
+        brandingContainer.style.display = 'none';
+        tabEmail.classList.add('active');
+        tabBranding.classList.remove('active');
+        updatePreview();
+    } else {
+        emailContainer.style.display = 'none';
+        brandingContainer.style.display = '';
+        tabEmail.classList.remove('active');
+        tabBranding.classList.add('active');
+        updateBrandingPreview();
+    }
+}
+
+function refreshCurrentPreview() {
+    if (currentPreviewTab === 'email') {
+        updatePreview();
+    } else {
+        updateBrandingPreview();
+    }
+}
+
+// ═══════════════════════════════════
 //  MINIFICAR HTML
 // ═══════════════════════════════════
 
@@ -1443,6 +1809,24 @@ function initEditorListeners() {
     document.querySelectorAll('#viewEditor input:not([type="range"]):not([type="checkbox"]):not([type="file"]), #viewEditor textarea, #viewEditor select').forEach(element => {
         element.addEventListener('input', updatePreview);
     });
+
+    // Branding preview auto-update listeners
+    const brandingInputIds = ['brandingHeaderColor', 'brandingHeaderColorValue', 'brandingFooterColor', 'brandingFooterColorValue',
+        'brandingLayoutColor', 'brandingLayoutColorValue', 'brandingTextColor', 'brandingTextColorValue', 'brandingTermsText'];
+    brandingInputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => {
+                if (currentPreviewTab === 'branding') updateBrandingPreview();
+            });
+        }
+    });
+    const brandingShowWelcome = document.getElementById('brandingShowWelcome');
+    if (brandingShowWelcome) {
+        brandingShowWelcome.addEventListener('change', () => {
+            if (currentPreviewTab === 'branding') updateBrandingPreview();
+        });
+    }
 
     // Opacity sliders
     const opacitySliders = [

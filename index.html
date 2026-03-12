@@ -112,6 +112,24 @@
                                 </select>
                             </div>
 
+                            <div class="form-group">
+                                <label>Plantilla predefinida (idioma)</label>
+                                <div class="preset-template-row">
+                                    <select id="templateLanguage">
+                                        <option value="">-- Seleccionar idioma --</option>
+                                        <option value="es">Espanol</option>
+                                        <option value="en">English</option>
+                                        <option value="ca">Catala</option>
+                                    </select>
+                                    <button class="btn-api-action btn-preset-load" onclick="loadPresetTemplate()">
+                                        Cargar plantilla
+                                    </button>
+                                </div>
+                                <small style="color: #6c757d; display: block; margin-top: 5px;">
+                                    Carga un template predefinido por idioma. Luego puedes editarlo.
+                                </small>
+                            </div>
+
                             <div class="api-button-row">
                                 <button class="btn-api-action btn-api-load" onclick="loadTemplateFromAPI()">
                                     Cargar template
@@ -335,6 +353,78 @@
                     </div>
                 </div>
 
+                <!-- Seccion: Branding App Preview -->
+                <div class="collapsible-section">
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        <h2>Branding App (Vista de Firma)</h2>
+                        <span class="collapsible-icon">&#9660;</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="collapsible-inner">
+                            <div class="info-box" style="margin-bottom: 14px;">
+                                Previsualiza como se vera la <strong>aplicacion de firma</strong> de Signaturit con tu branding.
+                                Estos parametros corresponden al endpoint <strong>Create Branding</strong> de la API.
+                            </div>
+
+                            <div class="form-group">
+                                <label>Header Color (header_color)</label>
+                                <div class="color-input">
+                                    <input type="color" id="brandingHeaderColor" value="#3d3d3d">
+                                    <input type="text" class="color-value" id="brandingHeaderColorValue" value="#3d3d3d">
+                                </div>
+                                <small style="color: #6c757d;">Color de la barra superior de la app de firma</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Footer Color (footer_color)</label>
+                                <div class="color-input">
+                                    <input type="color" id="brandingFooterColor" value="#3d3d3d">
+                                    <input type="text" class="color-value" id="brandingFooterColorValue" value="#3d3d3d">
+                                </div>
+                                <small style="color: #6c757d;">Color del pie de pagina de la app de firma</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Layout Color / Botones (layout_color)</label>
+                                <div class="color-input">
+                                    <input type="color" id="brandingLayoutColor" value="#77d401">
+                                    <input type="text" class="color-value" id="brandingLayoutColorValue" value="#77d401">
+                                </div>
+                                <small style="color: #6c757d;">Color de los botones (Empezar, Rellenar, Acepto)</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Text Color (text_color)</label>
+                                <div class="color-input">
+                                    <input type="color" id="brandingTextColor" value="#333333">
+                                    <input type="text" class="color-value" id="brandingTextColorValue" value="#333333">
+                                </div>
+                                <small style="color: #6c757d;">Color del texto principal del documento</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Terminos y Condiciones (application_texts[terms_and_conditions])</label>
+                                <textarea id="brandingTermsText" rows="3" placeholder="Texto de terminos y condiciones personalizados..." style="min-height: 60px;"></textarea>
+                                <small style="color: #6c757d;">Aparecen debajo de los de Signaturit</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="brandingShowWelcome" checked style="width: auto; cursor: pointer;">
+                                    <span>Mostrar pantalla de bienvenida (show_welcome_page)</span>
+                                </label>
+                                <small style="color: #6c757d; display: block; margin-top: 4px;">
+                                    Si se desmarca, se oculta la pantalla "Como funciona?" (show_welcome_page=0)
+                                </small>
+                            </div>
+
+                            <button class="btn-branding-preview" onclick="updateBrandingPreview()">
+                                Actualizar Preview
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Botones de accion -->
                 <div class="button-group">
                     <button class="btn-primary" onclick="downloadHTML()">Descargar</button>
@@ -358,15 +448,21 @@
             <!-- ── Preview ── -->
             <div class="preview-section">
                 <div class="preview-toolbar">
-                    <span class="preview-toolbar-title">Vista previa</span>
+                    <div class="preview-tabs">
+                        <button class="preview-tab active" id="tabEmailPreview" onclick="switchPreviewTab('email')">Email Preview</button>
+                        <button class="preview-tab" id="tabBrandingPreview" onclick="switchPreviewTab('branding')">App Branding Preview</button>
+                    </div>
                     <div class="preview-toolbar-actions">
-                        <button class="toolbar-btn" onclick="updatePreview()">Refrescar</button>
+                        <button class="toolbar-btn" onclick="refreshCurrentPreview()">Refrescar</button>
                         <button class="toolbar-btn toolbar-btn-primary" onclick="copyToClipboard()">Copiar HTML</button>
                     </div>
                 </div>
 
                 <div class="preview" id="previewContainer">
                     <div class="preview-frame" id="previewFrame"></div>
+                </div>
+                <div class="preview" id="brandingPreviewContainer" style="display: none;">
+                    <div class="preview-frame branding-preview-frame" id="brandingPreviewFrame"></div>
                 </div>
             </div>
         </div>
@@ -439,6 +535,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=4"></script>
+    <script src="app.js?v=5"></script>
 </body>
 </html>
