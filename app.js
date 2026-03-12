@@ -529,7 +529,10 @@ function renderBrandingsPage() {
             '<div class="branding-card-templates">' + badgesHTML + '</div>' +
             '<div class="branding-card-footer">' +
                 '<span class="branding-card-meta">' + totalConfigured + '/' + ALL_TEMPLATE_TYPES.length + ' templates</span>' +
-                '<span class="branding-card-action">Editar &rarr;</span>' +
+                '<div class="branding-card-actions">' +
+                    '<span class="branding-card-action-btn rename" onclick="event.stopPropagation(); renameBranding(\'' + b.id + '\', \'' + escapeHTML(name).replace(/'/g, "\\'") + '\')">Renombrar</span>' +
+                    '<span class="branding-card-action">Editar &rarr;</span>' +
+                '</div>' +
             '</div>' +
         '</div>';
     });
@@ -569,6 +572,27 @@ function escapeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+async function renameBranding(brandingId, currentName) {
+    const newName = prompt('Nuevo nombre para el branding:', currentName);
+    if (!newName || newName.trim() === '' || newName.trim() === currentName) return;
+
+    const body = new URLSearchParams();
+    body.append('name', newName.trim());
+
+    try {
+        await apiCall('PATCH', '/brandings/' + brandingId + '.json', body);
+        showToast('Branding renombrado a "' + newName.trim() + '"');
+
+        // Actualizar en la lista local
+        const branding = apiBrandings.find(b => b.id === brandingId);
+        if (branding) branding.name = newName.trim();
+        renderBrandingsPage();
+    } catch (error) {
+        console.error('Error renaming branding:', error);
+        showToast('Error al renombrar: ' + error.message);
+    }
 }
 
 // ═══════════════════════════════════
