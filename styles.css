@@ -1236,6 +1236,81 @@ button {
     font-size: 13px;
 }
 
+/* ── Preset Template Row ── */
+.preset-template-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.preset-template-row select {
+    flex: 1;
+}
+
+.btn-preset-load {
+    background: #8b5cf6;
+    color: white;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-preset-load:hover:not(:disabled) {
+    background: #7c3aed;
+}
+
+/* ── Preview Tabs ── */
+.preview-tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.preview-tab {
+    padding: 7px 16px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: #9ca3af;
+    transition: all 0.15s;
+}
+
+.preview-tab:hover {
+    background: rgba(255,255,255,0.1);
+    color: #e5e7eb;
+}
+
+.preview-tab.active {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: white;
+}
+
+/* ── Branding Preview ── */
+.branding-preview-frame {
+    padding: 0;
+    overflow: hidden;
+}
+
+.btn-branding-preview {
+    width: 100%;
+    padding: 10px 16px;
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 4px;
+}
+
+.btn-branding-preview:hover {
+    background: #7c3aed;
+}
+
 /* ── Responsive ── */
 @media (max-width: 1200px) {
     .editor-container {
