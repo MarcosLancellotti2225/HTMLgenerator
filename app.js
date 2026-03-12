@@ -399,6 +399,9 @@ async function goToEditorExisting(brandingId) {
         if (fullBranding.layout_color) {
             setColorField('bgColor', fullBranding.layout_color);
         }
+
+        // Cargar parametros de branding app
+        loadBrandingAppParams(fullBranding);
     } catch (error) {
         console.error('Error loading branding templates:', error);
         showToast('Branding cargado (sin templates)');
@@ -526,7 +529,10 @@ function renderBrandingsPage() {
             '<div class="branding-card-templates">' + badgesHTML + '</div>' +
             '<div class="branding-card-footer">' +
                 '<span class="branding-card-meta">' + totalConfigured + '/' + ALL_TEMPLATE_TYPES.length + ' templates</span>' +
-                '<span class="branding-card-action">Editar &rarr;</span>' +
+                '<div class="branding-card-actions">' +
+                    '<span class="branding-card-action-btn rename" onclick="event.stopPropagation(); renameBranding(\'' + b.id + '\', \'' + escapeHTML(name).replace(/'/g, "\\'") + '\')">Renombrar</span>' +
+                    '<span class="branding-card-action">Editar &rarr;</span>' +
+                '</div>' +
             '</div>' +
         '</div>';
     });
@@ -566,6 +572,27 @@ function escapeHTML(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+async function renameBranding(brandingId, currentName) {
+    const newName = prompt('Nuevo nombre para el branding:', currentName);
+    if (!newName || newName.trim() === '' || newName.trim() === currentName) return;
+
+    const body = new URLSearchParams();
+    body.append('name', newName.trim());
+
+    try {
+        await apiCall('PATCH', '/brandings/' + brandingId + '.json', body);
+        showToast('Branding renombrado a "' + newName.trim() + '"');
+
+        // Actualizar en la lista local
+        const branding = apiBrandings.find(b => b.id === brandingId);
+        if (branding) branding.name = newName.trim();
+        renderBrandingsPage();
+    } catch (error) {
+        console.error('Error renaming branding:', error);
+        showToast('Error al renombrar: ' + error.message);
+    }
 }
 
 // ═══════════════════════════════════
@@ -617,6 +644,9 @@ async function loadTemplateFromAPI() {
         if (branding.layout_color) {
             setColorField('bgColor', branding.layout_color);
         }
+
+        // Cargar parametros de branding app
+        loadBrandingAppParams(branding);
 
     } catch (error) {
         console.error('Error loading template:', error);
@@ -696,10 +726,32 @@ function showConfirmPushModal(method, templateType, brandingName, brandingId) {
         '<span class="confirm-label">Template:</span> <span class="confirm-value">' + templateType + '</span>' +
         '</div>';
 
-    details += '<div>' +
+    details += '<div style="margin-bottom: 6px;">' +
         '<span class="confirm-label">Entorno:</span> <span style="font-weight:600;' +
         (env === 'production' ? 'color:#dc2626;"' : 'color:#2563eb;"') + '>' + envLabel + '</span>' +
         '</div>';
+
+    // Mostrar parametros de branding app que se enviaran
+    const appParams = collectBrandingAppParams();
+    details += '<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e5e7eb;">' +
+        '<span class="confirm-label" style="font-size: 12px;">Parametros de Branding App:</span>' +
+        '<div style="margin-top: 6px; font-size: 11px; font-family: monospace; color: #6b7280;">';
+
+    if (method === 'PATCH') {
+        const nameVal = document.getElementById('editorBrandingName').value.trim();
+        if (nameVal) {
+            details += '<div style="margin-bottom: 3px;"><span style="color: #374151;">name:</span> ' + escapeHTML(nameVal) + '</div>';
+        }
+    }
+
+    Object.keys(appParams).forEach(key => {
+        const displayKey = key.replace('application_texts[terms_and_conditions]', 'terms_and_conditions');
+        const val = appParams[key];
+        const colorPreview = val.startsWith('#') ? ' <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:' + val + ';vertical-align:middle;border:1px solid #ddd;"></span>' : '';
+        details += '<div style="margin-bottom: 3px;"><span style="color: #374151;">' + displayKey + ':</span> ' + escapeHTML(val) + colorPreview + '</div>';
+    });
+
+    details += '</div></div>';
 
     document.getElementById('confirmPushDetails').innerHTML = details;
 
@@ -727,6 +779,60 @@ async function executeConfirmedPush() {
     }
 }
 
+// Helper: cargar parametros de branding app desde un objeto branding de la API
+function loadBrandingAppParams(branding) {
+    if (branding.header_color) {
+        setColorField('brandingHeaderColor', branding.header_color);
+    }
+    if (branding.footer_color) {
+        setColorField('brandingFooterColor', branding.footer_color);
+    }
+    if (branding.layout_color) {
+        setColorField('brandingLayoutColor', branding.layout_color);
+    }
+    if (branding.text_color) {
+        setColorField('brandingTextColor', branding.text_color);
+    }
+    // application_texts puede ser un objeto con terms_and_conditions
+    if (branding.application_texts && branding.application_texts.terms_and_conditions) {
+        const termsEl = document.getElementById('brandingTermsText');
+        if (termsEl) termsEl.value = branding.application_texts.terms_and_conditions;
+    }
+    // show_welcome_page: 1 = true, 0 = false
+    if (branding.show_welcome_page !== undefined) {
+        const welcomeEl = document.getElementById('brandingShowWelcome');
+        if (welcomeEl) welcomeEl.checked = branding.show_welcome_page !== 0 && branding.show_welcome_page !== '0';
+    }
+}
+
+// Helper: recoger todos los parametros de branding app
+function collectBrandingAppParams() {
+    const params = {};
+    const headerColor = document.getElementById('brandingHeaderColor');
+    const footerColor = document.getElementById('brandingFooterColor');
+    const layoutColor = document.getElementById('brandingLayoutColor');
+    const textColor = document.getElementById('brandingTextColor');
+    const termsText = document.getElementById('brandingTermsText');
+    const showWelcome = document.getElementById('brandingShowWelcome');
+
+    if (headerColor) params.header_color = headerColor.value;
+    if (footerColor) params.footer_color = footerColor.value;
+    if (layoutColor) params.layout_color = layoutColor.value;
+    if (textColor) params.text_color = textColor.value;
+    if (termsText && termsText.value.trim()) params['application_texts[terms_and_conditions]'] = termsText.value.trim();
+    if (showWelcome) params.show_welcome_page = showWelcome.checked ? '1' : '0';
+
+    return params;
+}
+
+// Helper: agregar parametros de branding app al body
+function appendBrandingAppParams(body) {
+    const params = collectBrandingAppParams();
+    Object.keys(params).forEach(key => {
+        body.append(key, params[key]);
+    });
+}
+
 async function createNewBranding(templateType) {
     const name = document.getElementById('newBrandingName').value.trim();
     if (!name) {
@@ -743,8 +849,7 @@ async function createNewBranding(templateType) {
     const body = new URLSearchParams();
     body.append('name', name);
     body.append('templates[' + templateType + ']', html);
-    body.append('text_color', document.getElementById('textColor').value);
-    body.append('layout_color', document.getElementById('bgColor').value);
+    appendBrandingAppParams(body);
 
     try {
         const result = await apiCall('POST', '/brandings.json', body);
@@ -778,13 +883,17 @@ async function updateExistingBranding(brandingId, templateType) {
     }
 
     const body = new URLSearchParams();
+    // Enviar nombre actualizado
+    const brandingName = document.getElementById('editorBrandingName').value.trim();
+    if (brandingName) {
+        body.append('name', brandingName);
+    }
     body.append('templates[' + templateType + ']', html);
-    body.append('text_color', document.getElementById('textColor').value);
-    body.append('layout_color', document.getElementById('bgColor').value);
+    appendBrandingAppParams(body);
 
     try {
         await apiCall('PATCH', '/brandings/' + brandingId + '.json', body);
-        showToast('Template "' + templateType + '" actualizado en branding');
+        showToast('Branding actualizado correctamente');
 
         // Recargar la lista para reflejar cambios
         try {

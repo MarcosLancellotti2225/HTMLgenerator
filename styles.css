@@ -294,10 +294,37 @@ body {
     color: #9ca3af;
 }
 
+.branding-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .branding-card-action {
     font-size: 12px;
     font-weight: 500;
     color: #2563eb;
+}
+
+.branding-card-action-btn {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.branding-card-action-btn.rename {
+    color: #6b7280;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+}
+
+.branding-card-action-btn.rename:hover {
+    color: #374151;
+    background: #e5e7eb;
+    border-color: #d1d5db;
 }
 
 /* Pagination */
