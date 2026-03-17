@@ -246,6 +246,107 @@ const TEMPLATE_LANGUAGE_NAMES = {
     ca: 'Catala'
 };
 
+// ═══════════════════════════════════
+//  TEMPLATES HTML COMPLETOS (Signbook)
+// ═══════════════════════════════════
+
+const SIGNBOOK_BUTTON = function(magicWord) {
+    return '<table class="miboton" align="center" style="width:200px;background:#0056b3;">' +
+        '<tr><td style="padding:0cm 0cm 0cm 0cm;line-height:12px">' +
+        '<p style="text-align:center;">' +
+        '<span class="mititulo" style="font-size:12px;font-family:Arial;color:white;">' + magicWord + '</span>' +
+        '</p></td></tr></table>';
+};
+
+const SIGNBOOK_P = function(text, padded) {
+    var pad = padded ? ' padding:10px;' : '';
+    return '<p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:Helvetica Neue, Helvetica, Arial;' + pad + '">' + text + '</p>';
+};
+
+function buildSignbookHTML(bodyHTML) {
+    return '<!DOCTYPE html>' +
+        '<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">' +
+        '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<style>table, td, div, h1, p {font-family: Helvetica Neue, Helvetica, Arial;}</style></head>' +
+        '<body style="margin:0;padding:0;background-color: #f6f6f6;">' +
+        '<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;margin:30px 0px;">' +
+        '<tr><td align="center" style="padding:0;">' +
+        '<table role="presentation" style="width:800px;border-collapse:collapse;border:1px solid #cccccc;border-spacing:0;text-align:left;background:#ffffff">' +
+        '<tr><td align="center" style="padding:30px 0 20px 0;">' +
+        '<img width="300px" height="auto" style="width:300px;height:auto;display:block;" alt="Logo" src="https://static.tech-value.es/LogoSignbook.jpg">' +
+        '</td></tr>' +
+        '<tr><td style="padding:10px 25px 0px 25px;">' +
+        '<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;">' +
+        '<tr><td style="padding:0 0 25px 0;color:#153643;">' +
+        bodyHTML +
+        '</td></tr></table></td></tr></table></td></tr></table></body></html>';
+}
+
+const SIGNBOOK_HTML_TEMPLATES = {
+    es: {
+        sign_request: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para su firma:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('Para proceder con la revisión y firma de la documentación presione el siguiente botón:') +
+            SIGNBOOK_BUTTON('{{sign_button}}') +
+            SIGNBOOK_P('{{email_body}}')
+        ),
+        signatures_request: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para firmar:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('Para proceder con la revisión de la documentación presione el siguiente botón:') +
+            SIGNBOOK_BUTTON('{{sign_button}}') +
+            SIGNBOOK_P('{{email_body}}')
+        ),
+        signatures_receipt: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le adjuntamos una copia del documento que ha firmado electrónicamente.')
+        ),
+        request_expired: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le informamos que ha expirado el proceso de firma de la siguiente documentación:') +
+            SIGNBOOK_P('{{filename}}', true)
+        ),
+        pending_sign: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, nos gustaría recordarle que tiene una petición de firma pendiente para la siguiente documentación, que expirará el próximo {{remaining_time}}:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('Presione el siguiente botón para acceder a la documentación:') +
+            SIGNBOOK_BUTTON('{{sign_button}}')
+        ),
+        document_canceled: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le informamos que se ha cancelado el proceso de firma de la siguiente documentación:') +
+            SIGNBOOK_P('{{filename}}', true)
+        ),
+        emails_request: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('Para proceder con su revisión presione el siguiente botón:') +
+            SIGNBOOK_BUTTON('{{email_button}}') +
+            SIGNBOOK_P('{{email_body}}')
+        ),
+        validation_request: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para su validación:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('Para proceder con la validación de la documentación presione el siguiente botón:') +
+            SIGNBOOK_BUTTON('{{validate_button}}') +
+            SIGNBOOK_P('{{email_body}}')
+        ),
+        signed_document: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le informamos que se ha completado la firma de la siguiente documentación:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('Se adjunta una copia del documento firmado para su registro.')
+        ),
+        document_declined: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le informamos que se ha rechazado la firma de la siguiente documentación:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('{{decline_reason}}')
+        ),
+        request_expired_requester: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le informamos que ha expirado la solicitud de firma que envió para la siguiente documentación:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('Si lo desea, puede volver a enviar una nueva solicitud de firma desde su cuenta.')
+        )
+    }
+};
+
 // ── Estado global ──
 let apiBrandings = [];
 let selectedBrandingId = null;
@@ -1207,6 +1308,12 @@ function generateHTML() {
             if (line.includes('{{sign_button}}')) {
                 return line.replace('{{sign_button}}', buttonHTML);
             }
+            if (line.includes('{{email_button}}')) {
+                return line.replace('{{email_button}}', buttonHTML.replace('{{sign_button}}', '{{email_button}}'));
+            }
+            if (line.includes('{{validate_button}}')) {
+                return line.replace('{{validate_button}}', buttonHTML.replace('{{sign_button}}', '{{validate_button}}'));
+            }
             return `\t\t\t\t\t\t\t\t\t\t<p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:'Helvetica Neue', Helvetica, Arial;">\n\t\t\t\t\t\t\t\t\t\t${line}</p>`;
         })
         .join('\n');
@@ -1508,7 +1615,10 @@ function parseHTMLTemplate(htmlString) {
             );
 
             let node;
+            let skipElement = null;
             while (node = walker.nextNode()) {
+                if (skipElement && skipElement.contains(node)) continue;
+                skipElement = null;
                 if (node.nodeType === Node.TEXT_NODE) {
                     const text = node.textContent.trim();
                     if (text) {
@@ -1517,7 +1627,15 @@ function parseHTMLTemplate(htmlString) {
                 } else if (node.nodeName === 'BR') {
                     content += '\n';
                 } else if (node.classList && node.classList.contains('miboton')) {
-                    content += '{{sign_button}}\n';
+                    var btnText = node.textContent.trim();
+                    if (btnText.includes('{{email_button}}')) {
+                        content += '{{email_button}}\n';
+                    } else if (btnText.includes('{{validate_button}}')) {
+                        content += '{{validate_button}}\n';
+                    } else {
+                        content += '{{sign_button}}\n';
+                    }
+                    skipElement = node;
                 }
             }
             return content;
@@ -1585,6 +1703,15 @@ function loadPresetTemplate() {
         return;
     }
 
+    // Intentar cargar HTML completo precargado (Signbook)
+    const htmlTemplates = SIGNBOOK_HTML_TEMPLATES[lang];
+    if (htmlTemplates && htmlTemplates[templateType]) {
+        parseHTMLTemplate(htmlTemplates[templateType]);
+        showToast('Template HTML "' + templateType + '" (' + TEMPLATE_LANGUAGE_NAMES[lang] + ') cargado');
+        return;
+    }
+
+    // Fallback: cargar solo texto
     const templates = EMAIL_TEMPLATES[lang];
     if (!templates || !templates[templateType]) {
         showToast('No hay template predefinido para este tipo e idioma');
