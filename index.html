@@ -418,6 +418,64 @@
                                 </small>
                             </div>
 
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="brandingShowCsv" checked style="width: auto; cursor: pointer;">
+                                    <span>Mostrar sello CSV en documento firmado (show_csv)</span>
+                                </label>
+                                <small style="color: #6c757d; display: block; margin-top: 4px;">
+                                    Muestra la imagen y texto CSV estampado en el archivo firmado
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="brandingShowBiometricHash" checked style="width: auto; cursor: pointer;">
+                                    <span>Mostrar Hash Biometrico (show_biometric_hash)</span>
+                                </label>
+                                <small style="color: #6c757d; display: block; margin-top: 4px;">
+                                    Muestra el hash biometrico en el documento firmado y audit trail
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Color de firma (signature_color)</label>
+                                <select id="brandingSignatureColor" style="padding: 6px 10px;">
+                                    <option value="">Por defecto</option>
+                                    <option value="black">Negro</option>
+                                    <option value="blue">Azul</option>
+                                </select>
+                                <small style="color: #6c757d;">Color del trazo de la firma (solo negro o azul)</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Posicion del CSV (csv_position)</label>
+                                <select id="brandingCsvPosition" style="padding: 6px 10px;">
+                                    <option value="">Por defecto</option>
+                                    <option value="right">Derecha</option>
+                                    <option value="left">Izquierda</option>
+                                </select>
+                                <small style="color: #6c757d;">Posicion del sello CSV en el documento firmado</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Texto boton email firma (application_texts[open_sign_button])</label>
+                                <input type="text" id="brandingOpenSignButton" placeholder='Ej: "VER DOCUMENTO", "View Document"...'>
+                                <small style="color: #6c757d;">Texto personalizado del boton en el email de firma</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Texto boton email certificado (application_texts[open_email_button])</label>
+                                <input type="text" id="brandingOpenEmailButton" placeholder='Ej: "VER EMAIL", "View Email"...'>
+                                <small style="color: #6c757d;">Texto personalizado del boton en el email certificado</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Texto boton enviar (application_texts[send_button])</label>
+                                <input type="text" id="brandingSendButton" placeholder='Ej: "ENVIAR", "Send"...'>
+                                <small style="color: #6c757d;">Texto personalizado del boton de envio</small>
+                            </div>
+
                             <button class="btn-branding-preview" onclick="updateBrandingPreview()">
                                 Actualizar Preview
                             </button>
