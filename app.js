@@ -894,15 +894,49 @@ function loadBrandingAppParams(branding) {
     if (branding.text_color) {
         setColorField('brandingTextColor', branding.text_color);
     }
-    // application_texts puede ser un objeto con terms_and_conditions
-    if (branding.application_texts && branding.application_texts.terms_and_conditions) {
-        const termsEl = document.getElementById('brandingTermsText');
-        if (termsEl) termsEl.value = branding.application_texts.terms_and_conditions;
+    // application_texts puede ser un objeto con varios campos
+    if (branding.application_texts) {
+        if (branding.application_texts.terms_and_conditions) {
+            const termsEl = document.getElementById('brandingTermsText');
+            if (termsEl) termsEl.value = branding.application_texts.terms_and_conditions;
+        }
+        if (branding.application_texts.open_sign_button) {
+            const el = document.getElementById('brandingOpenSignButton');
+            if (el) el.value = branding.application_texts.open_sign_button;
+        }
+        if (branding.application_texts.open_email_button) {
+            const el = document.getElementById('brandingOpenEmailButton');
+            if (el) el.value = branding.application_texts.open_email_button;
+        }
+        if (branding.application_texts.send_button) {
+            const el = document.getElementById('brandingSendButton');
+            if (el) el.value = branding.application_texts.send_button;
+        }
     }
     // show_welcome_page: 1 = true, 0 = false
     if (branding.show_welcome_page !== undefined) {
         const welcomeEl = document.getElementById('brandingShowWelcome');
         if (welcomeEl) welcomeEl.checked = branding.show_welcome_page !== 0 && branding.show_welcome_page !== '0';
+    }
+    // show_csv: 1 = true, 0 = false
+    if (branding.show_csv !== undefined) {
+        const csvEl = document.getElementById('brandingShowCsv');
+        if (csvEl) csvEl.checked = branding.show_csv !== 0 && branding.show_csv !== '0';
+    }
+    // show_biometric_hash: 1 = true, 0 = false
+    if (branding.show_biometric_hash !== undefined) {
+        const hashEl = document.getElementById('brandingShowBiometricHash');
+        if (hashEl) hashEl.checked = branding.show_biometric_hash !== 0 && branding.show_biometric_hash !== '0';
+    }
+    // signature_color
+    if (branding.signature_color) {
+        const sigColorEl = document.getElementById('brandingSignatureColor');
+        if (sigColorEl) sigColorEl.value = branding.signature_color;
+    }
+    // csv_position
+    if (branding.csv_position) {
+        const csvPosEl = document.getElementById('brandingCsvPosition');
+        if (csvPosEl) csvPosEl.value = branding.csv_position;
     }
 }
 
@@ -916,12 +950,27 @@ function collectBrandingAppParams() {
     const termsText = document.getElementById('brandingTermsText');
     const showWelcome = document.getElementById('brandingShowWelcome');
 
+    const showCsv = document.getElementById('brandingShowCsv');
+    const showBiometricHash = document.getElementById('brandingShowBiometricHash');
+    const signatureColor = document.getElementById('brandingSignatureColor');
+    const csvPosition = document.getElementById('brandingCsvPosition');
+    const openSignButton = document.getElementById('brandingOpenSignButton');
+    const openEmailButton = document.getElementById('brandingOpenEmailButton');
+    const sendButton = document.getElementById('brandingSendButton');
+
     if (headerColor) params.header_color = headerColor.value;
     if (footerColor) params.footer_color = footerColor.value;
     if (layoutColor) params.layout_color = layoutColor.value;
     if (textColor) params.text_color = textColor.value;
     if (termsText && termsText.value.trim()) params['application_texts[terms_and_conditions]'] = termsText.value.trim();
+    if (openSignButton && openSignButton.value.trim()) params['application_texts[open_sign_button]'] = openSignButton.value.trim();
+    if (openEmailButton && openEmailButton.value.trim()) params['application_texts[open_email_button]'] = openEmailButton.value.trim();
+    if (sendButton && sendButton.value.trim()) params['application_texts[send_button]'] = sendButton.value.trim();
     if (showWelcome) params.show_welcome_page = showWelcome.checked ? '1' : '0';
+    if (showCsv) params.show_csv = showCsv.checked ? '1' : '0';
+    if (showBiometricHash) params.show_biometric_hash = showBiometricHash.checked ? '1' : '0';
+    if (signatureColor && signatureColor.value) params.signature_color = signatureColor.value;
+    if (csvPosition && csvPosition.value) params.csv_position = csvPosition.value;
 
     return params;
 }
