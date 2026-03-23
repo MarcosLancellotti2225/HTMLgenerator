@@ -77,11 +77,19 @@ const defaults = {
     textFontWeight: 'normal',
     footerEnabled: 'no',
     footerContent: '',
+    footerImageUrl: '',
+    footerImageWidth: '150px',
+    footerImageHeight: 'auto',
     footerBgColor: '#3d3d3d',
     footerTextColor: '#ffffff',
     footerFontSize: '12',
     footerLineHeight: '18',
     footerTextAlign: 'center',
+    footerBorderColor: '#cccccc',
+    footerBorderTop: '0',
+    footerBorderRight: '0',
+    footerBorderBottom: '0',
+    footerBorderLeft: '0',
     footerPaddingTop: '15',
     footerPaddingRight: '25',
     footerPaddingBottom: '15',
@@ -1339,7 +1347,8 @@ function syncColorInputs() {
         ['brandingLayoutColor', 'brandingLayoutColorValue'],
         ['brandingTextColor', 'brandingTextColorValue'],
         ['footerBgColor', 'footerBgColorValue'],
-        ['footerTextColor', 'footerTextColorValue']
+        ['footerTextColor', 'footerTextColorValue'],
+        ['footerBorderColor', 'footerBorderColorValue']
     ];
 
     colorPairs.forEach(([pickerId, valueId]) => {
@@ -1450,17 +1459,36 @@ function generateHTML() {
     let footerSection = '';
     if (footerEnabled === 'yes') {
         const footerContent = document.getElementById('footerContent').value || '';
+        const footerImageUrl = document.getElementById('footerImageUrl').value || '';
+        const footerImageWidth = document.getElementById('footerImageWidth').value || defaults.footerImageWidth;
+        const footerImageHeight = document.getElementById('footerImageHeight').value || defaults.footerImageHeight;
         const footerBgColor = document.getElementById('footerBgColor').value || defaults.footerBgColor;
         const footerTextColor = document.getElementById('footerTextColor').value || defaults.footerTextColor;
         const footerFontSize = document.getElementById('footerFontSize').value || defaults.footerFontSize;
         const footerLineHeight = document.getElementById('footerLineHeight').value || defaults.footerLineHeight;
         const footerTextAlign = document.getElementById('footerTextAlign').value || defaults.footerTextAlign;
+        const footerBorderColor = document.getElementById('footerBorderColor').value || defaults.footerBorderColor;
+        const fBorderTop = document.getElementById('footerBorderTop').value || '0';
+        const fBorderRight = document.getElementById('footerBorderRight').value || '0';
+        const fBorderBottom = document.getElementById('footerBorderBottom').value || '0';
+        const fBorderLeft = document.getElementById('footerBorderLeft').value || '0';
         const footerPaddingTop = document.getElementById('footerPaddingTop').value || defaults.footerPaddingTop;
         const footerPaddingRight = document.getElementById('footerPaddingRight').value || defaults.footerPaddingRight;
         const footerPaddingBottom = document.getElementById('footerPaddingBottom').value || defaults.footerPaddingBottom;
         const footerPaddingLeft = document.getElementById('footerPaddingLeft').value || defaults.footerPaddingLeft;
         const footerPadding = `${footerPaddingTop}px ${footerPaddingRight}px ${footerPaddingBottom}px ${footerPaddingLeft}px`;
+
+        let footerBorderStyle = '';
+        if (fBorderTop !== '0') footerBorderStyle += `border-top:${fBorderTop}px solid ${footerBorderColor};`;
+        if (fBorderRight !== '0') footerBorderStyle += `border-right:${fBorderRight}px solid ${footerBorderColor};`;
+        if (fBorderBottom !== '0') footerBorderStyle += `border-bottom:${fBorderBottom}px solid ${footerBorderColor};`;
+        if (fBorderLeft !== '0') footerBorderStyle += `border-left:${fBorderLeft}px solid ${footerBorderColor};`;
+
         const footerTextStyle = `margin:0;font-size:${footerFontSize}px;line-height:${footerLineHeight}px;text-align:${footerTextAlign};font-family:'Helvetica Neue', Helvetica, Arial;color:${footerTextColor};`;
+
+        const footerImageHTML = footerImageUrl
+            ? `<img src="${footerImageUrl}" alt="Footer" style="width:${footerImageWidth};height:${footerImageHeight};display:block;margin:0 auto 8px auto;">\n`
+            : '';
 
         const footerParagraphs = footerContent
             .split('\n')
@@ -1474,10 +1502,10 @@ function generateHTML() {
             })
             .join('\n');
 
-        if (footerParagraphs) {
+        if (footerImageUrl || footerParagraphs) {
             footerSection = `\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};">
-${footerParagraphs}
+\t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};${footerBorderStyle}">
+${footerImageHTML}${footerParagraphs}
 \t\t\t\t\t\t</td>
 \t\t\t\t\t</tr>`;
         }
@@ -2202,6 +2230,20 @@ function switchPreviewTab(tab) {
         tabBranding.classList.add('active');
         updateBrandingPreview();
     }
+
+    // Show/hide editor sections based on active tab
+    updateEditorSectionsVisibility(tab);
+}
+
+function updateEditorSectionsVisibility(tab) {
+    document.querySelectorAll('[data-preview-tab]').forEach(el => {
+        const sectionTab = el.getAttribute('data-preview-tab');
+        if (sectionTab === tab) {
+            el.style.display = '';
+        } else {
+            el.style.display = 'none';
+        }
+    });
 }
 
 function refreshCurrentPreview() {
@@ -2440,6 +2482,7 @@ function initEditorListeners() {
     }
 
     updatePreview();
+    updateEditorSectionsVisibility(currentPreviewTab);
 }
 
 function initApp() {
