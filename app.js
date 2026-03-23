@@ -70,6 +70,9 @@ const defaults = {
     buttonMarginBottom: '10',
     buttonMarginLeft: '0',
     buttonWidth: '200',
+    buttonFontSize: '18',
+    buttonLineHeight: '22',
+    buttonFontWeight: 'normal',
     textFontSize: '16',
     textLineHeight: '24',
     textLetterSpacing: '0',
@@ -1398,6 +1401,9 @@ function generateHTML() {
     const buttonMarginBottom = document.getElementById('buttonMarginBottom').value || '10';
     const buttonMarginLeft = document.getElementById('buttonMarginLeft').value || '0';
     const buttonWidth = document.getElementById('buttonWidth').value || '200';
+    const buttonFontSize = document.getElementById('buttonFontSize').value || defaults.buttonFontSize;
+    const buttonLineHeight = document.getElementById('buttonLineHeight').value || defaults.buttonLineHeight;
+    const buttonFontWeight = document.getElementById('buttonFontWeight').value || defaults.buttonFontWeight;
 
     const logoObjectFitStyle = logoObjectFit !== 'none' ? `object-fit:${logoObjectFit};` : '';
     const logoStyles = `width:${logoWidth};height:${logoHeight};${logoObjectFitStyle}display:block;`;
@@ -1411,11 +1417,12 @@ function generateHTML() {
     const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
     const buttonPaddingStyle = `padding:${buttonPaddingTop}px ${buttonPaddingRight}px ${buttonPaddingBottom}px ${buttonPaddingLeft}px;`;
     const buttonMarginStyle = `margin:${buttonMarginTop}px ${buttonMarginRight}px ${buttonMarginBottom}px ${buttonMarginLeft}px;`;
+    const buttonFontWeightStyle = buttonFontWeight !== 'normal' ? `font-weight:${buttonFontWeight};` : '';
     const buttonHTML = `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:12px'>
+\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px'>
 \t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:18px;font-family:"Arial";color:${buttonTextColor};text-transform:none !important;'>{{sign_button}}</span>
+\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}text-transform:none !important;'>{{sign_button}}</span>
 \t\t\t\t\t\t\t\t\t\t\t\t\t</p>
 \t\t\t\t\t\t\t\t\t\t\t\t</td>
 \t\t\t\t\t\t\t\t\t\t\t</tr>

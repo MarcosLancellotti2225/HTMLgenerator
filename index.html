@@ -591,6 +591,30 @@
                                 <label>Ancho del Boton (px)</label>
                                 <input type="number" id="buttonWidth" value="200" min="100" max="400">
                             </div>
+
+                            <div class="form-group">
+                                <label>Formato del Texto del Boton</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <small style="color: #6c757d;">Tamaño (px)</small>
+                                        <input type="number" id="buttonFontSize" value="18" min="8" max="40" style="width: 100%;">
+                                    </div>
+                                    <div>
+                                        <small style="color: #6c757d;">Interlineado (px)</small>
+                                        <input type="number" id="buttonLineHeight" value="22" min="8" max="60" style="width: 100%;">
+                                    </div>
+                                    <div>
+                                        <small style="color: #6c757d;">Grosor de fuente</small>
+                                        <select id="buttonFontWeight" style="width: 100%;">
+                                            <option value="normal">Normal (400)</option>
+                                            <option value="500">Medium (500)</option>
+                                            <option value="600">Semi-Bold (600)</option>
+                                            <option value="bold">Bold (700)</option>
+                                            <option value="800">Extra-Bold (800)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
