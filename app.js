@@ -259,7 +259,7 @@ const SIGNBOOK_BUTTON = function(magicWord) {
     return '<table class="miboton" align="center" style="width:200px;background:#0056b3;">' +
         '<tr><td style="padding:0cm 0cm 0cm 0cm;line-height:12px">' +
         '<p style="text-align:center;">' +
-        '<span class="mititulo" style="font-size:12px;font-family:Arial;color:white;">' + magicWord + '</span>' +
+        '<span class="mititulo" style="font-size:12px;font-family:Arial;color:white;text-transform:none !important;">' + magicWord + '</span>' +
         '</p></td></tr></table>';
 };
 
@@ -1392,7 +1392,7 @@ function generateHTML() {
 \t\t\t\t\t\t\t\t\t\t\t<tr>
 \t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:12px'>
 \t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:18px;font-family:"Arial";color:${buttonTextColor};'>{{sign_button}}</span>
+\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:18px;font-family:"Arial";color:${buttonTextColor};text-transform:none !important;'>{{sign_button}}</span>
 \t\t\t\t\t\t\t\t\t\t\t\t\t</p>
 \t\t\t\t\t\t\t\t\t\t\t\t</td>
 \t\t\t\t\t\t\t\t\t\t\t</tr>
