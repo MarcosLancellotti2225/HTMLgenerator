@@ -1335,13 +1335,11 @@ function syncColorInputs() {
 
         picker.addEventListener('input', (e) => {
             value.value = e.target.value;
-            updatePreview();
         });
 
         value.addEventListener('input', (e) => {
             if (/^#[0-9A-F]{6}$/i.test(e.target.value)) {
                 picker.value = e.target.value;
-                updatePreview();
             }
         });
     });
@@ -1869,6 +1867,12 @@ function updateBrandingPreview() {
     const termsText = document.getElementById('brandingTermsText').value || '';
     const showWelcome = document.getElementById('brandingShowWelcome').checked;
 
+    // Formato de texto (compartido con el email)
+    const textFontSize = document.getElementById('textFontSize').value || '16';
+    const textLineHeight = document.getElementById('textLineHeight').value || '24';
+    const textAlign = document.getElementById('textAlign').value || 'left';
+    const textFontWeight = document.getElementById('textFontWeight').value || 'normal';
+
     // Textos personalizados de botones
     const signButtonText = document.getElementById('brandingSignButton').value.trim() || 'Firmar';
     const sendButtonText = document.getElementById('brandingSendButton').value.trim() || 'Acepto';
@@ -1953,9 +1957,9 @@ function updateBrandingPreview() {
                     ${logoUrl ? '<img src="' + escapeHTML(logoUrl) + '" alt="Logo" style="max-height: 60px; max-width: 250px; object-fit: contain;">' : '<div style="font-family: \'Brush Script MT\', cursive; font-size: 32px; color: #333;">Signaturit</div><div style="font-size: 11px; color: #999; margin-top: -4px; text-align: center;">Sign anywhere, anytime</div>'}
                 </div>
 
-                <h3 style="text-align: center; font-size: 16px; color: ${appTextColor}; margin: 20px 0 16px;">Sample document template</h3>
+                <h3 style="text-align: ${textAlign}; font-size: ${parseInt(textFontSize) + 2}px; color: ${appTextColor}; margin: 20px 0 16px; font-weight: bold;">Sample document template</h3>
 
-                <p style="font-size: 13px; color: #666; font-style: italic; line-height: 1.5; text-align: center; margin-bottom: 20px;">
+                <p style="font-size: ${textFontSize}px; color: ${appTextColor}; line-height: ${textLineHeight}px; text-align: ${textAlign}; margin-bottom: 20px; font-weight: ${textFontWeight};">
                     This is an example of a document created with Signaturit, the fastest way to get documents signed with legal validity.
                 </p>
 
@@ -1985,10 +1989,10 @@ function updateBrandingPreview() {
             <div style="background: ${headerColor}; padding: 14px 20px; text-align: center;">
                 ${logoUrl ? '<img src="' + escapeHTML(logoUrl) + '" alt="Logo" style="max-height: 40px; max-width: 180px; object-fit: contain;">' : '<div style="font-family: \'Brush Script MT\', cursive; font-size: 24px; color: ' + headerTextColor + ';">Signaturit</div>'}
             </div>
-            <div style="padding: 24px 20px; text-align: center;">
+            <div style="padding: 24px 20px; text-align: ${textAlign};">
                 <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Preview Email de Firma</div>
-                <p style="font-size: 13px; color: #555; line-height: 1.5; margin: 0 0 8px;">Estimado/a <em>Nombre Firmante</em>,</p>
-                <p style="font-size: 13px; color: #555; line-height: 1.5; margin: 0 0 16px;">Tiene documentacion pendiente de firma.</p>
+                <p style="font-size: ${textFontSize}px; color: ${appTextColor}; line-height: ${textLineHeight}px; margin: 0 0 8px; font-weight: ${textFontWeight};">Estimado/a <em>Nombre Firmante</em>,</p>
+                <p style="font-size: ${textFontSize}px; color: ${appTextColor}; line-height: ${textLineHeight}px; margin: 0 0 16px; font-weight: ${textFontWeight};">Tiene documentacion pendiente de firma.</p>
                 <a style="display: inline-block; padding: 12px 32px; background: ${layoutColor}; color: ${btnTextColor}; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: default;">${escapeHTML(openSignButtonText)}</a>
             </div>
             <div style="background: ${footerColor}; padding: 10px 20px; text-align: center;">
@@ -2001,9 +2005,9 @@ function updateBrandingPreview() {
             <div style="background: ${headerColor}; padding: 14px 20px; text-align: center;">
                 ${logoUrl ? '<img src="' + escapeHTML(logoUrl) + '" alt="Logo" style="max-height: 40px; max-width: 180px; object-fit: contain;">' : '<div style="font-family: \'Brush Script MT\', cursive; font-size: 24px; color: ' + headerTextColor + ';">Signaturit</div>'}
             </div>
-            <div style="padding: 24px 20px; text-align: center;">
+            <div style="padding: 24px 20px; text-align: ${textAlign};">
                 <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Preview Email Certificado</div>
-                <p style="font-size: 13px; color: #555; line-height: 1.5; margin: 0 0 16px;">Tiene un nuevo email certificado pendiente.</p>
+                <p style="font-size: ${textFontSize}px; color: ${appTextColor}; line-height: ${textLineHeight}px; margin: 0 0 16px; font-weight: ${textFontWeight};">Tiene un nuevo email certificado pendiente.</p>
                 <a style="display: inline-block; padding: 12px 32px; background: ${layoutColor}; color: ${btnTextColor}; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: default;">${escapeHTML(openEmailButtonText)}</a>
             </div>
             <div style="background: ${footerColor}; padding: 10px 20px; text-align: center;">
@@ -2305,33 +2309,23 @@ function initEditorListeners() {
     }
     editorListenersAttached = true;
 
-    // Event listeners para todos los inputs del editor
+    // Event listeners para todos los inputs del editor - actualizan ambas previews
+    function updateActivePreview() {
+        if (currentPreviewTab === 'email') {
+            updatePreview();
+        } else {
+            updateBrandingPreview();
+        }
+    }
+
     document.querySelectorAll('#viewEditor input:not([type="range"]):not([type="checkbox"]):not([type="file"]), #viewEditor textarea, #viewEditor select').forEach(element => {
-        element.addEventListener('input', updatePreview);
+        element.addEventListener('input', updateActivePreview);
     });
 
-    // Branding preview auto-update listeners
-    const brandingInputIds = ['brandingHeaderColor', 'brandingHeaderColorValue', 'brandingFooterColor', 'brandingFooterColorValue',
-        'brandingLayoutColor', 'brandingLayoutColorValue', 'brandingTextColor', 'brandingTextColorValue', 'brandingTermsText',
-        'brandingSignButton', 'brandingOpenSignButton', 'brandingOpenEmailButton', 'brandingSendButton',
-        'brandingMultiPage', 'brandingPhotoText', 'brandingVoiceText'];
-    brandingInputIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('input', () => {
-                if (currentPreviewTab === 'branding') updateBrandingPreview();
-                // Los textos de botones tambien afectan la preview del email
-                if (id === 'brandingOpenSignButton' || id === 'brandingOpenEmailButton') {
-                    updatePreview();
-                }
-            });
-        }
-    });
+    // Checkboxes de la app
     const brandingShowWelcome = document.getElementById('brandingShowWelcome');
     if (brandingShowWelcome) {
-        brandingShowWelcome.addEventListener('change', () => {
-            if (currentPreviewTab === 'branding') updateBrandingPreview();
-        });
+        brandingShowWelcome.addEventListener('change', updateActivePreview);
     }
 
     // Opacity sliders
@@ -2349,7 +2343,7 @@ function initEditorListeners() {
             slider.addEventListener('input', function() {
                 const percentage = Math.round(this.value * 100);
                 valueSpan.textContent = percentage + '%';
-                updatePreview();
+                updateActivePreview();
             });
         }
     });
@@ -2359,7 +2353,6 @@ function initEditorListeners() {
     if (termsTextarea) {
         termsTextarea.addEventListener('input', () => {
             updateTermsPreview();
-            if (currentPreviewTab === 'branding') updateBrandingPreview();
         });
     }
 
