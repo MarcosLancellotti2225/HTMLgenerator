@@ -254,6 +254,101 @@
                     </div>
                 </div>
 
+                <!-- Sección: Footer del Email -->
+                <div class="collapsible-section">
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        <h2>Footer del Email</h2>
+                        <span class="collapsible-icon">&#9660;</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="collapsible-inner">
+                            <div class="info-box" style="margin-bottom: 12px;">
+                                Configura el pie de pagina que aparece debajo del contenido del email. Dejalo vacio para no mostrar footer.
+                            </div>
+
+                            <div class="form-group">
+                                <label>Activar Footer</label>
+                                <select id="footerEnabled">
+                                    <option value="no">No</option>
+                                    <option value="yes">Si</option>
+                                </select>
+                            </div>
+
+                            <div id="footerOptions" style="display:none;">
+                                <div class="form-group">
+                                    <label>Texto del Footer</label>
+                                    <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                        <button type="button" onclick="wrapFooterSelection('**', '**')" title="Negrita" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;">B</button>
+                                        <button type="button" onclick="wrapFooterSelection('*', '*')" title="Cursiva" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-style: italic; font-size: 13px;">I</button>
+                                        <button type="button" onclick="wrapFooterSelection('__', '__')" title="Subrayado" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; text-decoration: underline; font-size: 13px;">U</button>
+                                    </div>
+                                    <textarea id="footerContent" style="min-height: 80px;" placeholder="Ej: Powered by REVEL | www.revel.com"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color de Fondo del Footer</label>
+                                    <div class="color-input">
+                                        <input type="color" id="footerBgColor" value="#3d3d3d">
+                                        <input type="text" class="color-value" id="footerBgColorValue" value="#3d3d3d">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color del Texto del Footer</label>
+                                    <div class="color-input">
+                                        <input type="color" id="footerTextColor" value="#ffffff">
+                                        <input type="text" class="color-value" id="footerTextColorValue" value="#ffffff">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Formato del Texto del Footer</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                        <div>
+                                            <small style="color: #6c757d;">Tamaño (px)</small>
+                                            <input type="number" id="footerFontSize" value="12" min="8" max="24" style="width: 100%;">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Interlineado (px)</small>
+                                            <input type="number" id="footerLineHeight" value="18" min="10" max="40" style="width: 100%;">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Alineacion</small>
+                                            <select id="footerTextAlign" style="width: 100%;">
+                                                <option value="center">Centro</option>
+                                                <option value="left">Izquierda</option>
+                                                <option value="right">Derecha</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Padding del Footer</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
+                                        <div>
+                                            <small style="color: #6c757d;">Arriba</small>
+                                            <input type="number" id="footerPaddingTop" value="15" min="0" max="60" style="width: 100%;">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Derecha</small>
+                                            <input type="number" id="footerPaddingRight" value="25" min="0" max="60" style="width: 100%;">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Abajo</small>
+                                            <input type="number" id="footerPaddingBottom" value="15" min="0" max="60" style="width: 100%;">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Izquierda</small>
+                                            <input type="number" id="footerPaddingLeft" value="25" min="0" max="60" style="width: 100%;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Sección: Colores Generales -->
                 <div class="collapsible-section">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">

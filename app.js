@@ -74,7 +74,18 @@ const defaults = {
     textLineHeight: '24',
     textLetterSpacing: '0',
     textAlign: 'left',
-    textFontWeight: 'normal'
+    textFontWeight: 'normal',
+    footerEnabled: 'no',
+    footerContent: '',
+    footerBgColor: '#3d3d3d',
+    footerTextColor: '#ffffff',
+    footerFontSize: '12',
+    footerLineHeight: '18',
+    footerTextAlign: 'center',
+    footerPaddingTop: '15',
+    footerPaddingRight: '25',
+    footerPaddingBottom: '15',
+    footerPaddingLeft: '25'
 };
 
 // Todos los tipos de template posibles
@@ -259,7 +270,7 @@ const SIGNBOOK_BUTTON = function(magicWord) {
     return '<table class="miboton" align="center" style="width:200px;background:#0056b3;">' +
         '<tr><td style="padding:0cm 0cm 0cm 0cm;line-height:12px">' +
         '<p style="text-align:center;">' +
-        '<span class="mititulo" style="font-size:12px;font-family:Arial;color:white;">' + magicWord + '</span>' +
+        '<span class="mititulo" style="font-size:12px;font-family:Arial;color:white;text-transform:none !important;">' + magicWord + '</span>' +
         '</p></td></tr></table>';
 };
 
@@ -1326,7 +1337,9 @@ function syncColorInputs() {
         ['brandingHeaderColor', 'brandingHeaderColorValue'],
         ['brandingFooterColor', 'brandingFooterColorValue'],
         ['brandingLayoutColor', 'brandingLayoutColorValue'],
-        ['brandingTextColor', 'brandingTextColorValue']
+        ['brandingTextColor', 'brandingTextColorValue'],
+        ['footerBgColor', 'footerBgColorValue'],
+        ['footerTextColor', 'footerTextColorValue']
     ];
 
     colorPairs.forEach(([pickerId, valueId]) => {
@@ -1392,7 +1405,7 @@ function generateHTML() {
 \t\t\t\t\t\t\t\t\t\t\t<tr>
 \t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:12px'>
 \t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:18px;font-family:"Arial";color:${buttonTextColor};'>{{sign_button}}</span>
+\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:18px;font-family:"Arial";color:${buttonTextColor};text-transform:none !important;'>{{sign_button}}</span>
 \t\t\t\t\t\t\t\t\t\t\t\t\t</p>
 \t\t\t\t\t\t\t\t\t\t\t\t</td>
 \t\t\t\t\t\t\t\t\t\t\t</tr>
@@ -1432,6 +1445,44 @@ function generateHTML() {
         })
         .join('\n');
 
+    // Footer del email
+    const footerEnabled = document.getElementById('footerEnabled').value;
+    let footerSection = '';
+    if (footerEnabled === 'yes') {
+        const footerContent = document.getElementById('footerContent').value || '';
+        const footerBgColor = document.getElementById('footerBgColor').value || defaults.footerBgColor;
+        const footerTextColor = document.getElementById('footerTextColor').value || defaults.footerTextColor;
+        const footerFontSize = document.getElementById('footerFontSize').value || defaults.footerFontSize;
+        const footerLineHeight = document.getElementById('footerLineHeight').value || defaults.footerLineHeight;
+        const footerTextAlign = document.getElementById('footerTextAlign').value || defaults.footerTextAlign;
+        const footerPaddingTop = document.getElementById('footerPaddingTop').value || defaults.footerPaddingTop;
+        const footerPaddingRight = document.getElementById('footerPaddingRight').value || defaults.footerPaddingRight;
+        const footerPaddingBottom = document.getElementById('footerPaddingBottom').value || defaults.footerPaddingBottom;
+        const footerPaddingLeft = document.getElementById('footerPaddingLeft').value || defaults.footerPaddingLeft;
+        const footerPadding = `${footerPaddingTop}px ${footerPaddingRight}px ${footerPaddingBottom}px ${footerPaddingLeft}px`;
+        const footerTextStyle = `margin:0;font-size:${footerFontSize}px;line-height:${footerLineHeight}px;text-align:${footerTextAlign};font-family:'Helvetica Neue', Helvetica, Arial;color:${footerTextColor};`;
+
+        const footerParagraphs = footerContent
+            .split('\n')
+            .filter(line => line.trim() !== '')
+            .map(line => {
+                let processedLine = line;
+                processedLine = processedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                processedLine = processedLine.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+                processedLine = processedLine.replace(/__(.+?)__/g, '<u>$1</u>');
+                return `<p style="${footerTextStyle}">${processedLine}</p>`;
+            })
+            .join('\n');
+
+        if (footerParagraphs) {
+            footerSection = `\t\t\t\t\t<tr>
+\t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};">
+${footerParagraphs}
+\t\t\t\t\t\t</td>
+\t\t\t\t\t</tr>`;
+        }
+    }
+
     return `<!DOCTYPE html>
 <html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -1469,6 +1520,7 @@ ${contentParagraphs}
 \t\t\t\t\t\t\t</table>
 \t\t\t\t\t\t</td>
 \t\t\t\t\t</tr>
+${footerSection}
 \t\t\t\t</table>
 \t\t\t</td>
 \t\t</tr>
@@ -2057,6 +2109,21 @@ function wrapEmailSelection(before, after) {
     updatePreview();
 }
 
+function wrapFooterSelection(before, after) {
+    const textarea = document.getElementById('footerContent');
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    const wrapped = before + (selected || 'texto') + after;
+    textarea.value = textarea.value.substring(0, start) + wrapped + textarea.value.substring(end);
+    textarea.focus();
+    const innerStart = start + before.length;
+    const innerEnd = innerStart + (selected || 'texto').length;
+    textarea.setSelectionRange(innerStart, innerEnd);
+    updatePreview();
+}
+
 // ── HTML Format Helpers for Terms ──
 function insertHTMLTag(textareaId, tag, selfClosing) {
     const textarea = document.getElementById(textareaId);
@@ -2283,6 +2350,10 @@ function resetToDefault(silent) {
         'email_button', 'email_body', 'code', 'reason',
         'dashboard_button', 'signers'
     ];
+    // Reset footer toggle visibility
+    const footerOpts = document.getElementById('footerOptions');
+    if (footerOpts) footerOpts.style.display = 'none';
+
     renderVariables();
     updatePreview();
 
@@ -2347,6 +2418,18 @@ function initEditorListeners() {
             });
         }
     });
+
+    // Footer toggle
+    const footerEnabledSelect = document.getElementById('footerEnabled');
+    if (footerEnabledSelect) {
+        const footerOpts = document.getElementById('footerOptions');
+        footerEnabledSelect.addEventListener('change', function() {
+            if (footerOpts) footerOpts.style.display = this.value === 'yes' ? 'block' : 'none';
+            updateActivePreview();
+        });
+        // Set initial state
+        if (footerOpts) footerOpts.style.display = footerEnabledSelect.value === 'yes' ? 'block' : 'none';
+    }
 
     // Terms preview auto-update
     const termsTextarea = document.getElementById('brandingTermsText');
