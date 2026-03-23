@@ -444,11 +444,6 @@
                                 <small style="color: #6c757d;">Color del texto principal del documento</small>
                             </div>
 
-                            <div class="form-group">
-                                <label>Terminos y Condiciones (application_texts[terms_and_conditions])</label>
-                                <textarea id="brandingTermsText" rows="3" placeholder="Texto de terminos y condiciones personalizados..." style="min-height: 60px;"></textarea>
-                                <small style="color: #6c757d;">Aparecen debajo de los de Signaturit</small>
-                            </div>
 
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -500,55 +495,88 @@
                                 <small style="color: #6c757d;">Posicion del sello CSV en el documento firmado</small>
                             </div>
 
-                            <div style="background: #f0f4ff; border: 1px solid #d0d9f0; border-radius: 8px; padding: 14px; margin-bottom: 12px;">
-                                <label style="font-weight: 600; font-size: 13px; color: #374151; margin-bottom: 10px; display: block;">Textos de la App (application_texts)</label>
-
-                                <div class="form-group" style="margin-bottom: 8px;">
-                                    <label>Boton firmar (sign_button)</label>
-                                    <input type="text" id="brandingSignButton" placeholder='Ej: "FIRMAR", "Sign"...'>
-                                    <small style="color: #6c757d;">Texto del boton de firma en la app de firma</small>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 8px;">
-                                    <label>Boton email firma (open_sign_button)</label>
-                                    <input type="text" id="brandingOpenSignButton" placeholder='Ej: "VER DOCUMENTO", "View Document"...'>
-                                    <small style="color: #6c757d;">Texto del boton en el email de firma</small>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 8px;">
-                                    <label>Boton email certificado (open_email_button)</label>
-                                    <input type="text" id="brandingOpenEmailButton" placeholder='Ej: "VER EMAIL", "View Email"...'>
-                                    <small style="color: #6c757d;">Texto del boton en el email certificado</small>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 8px;">
-                                    <label>Boton enviar (send_button)</label>
-                                    <input type="text" id="brandingSendButton" placeholder='Ej: "ENVIAR", "Send"...'>
-                                    <small style="color: #6c757d;">Texto del boton de envio</small>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 8px;">
-                                    <label>Texto multi-pagina (multi_page)</label>
-                                    <input type="text" id="brandingMultiPage" placeholder='Ej: "Desliza para ver mas paginas"...'>
-                                    <small style="color: #6c757d;">Instrucciones cuando hay multiples paginas</small>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 8px;">
-                                    <label>Texto foto (photo)</label>
-                                    <input type="text" id="brandingPhotoText" placeholder='Ej: "Adjunta una foto de tu DNI"...'>
-                                    <small style="color: #6c757d;">Mensaje cuando se requiere foto</small>
-                                </div>
-
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label>Texto voz (voice)</label>
-                                    <input type="text" id="brandingVoiceText" placeholder='Ej: "Graba tu voz para confirmar"...'>
-                                    <small style="color: #6c757d;">Mensaje cuando se requiere grabacion de voz</small>
-                                </div>
-                            </div>
-
                             <button class="btn-branding-preview" onclick="updateBrandingPreview()">
                                 Actualizar Preview
                             </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seccion: Textos de la App (application_texts) -->
+                <div class="collapsible-section">
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        <h2>Textos de Botones y Mensajes</h2>
+                        <span class="collapsible-icon">&#9660;</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="collapsible-inner">
+                            <div class="info-box" style="margin-bottom: 14px;">
+                                Personaliza los textos de los <strong>botones</strong> en los emails y la app de firma.
+                                Corresponden a <strong>application_texts</strong> del endpoint Branding.
+                                El campo <em>terms_and_conditions</em> acepta <strong>HTML</strong> (negrita, links, etc).
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Boton firmar (sign_button)</label>
+                                    <input type="text" id="brandingSignButton" placeholder='Ej: "FIRMAR", "Sign"...'>
+                                    <small style="color: #6c757d;">Boton de firma en la app</small>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Boton enviar (send_button)</label>
+                                    <input type="text" id="brandingSendButton" placeholder='Ej: "ENVIAR", "Send"...'>
+                                    <small style="color: #6c757d;">Boton de envio en la app</small>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Boton email firma (open_sign_button)</label>
+                                    <input type="text" id="brandingOpenSignButton" placeholder='Ej: "VER DOCUMENTO"...'>
+                                    <small style="color: #6c757d;">Boton en el email de firma</small>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Boton email certificado (open_email_button)</label>
+                                    <input type="text" id="brandingOpenEmailButton" placeholder='Ej: "VER EMAIL"...'>
+                                    <small style="color: #6c757d;">Boton en el email certificado</small>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Multi-pagina (multi_page)</label>
+                                    <input type="text" id="brandingMultiPage" placeholder='Ej: "Desliza para ver mas"...'>
+                                    <small style="color: #6c757d;">Instrucciones multi-pagina</small>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Foto (photo)</label>
+                                    <input type="text" id="brandingPhotoText" placeholder='Ej: "Adjunta foto DNI"...'>
+                                    <small style="color: #6c757d;">Mensaje para foto</small>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Voz (voice)</label>
+                                    <input type="text" id="brandingVoiceText" placeholder='Ej: "Graba tu voz"...'>
+                                    <small style="color: #6c757d;">Mensaje para grabacion</small>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Terminos y condiciones (terms_and_conditions) - Acepta HTML</label>
+                                <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                    <button type="button" class="btn-format" onclick="insertHTMLTag('brandingTermsText', 'b')" title="Negrita" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;">B</button>
+                                    <button type="button" class="btn-format" onclick="insertHTMLTag('brandingTermsText', 'i')" title="Cursiva" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-style: italic; font-size: 13px;">I</button>
+                                    <button type="button" class="btn-format" onclick="insertHTMLTag('brandingTermsText', 'u')" title="Subrayado" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; text-decoration: underline; font-size: 13px;">U</button>
+                                    <button type="button" class="btn-format" onclick="insertHTMLLink('brandingTermsText')" title="Insertar link" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-size: 13px;">Link</button>
+                                    <button type="button" class="btn-format" onclick="insertHTMLTag('brandingTermsText', 'br', true)" title="Salto de linea" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-size: 13px;">BR</button>
+                                </div>
+                                <textarea id="brandingTermsText" rows="3" placeholder='Ej: Al firmar acepta los <b>terminos</b> de <a href="https://...">nuestro servicio</a>'></textarea>
+                                <div id="termsPreview" style="margin-top: 6px; padding: 8px 12px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; color: #555; display: none;">
+                                    <small style="color: #999; display: block; margin-bottom: 4px;">Preview:</small>
+                                    <div id="termsPreviewContent"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -2040,6 +2040,61 @@ function isColorDark(hexColor) {
     return luminance < 0.5;
 }
 
+// ── HTML Format Helpers for Terms ──
+function insertHTMLTag(textareaId, tag, selfClosing) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+
+    let insertion;
+    if (selfClosing) {
+        insertion = '<' + tag + '>';
+    } else {
+        insertion = '<' + tag + '>' + selected + '</' + tag + '>';
+    }
+
+    textarea.value = textarea.value.substring(0, start) + insertion + textarea.value.substring(end);
+    textarea.focus();
+    const cursorPos = selfClosing ? start + insertion.length : start + tag.length + 2 + selected.length;
+    textarea.setSelectionRange(cursorPos, cursorPos);
+    updateTermsPreview();
+}
+
+function insertHTMLLink(textareaId) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end) || 'texto del link';
+    const url = prompt('URL del enlace:', 'https://');
+    if (!url) return;
+
+    const insertion = '<a href="' + url + '">' + selected + '</a>';
+    textarea.value = textarea.value.substring(0, start) + insertion + textarea.value.substring(end);
+    textarea.focus();
+    updateTermsPreview();
+}
+
+function updateTermsPreview() {
+    const textarea = document.getElementById('brandingTermsText');
+    const previewDiv = document.getElementById('termsPreview');
+    const previewContent = document.getElementById('termsPreviewContent');
+    if (!textarea || !previewDiv || !previewContent) return;
+
+    const val = textarea.value.trim();
+    if (val) {
+        previewDiv.style.display = '';
+        // Sanitize: only allow b, i, u, a, br, strong, em tags
+        const sanitized = val.replace(/<(?!\/?(?:b|i|u|a|br|strong|em)\b)[^>]*>/gi, '');
+        previewContent.innerHTML = sanitized;
+    } else {
+        previewDiv.style.display = 'none';
+        previewContent.innerHTML = '';
+    }
+}
+
 // ── Preview Tabs ──
 let currentPreviewTab = 'email';
 
@@ -2092,7 +2147,36 @@ function minifyHTML(html) {
 function updatePreview() {
     const frame = document.getElementById('previewFrame');
     if (frame) {
-        const html = generateHTML();
+        let html = generateHTML();
+
+        // Reemplazar magic words con valores de preview
+        const openSignBtn = document.getElementById('brandingOpenSignButton');
+        const openEmailBtn = document.getElementById('brandingOpenEmailButton');
+        const signBtnText = (openSignBtn && openSignBtn.value.trim()) || 'VER DOCUMENTO';
+        const emailBtnText = (openEmailBtn && openEmailBtn.value.trim()) || 'VER EMAIL';
+
+        html = html.replace(/\{\{sign_button\}\}/g, signBtnText);
+        html = html.replace(/\{\{email_button\}\}/g, emailBtnText);
+        html = html.replace(/\{\{validate_button\}\}/g, 'VALIDAR');
+        html = html.replace(/\{\{signer_name\}\}/g, 'Nombre Firmante');
+        html = html.replace(/\{\{signer_email\}\}/g, 'firmante@ejemplo.com');
+        html = html.replace(/\{\{sender_email\}\}/g, 'remitente@ejemplo.com');
+        html = html.replace(/\{\{filename\}\}/g, 'documento_ejemplo.pdf');
+        html = html.replace(/\{\{remaining_time\}\}/g, '31/12/2026');
+        html = html.replace(/\{\{email_body\}\}/g, 'Texto adicional del email');
+        html = html.replace(/\{\{code\}\}/g, '123456');
+        html = html.replace(/\{\{reason\}\}/g, 'Motivo de rechazo');
+        html = html.replace(/\{\{dashboard_button\}\}/g, 'IR AL DASHBOARD');
+        html = html.replace(/\{\{signers\}\}/g, 'Firmante 1, Firmante 2');
+
+        // Logo: usar URL del logo si existe
+        const logoUrl = document.getElementById('logoUrl').value;
+        if (logoUrl) {
+            html = html.replace(/\{\{logo\}\}/g, '<img src="' + logoUrl + '" alt="Logo" style="max-height:60px;">');
+        } else {
+            html = html.replace(/\{\{logo\}\}/g, 'Logo');
+        }
+
         frame.innerHTML = html;
     }
 }
@@ -2223,6 +2307,10 @@ function initEditorListeners() {
         if (el) {
             el.addEventListener('input', () => {
                 if (currentPreviewTab === 'branding') updateBrandingPreview();
+                // Los textos de botones tambien afectan la preview del email
+                if (id === 'brandingOpenSignButton' || id === 'brandingOpenEmailButton') {
+                    updatePreview();
+                }
             });
         }
     });
@@ -2252,6 +2340,15 @@ function initEditorListeners() {
             });
         }
     });
+
+    // Terms preview auto-update
+    const termsTextarea = document.getElementById('brandingTermsText');
+    if (termsTextarea) {
+        termsTextarea.addEventListener('input', () => {
+            updateTermsPreview();
+            if (currentPreviewTab === 'branding') updateBrandingPreview();
+        });
+    }
 
     updatePreview();
 }
