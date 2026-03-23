@@ -76,6 +76,7 @@ const defaults = {
     textAlign: 'left',
     textFontWeight: 'normal',
     footerEnabled: 'no',
+    footerWidth: '100',
     footerContent: '',
     footerImageUrl: '',
     footerImageWidth: '150px',
@@ -1458,6 +1459,7 @@ function generateHTML() {
     const footerEnabled = document.getElementById('footerEnabled').value;
     let footerSection = '';
     if (footerEnabled === 'yes') {
+        const footerWidth = document.getElementById('footerWidth').value || defaults.footerWidth;
         const footerContent = document.getElementById('footerContent').value || '';
         const footerImageUrl = document.getElementById('footerImageUrl').value || '';
         const footerImageWidth = document.getElementById('footerImageWidth').value || defaults.footerImageWidth;
@@ -1503,11 +1505,26 @@ function generateHTML() {
             .join('\n');
 
         if (footerImageUrl || footerParagraphs) {
-            footerSection = `\t\t\t\t\t<tr>
+            const footerInner = `${footerImageHTML}${footerParagraphs}`;
+            if (footerWidth === '100') {
+                footerSection = `\t\t\t\t\t<tr>
 \t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};${footerBorderStyle}">
-${footerImageHTML}${footerParagraphs}
+${footerInner}
 \t\t\t\t\t\t</td>
 \t\t\t\t\t</tr>`;
+            } else {
+                footerSection = `\t\t\t\t\t<tr>
+\t\t\t\t\t\t<td align="center" style="padding:0;">
+\t\t\t\t\t\t\t<table role="presentation" align="center" style="width:${footerWidth}%;border-collapse:collapse;border-spacing:0;">
+\t\t\t\t\t\t\t\t<tr>
+\t\t\t\t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};${footerBorderStyle}">
+${footerInner}
+\t\t\t\t\t\t\t\t\t</td>
+\t\t\t\t\t\t\t\t</tr>
+\t\t\t\t\t\t\t</table>
+\t\t\t\t\t\t</td>
+\t\t\t\t\t</tr>`;
+            }
         }
     }
 
@@ -2460,6 +2477,16 @@ function initEditorListeners() {
             });
         }
     });
+
+    // Footer width slider
+    const footerWidthSlider = document.getElementById('footerWidth');
+    const footerWidthValue = document.getElementById('footerWidthValue');
+    if (footerWidthSlider && footerWidthValue) {
+        footerWidthSlider.addEventListener('input', function() {
+            footerWidthValue.textContent = this.value + '%';
+            updateActivePreview();
+        });
+    }
 
     // Footer toggle
     const footerEnabledSelect = document.getElementById('footerEnabled');

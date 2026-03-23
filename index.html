@@ -276,6 +276,15 @@
 
                             <div id="footerOptions" style="display:none;">
                                 <div class="form-group">
+                                    <label>Ancho del Footer</label>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <input type="range" id="footerWidth" min="10" max="100" step="5" value="100" style="flex: 1;">
+                                        <span id="footerWidthValue" style="font-size: 13px; min-width: 40px; font-weight: 600;">100%</span>
+                                    </div>
+                                    <small style="color: #6c757d;">El footer se centra automaticamente dentro del contenedor.</small>
+                                </div>
+
+                                <div class="form-group">
                                     <label>Imagen del Footer</label>
                                     <input type="url" id="footerImageUrl" placeholder="https://ejemplo.com/logo-footer.png" style="margin-bottom: 6px;">
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
