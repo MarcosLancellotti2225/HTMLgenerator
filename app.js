@@ -689,8 +689,7 @@ async function renameBranding(brandingId, currentName) {
     const newName = prompt('Nuevo nombre para el branding:', currentName);
     if (!newName || newName.trim() === '' || newName.trim() === currentName) return;
 
-    const body = new URLSearchParams();
-    body.append('name', newName.trim());
+    const body = { name: newName.trim() };
 
     try {
         await apiCall('PATCH', '/brandings/' + brandingId + '.json', body);
