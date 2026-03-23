@@ -190,6 +190,48 @@
                             </div>
 
                             <div class="form-group">
+                                <label>Formato del Texto</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+                                    <div>
+                                        <small style="color: #6c757d;">Tamaño (px)</small>
+                                        <input type="number" id="textFontSize" value="16" min="10" max="40" style="width: 100%;">
+                                    </div>
+                                    <div>
+                                        <small style="color: #6c757d;">Interlineado (px)</small>
+                                        <input type="number" id="textLineHeight" value="24" min="12" max="60" style="width: 100%;">
+                                    </div>
+                                    <div>
+                                        <small style="color: #6c757d;">Espaciado letras (px)</small>
+                                        <input type="number" id="textLetterSpacing" value="0" min="-2" max="10" step="0.5" style="width: 100%;">
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <small style="color: #6c757d;">Alineacion</small>
+                                        <select id="textAlign" style="width: 100%;">
+                                            <option value="left">Izquierda</option>
+                                            <option value="center">Centro</option>
+                                            <option value="right">Derecha</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <small style="color: #6c757d;">Grosor de fuente</small>
+                                        <select id="textFontWeight" style="width: 100%;">
+                                            <option value="normal">Normal (400)</option>
+                                            <option value="500">Medium (500)</option>
+                                            <option value="600">Semi-Bold (600)</option>
+                                            <option value="bold">Bold (700)</option>
+                                            <option value="800">Extra-Bold (800)</option>
+                                            <option value="900">Black (900)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <small style="color: #6c757d; display: block; margin-top: 6px;">
+                                    Tip: Usa **texto** para negrita por linea, o [center]texto[/center] para centrar una linea especifica
+                                </small>
+                            </div>
+
+                            <div class="form-group">
                                 <label>Contenido Completo del Email</label>
                                 <textarea id="emailContent" style="min-height: 300px;" placeholder="Escribe aquí el contenido de tu email...&#10;&#10;Ejemplo:&#10;Estimado/a {{signer_name}}, le hacemos llegar la documentación:&#10;&#10;{{filename}}&#10;&#10;Para firmar, haga clic en: {{sign_button}}&#10;&#10;{{email_body}}"></textarea>
                             </div>
