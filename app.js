@@ -665,6 +665,7 @@ function renderBrandingsPage() {
                 '<span class="branding-card-meta">' + totalConfigured + '/' + ALL_TEMPLATE_TYPES.length + ' templates</span>' +
                 '<div class="branding-card-actions">' +
                     '<span class="branding-card-action-btn rename" onclick="event.stopPropagation(); renameBranding(\'' + b.id + '\', \'' + escapeHTML(name).replace(/'/g, "\\'") + '\')">Renombrar</span>' +
+                    '<span class="branding-card-action-btn rename" onclick="event.stopPropagation(); duplicateBranding(\'' + b.id + '\', \'' + escapeHTML(name).replace(/'/g, "\\'") + '\')">Duplicar</span>' +
                     '<span class="branding-card-action">Editar &rarr;</span>' +
                 '</div>' +
             '</div>' +
@@ -725,6 +726,53 @@ async function renameBranding(brandingId, currentName) {
     } catch (error) {
         console.error('Error renaming branding:', error);
         showToast('Error al renombrar: ' + error.message);
+    }
+}
+
+async function duplicateBranding(brandingId, currentName) {
+    const newName = prompt('Nombre para la copia del branding:', currentName + ' (copia)');
+    if (!newName || newName.trim() === '') return;
+
+    try {
+        showToast('Duplicando branding...');
+
+        // Fetch full branding data
+        const fullBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
+
+        // Build new branding body with all templates and params
+        const body = { name: newName.trim(), templates: {} };
+
+        // Copy all templates
+        if (fullBranding.templates && Array.isArray(fullBranding.templates)) {
+            fullBranding.templates.forEach(t => {
+                if (t.name && t.content) {
+                    body.templates[t.name] = t.content;
+                }
+            });
+        }
+
+        // Copy branding params
+        if (fullBranding.header_color) body.header_color = fullBranding.header_color;
+        if (fullBranding.footer_color) body.footer_color = fullBranding.footer_color;
+        if (fullBranding.layout_color) body.layout_color = fullBranding.layout_color;
+        if (fullBranding.text_color) body.text_color = fullBranding.text_color;
+        if (fullBranding.signature_color) body.signature_color = fullBranding.signature_color;
+        if (fullBranding.csv_position) body.csv_position = fullBranding.csv_position;
+        if (fullBranding.show_welcome_page !== undefined) body.show_welcome_page = fullBranding.show_welcome_page;
+        if (fullBranding.show_csv !== undefined) body.show_csv = fullBranding.show_csv;
+        if (fullBranding.show_biometric_hash !== undefined) body.show_biometric_hash = fullBranding.show_biometric_hash;
+        if (fullBranding.application_texts) body.application_texts = fullBranding.application_texts;
+
+        const result = await apiCall('POST', '/brandings.json', body);
+        showToast('Branding duplicado como "' + newName.trim() + '"');
+
+        // Reload brandings list
+        apiBrandings = await apiCall('GET', '/brandings.json');
+        document.getElementById('dashboardCount').textContent = apiBrandings.length;
+        renderBrandingsPage();
+    } catch (error) {
+        console.error('Error duplicating branding:', error);
+        showToast('Error al duplicar: ' + error.message);
     }
 }
 
@@ -1812,6 +1860,20 @@ function parseHTMLTemplate(htmlString) {
                 document.getElementById('buttonTextColor').value = txtColor;
                 document.getElementById('buttonTextColorValue').value = txtColor;
             }
+            const btnFontSizeMatch = spanStyle.match(/font-size:\s*(\d+)px/);
+            if (btnFontSizeMatch) {
+                document.getElementById('buttonFontSize').value = btnFontSizeMatch[1];
+            }
+            const btnLineHeightMatch = spanStyle.match(/line-height:\s*(\d+)px/);
+            if (btnLineHeightMatch) {
+                document.getElementById('buttonLineHeight').value = btnLineHeightMatch[1];
+            }
+            const btnFontWeightMatch = spanStyle.match(/font-weight:\s*(\w+)/);
+            if (btnFontWeightMatch) {
+                document.getElementById('buttonFontWeight').value = btnFontWeightMatch[1];
+            } else {
+                document.getElementById('buttonFontWeight').value = 'normal';
+            }
         }
     }
 
@@ -1874,6 +1936,128 @@ function parseHTMLTemplate(htmlString) {
 
     if (emailContent) {
         document.getElementById('emailContent').value = emailContent;
+    }
+
+    // Footer parsing
+    // The footer is the last <tr> in the main container table, after the content row.
+    // It can be a direct <td> with background or a nested centered table.
+    const mainContainerTable = doc.querySelector('table[style*="width:800px"]');
+    if (mainContainerTable) {
+        const allRows = mainContainerTable.querySelectorAll(':scope > tbody > tr, :scope > tr');
+        const lastRow = allRows.length > 0 ? allRows[allRows.length - 1] : null;
+
+        if (lastRow) {
+            const lastTd = lastRow.querySelector('td');
+            const lastTdStyle = lastTd ? (lastTd.getAttribute('style') || '') : '';
+
+            // Check if this row is the footer (has background color, is not logo or content row)
+            let footerTd = null;
+            let footerWidthPercent = '100';
+
+            // Check for nested centered table (custom width footer)
+            const nestedTable = lastTd ? lastTd.querySelector('table[align="center"]') : null;
+            if (nestedTable) {
+                const nestedStyle = nestedTable.getAttribute('style') || '';
+                const nestedWidthMatch = nestedStyle.match(/width:\s*(\d+)%/);
+                if (nestedWidthMatch) {
+                    footerWidthPercent = nestedWidthMatch[1];
+                }
+                footerTd = nestedTable.querySelector('td');
+            } else if (lastTdStyle.includes('background') && !lastTdStyle.includes('padding:30px 0 20px 0') && !lastTdStyle.includes('padding:0 0 25px 0')) {
+                footerTd = lastTd;
+            }
+
+            if (footerTd) {
+                const ftdStyle = footerTd.getAttribute('style') || '';
+
+                document.getElementById('footerEnabled').value = 'yes';
+                const footerOpts = document.getElementById('footerOptions');
+                if (footerOpts) footerOpts.style.display = 'block';
+
+                document.getElementById('footerWidth').value = footerWidthPercent;
+                const footerWidthValue = document.getElementById('footerWidthValue');
+                if (footerWidthValue) footerWidthValue.textContent = footerWidthPercent + '%';
+
+                // Background color
+                const ftBgMatch = ftdStyle.match(/background:\s*([^;]+)/);
+                if (ftBgMatch && ftBgMatch[1].trim().startsWith('#')) {
+                    document.getElementById('footerBgColor').value = ftBgMatch[1].trim();
+                    document.getElementById('footerBgColorValue').value = ftBgMatch[1].trim();
+                }
+
+                // Padding
+                const ftPadMatch = ftdStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+                if (ftPadMatch) {
+                    document.getElementById('footerPaddingTop').value = ftPadMatch[1];
+                    document.getElementById('footerPaddingRight').value = ftPadMatch[2];
+                    document.getElementById('footerPaddingBottom').value = ftPadMatch[3];
+                    document.getElementById('footerPaddingLeft').value = ftPadMatch[4];
+                }
+
+                // Borders per side
+                const ftBorderTopMatch = ftdStyle.match(/border-top:\s*(\d+)px solid ([^;]+)/);
+                const ftBorderRightMatch = ftdStyle.match(/border-right:\s*(\d+)px solid ([^;]+)/);
+                const ftBorderBottomMatch = ftdStyle.match(/border-bottom:\s*(\d+)px solid ([^;]+)/);
+                const ftBorderLeftMatch = ftdStyle.match(/border-left:\s*(\d+)px solid ([^;]+)/);
+
+                if (ftBorderTopMatch) document.getElementById('footerBorderTop').value = ftBorderTopMatch[1];
+                if (ftBorderRightMatch) document.getElementById('footerBorderRight').value = ftBorderRightMatch[1];
+                if (ftBorderBottomMatch) document.getElementById('footerBorderBottom').value = ftBorderBottomMatch[1];
+                if (ftBorderLeftMatch) document.getElementById('footerBorderLeft').value = ftBorderLeftMatch[1];
+
+                const borderColorSource = ftBorderTopMatch || ftBorderRightMatch || ftBorderBottomMatch || ftBorderLeftMatch;
+                if (borderColorSource && borderColorSource[2].trim().startsWith('#')) {
+                    document.getElementById('footerBorderColor').value = borderColorSource[2].trim();
+                    document.getElementById('footerBorderColorValue').value = borderColorSource[2].trim();
+                }
+
+                // Footer image
+                const footerImg = footerTd.querySelector('img');
+                if (footerImg) {
+                    const imgSrc = footerImg.getAttribute('src') || '';
+                    if (imgSrc && !imgSrc.includes('data:image')) {
+                        document.getElementById('footerImageUrl').value = imgSrc;
+                    }
+                    const imgStyle = footerImg.getAttribute('style') || '';
+                    const imgWMatch = imgStyle.match(/width:\s*([^;]+)/);
+                    if (imgWMatch) document.getElementById('footerImageWidth').value = imgWMatch[1].trim();
+                    const imgHMatch = imgStyle.match(/height:\s*([^;]+)/);
+                    if (imgHMatch) document.getElementById('footerImageHeight').value = imgHMatch[1].trim();
+                }
+
+                // Footer text content
+                const footerPs = footerTd.querySelectorAll('p');
+                let footerText = '';
+                let firstFooterP = true;
+                footerPs.forEach(p => {
+                    if (!firstFooterP) footerText += '\n';
+                    firstFooterP = false;
+                    footerText += p.textContent.trim();
+
+                    // Extract text styling from first <p>
+                    const pStyle = p.getAttribute('style') || '';
+                    const ftColorMatch = pStyle.match(/color:\s*([^;]+)/);
+                    if (ftColorMatch && ftColorMatch[1].trim().startsWith('#')) {
+                        document.getElementById('footerTextColor').value = ftColorMatch[1].trim();
+                        document.getElementById('footerTextColorValue').value = ftColorMatch[1].trim();
+                    }
+                    const ftFsMatch = pStyle.match(/font-size:\s*(\d+)px/);
+                    if (ftFsMatch) document.getElementById('footerFontSize').value = ftFsMatch[1];
+                    const ftLhMatch = pStyle.match(/line-height:\s*(\d+)px/);
+                    if (ftLhMatch) document.getElementById('footerLineHeight').value = ftLhMatch[1];
+                    const ftAlignMatch = pStyle.match(/text-align:\s*(\w+)/);
+                    if (ftAlignMatch) document.getElementById('footerTextAlign').value = ftAlignMatch[1];
+                });
+                document.getElementById('footerContent').value = footerText;
+
+                extractedSomething = true;
+            } else {
+                // No footer found, reset
+                document.getElementById('footerEnabled').value = 'no';
+                const footerOpts = document.getElementById('footerOptions');
+                if (footerOpts) footerOpts.style.display = 'none';
+            }
+        }
     }
 
     if (!extractedSomething) {
