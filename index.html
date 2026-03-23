@@ -153,7 +153,7 @@
                 </button>
 
                 <!-- Sección: Contenido del Email -->
-                <div class="collapsible-section">
+                <div class="collapsible-section" data-preview-tab="email">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
                         <h2>Contenido del Email</h2>
                         <span class="collapsible-icon">&#9660;</span>
@@ -255,7 +255,7 @@
                 </div>
 
                 <!-- Sección: Footer del Email -->
-                <div class="collapsible-section">
+                <div class="collapsible-section" data-preview-tab="email">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
                         <h2>Footer del Email</h2>
                         <span class="collapsible-icon">&#9660;</span>
@@ -275,6 +275,21 @@
                             </div>
 
                             <div id="footerOptions" style="display:none;">
+                                <div class="form-group">
+                                    <label>Imagen del Footer</label>
+                                    <input type="url" id="footerImageUrl" placeholder="https://ejemplo.com/logo-footer.png" style="margin-bottom: 6px;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                        <div>
+                                            <small style="color: #6c757d;">Ancho (px o %)</small>
+                                            <input type="text" id="footerImageWidth" value="150px" placeholder="150px o 50%">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Alto (px, % o auto)</small>
+                                            <input type="text" id="footerImageHeight" value="auto" placeholder="auto, 50px">
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="form-group">
                                     <label>Texto del Footer</label>
                                     <div style="display: flex; gap: 4px; margin-bottom: 6px;">
@@ -324,6 +339,36 @@
                                 </div>
 
                                 <div class="form-group">
+                                    <label>Bordes del Footer</label>
+                                    <div style="margin-bottom: 8px;">
+                                        <div class="color-input" style="margin-bottom: 6px;">
+                                            <input type="color" id="footerBorderColor" value="#cccccc">
+                                            <input type="text" class="color-value" id="footerBorderColorValue" value="#cccccc">
+                                        </div>
+                                        <small style="color: #6c757d;">Color del borde</small>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
+                                        <div>
+                                            <small style="color: #6c757d;">Arriba (px)</small>
+                                            <input type="number" id="footerBorderTop" value="0" min="0" max="10" style="width: 100%;">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Derecha (px)</small>
+                                            <input type="number" id="footerBorderRight" value="0" min="0" max="10" style="width: 100%;">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Abajo (px)</small>
+                                            <input type="number" id="footerBorderBottom" value="0" min="0" max="10" style="width: 100%;">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Izquierda (px)</small>
+                                            <input type="number" id="footerBorderLeft" value="0" min="0" max="10" style="width: 100%;">
+                                        </div>
+                                    </div>
+                                    <small style="color: #6c757d; display: block; margin-top: 6px;">Pone 0 en un lado para no mostrar borde ahi.</small>
+                                </div>
+
+                                <div class="form-group">
                                     <label>Padding del Footer</label>
                                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
                                         <div>
@@ -357,6 +402,7 @@
                     </div>
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
+                            <div data-preview-tab="email">
                             <div class="form-group">
                                 <label>Color de Fondo Principal</label>
                                 <div class="color-input">
@@ -409,7 +455,8 @@
                                 </div>
                             </div>
 
-                            <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e5e7eb;">
+                            </div>
+                            <div data-preview-tab="app" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e5e7eb;">
                                 <div class="info-box" style="margin-bottom: 12px;">
                                     Colores adicionales para la <strong>app de firma</strong> de Signaturit (header, footer, botones de la app).
                                 </div>
@@ -455,7 +502,7 @@
                 </div>
 
                 <!-- Sección: Estilo del Botón -->
-                <div class="collapsible-section">
+                <div class="collapsible-section" data-preview-tab="email">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
                         <h2>Estilo del Boton</h2>
                         <span class="collapsible-icon">&#9660;</span>
@@ -540,7 +587,7 @@
                 </div>
 
                 <!-- Seccion: Branding App Preview -->
-                <div class="collapsible-section">
+                <div class="collapsible-section" data-preview-tab="app">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
                         <h2>Opciones de App (Vista de Firma)</h2>
                         <span class="collapsible-icon">&#9660;</span>
