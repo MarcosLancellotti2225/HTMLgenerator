@@ -927,6 +927,22 @@ function loadBrandingAppParams(branding) {
             const el = document.getElementById('brandingSendButton');
             if (el) el.value = branding.application_texts.send_button;
         }
+        if (branding.application_texts.sign_button) {
+            const el = document.getElementById('brandingSignButton');
+            if (el) el.value = branding.application_texts.sign_button;
+        }
+        if (branding.application_texts.multi_page) {
+            const el = document.getElementById('brandingMultiPage');
+            if (el) el.value = branding.application_texts.multi_page;
+        }
+        if (branding.application_texts.photo) {
+            const el = document.getElementById('brandingPhotoText');
+            if (el) el.value = branding.application_texts.photo;
+        }
+        if (branding.application_texts.voice) {
+            const el = document.getElementById('brandingVoiceText');
+            if (el) el.value = branding.application_texts.voice;
+        }
     }
     // show_welcome_page: 1 = true, 0 = false
     if (branding.show_welcome_page !== undefined) {
@@ -984,6 +1000,16 @@ function collectBrandingAppParams() {
     if (openSignButton && openSignButton.value.trim()) appTexts.open_sign_button = openSignButton.value.trim();
     if (openEmailButton && openEmailButton.value.trim()) appTexts.open_email_button = openEmailButton.value.trim();
     if (sendButton && sendButton.value.trim()) appTexts.send_button = sendButton.value.trim();
+
+    const signButton = document.getElementById('brandingSignButton');
+    const multiPage = document.getElementById('brandingMultiPage');
+    const photoText = document.getElementById('brandingPhotoText');
+    const voiceText = document.getElementById('brandingVoiceText');
+    if (signButton && signButton.value.trim()) appTexts.sign_button = signButton.value.trim();
+    if (multiPage && multiPage.value.trim()) appTexts.multi_page = multiPage.value.trim();
+    if (photoText && photoText.value.trim()) appTexts.photo = photoText.value.trim();
+    if (voiceText && voiceText.value.trim()) appTexts.voice = voiceText.value.trim();
+
     if (Object.keys(appTexts).length > 0) params.application_texts = appTexts;
 
     if (showWelcome) params.show_welcome_page = showWelcome.checked ? 1 : 0;
@@ -1847,6 +1873,15 @@ function updateBrandingPreview() {
     const termsText = document.getElementById('brandingTermsText').value || '';
     const showWelcome = document.getElementById('brandingShowWelcome').checked;
 
+    // Textos personalizados de botones
+    const signButtonText = document.getElementById('brandingSignButton').value.trim() || 'Firmar';
+    const sendButtonText = document.getElementById('brandingSendButton').value.trim() || 'Acepto';
+    const openSignButtonText = document.getElementById('brandingOpenSignButton').value.trim() || 'VER DOCUMENTO';
+    const openEmailButtonText = document.getElementById('brandingOpenEmailButton').value.trim() || 'VER EMAIL';
+    const multiPageText = document.getElementById('brandingMultiPage').value.trim() || '';
+    const photoText = document.getElementById('brandingPhotoText').value.trim() || '';
+    const voiceText = document.getElementById('brandingVoiceText').value.trim() || '';
+
     // Determinar color de texto para contraste
     const isDarkBg = isColorDark(layoutColor);
     const btnTextColor = isDarkBg ? '#ffffff' : '#333333';
@@ -1887,7 +1922,7 @@ function updateBrandingPreview() {
                     <div style="width: 24px; height: 24px; border-radius: 50%; background: ${layoutColor}15; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px; color: ${layoutColor};">2</div>
                     <div>
                         <div style="font-size: 12px; font-weight: 600; color: #333;">Firma el documento</div>
-                        <div style="font-size: 11px; color: #888;">Pulsa el boton "Firmar" o el campo de firma.</div>
+                        <div style="font-size: 11px; color: #888;">Pulsa el boton "${escapeHTML(signButtonText)}" o el campo de firma.</div>
                     </div>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px;">
@@ -1910,7 +1945,7 @@ function updateBrandingPreview() {
                 <div style="background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 4px; font-size: 12px; color: ${headerTextColor}; cursor: default;">Acciones</div>
                 <span style="font-size: 12px; color: ${headerTextColor}; opacity: 0.8;">Tienes 3 campos a rellenar</span>
             </div>
-            <button style="background: ${layoutColor}; color: ${btnTextColor}; border: none; padding: 8px 20px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: default;">Rellenar</button>
+            <button style="background: ${layoutColor}; color: ${btnTextColor}; border: none; padding: 8px 20px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: default;">${escapeHTML(signButtonText)}</button>
         </div>
 
         <div style="padding: 20px;">
@@ -1945,9 +1980,47 @@ function updateBrandingPreview() {
                     </label>
                 </div>
 
-                <button style="margin-top: 16px; padding: 10px 28px; background: ${layoutColor}; color: ${btnTextColor}; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: default;">Acepto</button>
+                <button style="margin-top: 16px; padding: 10px 28px; background: ${layoutColor}; color: ${btnTextColor}; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: default;">${escapeHTML(sendButtonText)}</button>
             </div>
         </div>
+
+        <!-- Email Preview: Sending Email -->
+        <div style="max-width: 500px; margin: 20px auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;">
+            <div style="background: ${headerColor}; padding: 14px 20px; text-align: center;">
+                ${logoUrl ? '<img src="' + escapeHTML(logoUrl) + '" alt="Logo" style="max-height: 40px; max-width: 180px; object-fit: contain;">' : '<div style="font-family: \'Brush Script MT\', cursive; font-size: 24px; color: ' + headerTextColor + ';">Signaturit</div>'}
+            </div>
+            <div style="padding: 24px 20px; text-align: center;">
+                <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Preview Email de Firma</div>
+                <p style="font-size: 13px; color: #555; line-height: 1.5; margin: 0 0 8px;">Estimado/a <em>Nombre Firmante</em>,</p>
+                <p style="font-size: 13px; color: #555; line-height: 1.5; margin: 0 0 16px;">Tiene documentacion pendiente de firma.</p>
+                <a style="display: inline-block; padding: 12px 32px; background: ${layoutColor}; color: ${btnTextColor}; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: default;">${escapeHTML(openSignButtonText)}</a>
+            </div>
+            <div style="background: ${footerColor}; padding: 10px 20px; text-align: center;">
+                <div style="font-size: 10px; color: ${footerTextColor};">Powered by Signaturit</div>
+            </div>
+        </div>
+
+        <!-- Email Preview: Certified Email -->
+        <div style="max-width: 500px; margin: 20px auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;">
+            <div style="background: ${headerColor}; padding: 14px 20px; text-align: center;">
+                ${logoUrl ? '<img src="' + escapeHTML(logoUrl) + '" alt="Logo" style="max-height: 40px; max-width: 180px; object-fit: contain;">' : '<div style="font-family: \'Brush Script MT\', cursive; font-size: 24px; color: ' + headerTextColor + ';">Signaturit</div>'}
+            </div>
+            <div style="padding: 24px 20px; text-align: center;">
+                <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Preview Email Certificado</div>
+                <p style="font-size: 13px; color: #555; line-height: 1.5; margin: 0 0 16px;">Tiene un nuevo email certificado pendiente.</p>
+                <a style="display: inline-block; padding: 12px 32px; background: ${layoutColor}; color: ${btnTextColor}; border-radius: 6px; font-size: 14px; font-weight: 600; text-decoration: none; cursor: default;">${escapeHTML(openEmailButtonText)}</a>
+            </div>
+            <div style="background: ${footerColor}; padding: 10px 20px; text-align: center;">
+                <div style="font-size: 10px; color: ${footerTextColor};">Powered by Signaturit</div>
+            </div>
+        </div>
+
+        ${multiPageText || photoText || voiceText ? '<div style="max-width: 500px; margin: 20px auto; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 16px 20px;">' +
+            '<div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: center;">Textos Personalizados</div>' +
+            (multiPageText ? '<div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0f4ff; border-radius: 6px; margin-bottom: 6px;"><span style="font-size: 16px;">📄</span><span style="font-size: 12px; color: #555;"><strong>Multi-pagina:</strong> ' + escapeHTML(multiPageText) + '</span></div>' : '') +
+            (photoText ? '<div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0fff4; border-radius: 6px; margin-bottom: 6px;"><span style="font-size: 16px;">📷</span><span style="font-size: 12px; color: #555;"><strong>Foto:</strong> ' + escapeHTML(photoText) + '</span></div>' : '') +
+            (voiceText ? '<div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fff4f0; border-radius: 6px;"><span style="font-size: 16px;">🎤</span><span style="font-size: 12px; color: #555;"><strong>Voz:</strong> ' + escapeHTML(voiceText) + '</span></div>' : '') +
+            '</div>' : ''}
 
         <!-- Footer -->
         <div style="background: ${footerColor}; padding: 14px 20px; text-align: center; margin-top: 20px;">
@@ -2142,7 +2215,9 @@ function initEditorListeners() {
 
     // Branding preview auto-update listeners
     const brandingInputIds = ['brandingHeaderColor', 'brandingHeaderColorValue', 'brandingFooterColor', 'brandingFooterColorValue',
-        'brandingLayoutColor', 'brandingLayoutColorValue', 'brandingTextColor', 'brandingTextColorValue', 'brandingTermsText'];
+        'brandingLayoutColor', 'brandingLayoutColorValue', 'brandingTextColor', 'brandingTextColorValue', 'brandingTermsText',
+        'brandingSignButton', 'brandingOpenSignButton', 'brandingOpenEmailButton', 'brandingSendButton',
+        'brandingMultiPage', 'brandingPhotoText', 'brandingVoiceText'];
     brandingInputIds.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
