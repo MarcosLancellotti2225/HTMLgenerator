@@ -313,6 +313,48 @@
                                     <span id="textColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
                                 </div>
                             </div>
+
+                            <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e5e7eb;">
+                                <div class="info-box" style="margin-bottom: 12px;">
+                                    Colores adicionales para la <strong>app de firma</strong> de Signaturit (header, footer, botones de la app).
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color Header App (header_color)</label>
+                                    <div class="color-input">
+                                        <input type="color" id="brandingHeaderColor" value="#3d3d3d">
+                                        <input type="text" class="color-value" id="brandingHeaderColorValue" value="#3d3d3d">
+                                    </div>
+                                    <small style="color: #6c757d;">Barra superior de la app de firma</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color Footer App (footer_color)</label>
+                                    <div class="color-input">
+                                        <input type="color" id="brandingFooterColor" value="#3d3d3d">
+                                        <input type="text" class="color-value" id="brandingFooterColorValue" value="#3d3d3d">
+                                    </div>
+                                    <small style="color: #6c757d;">Pie de pagina de la app de firma</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color Botones App (layout_color)</label>
+                                    <div class="color-input">
+                                        <input type="color" id="brandingLayoutColor" value="#77d401">
+                                        <input type="text" class="color-value" id="brandingLayoutColorValue" value="#77d401">
+                                    </div>
+                                    <small style="color: #6c757d;">Botones de la app (Empezar, Rellenar, Acepto)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color Texto App (text_color)</label>
+                                    <div class="color-input">
+                                        <input type="color" id="brandingTextColor" value="#333333">
+                                        <input type="text" class="color-value" id="brandingTextColorValue" value="#333333">
+                                    </div>
+                                    <small style="color: #6c757d;">Texto principal en la app de firma</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -405,52 +447,15 @@
                 <!-- Seccion: Branding App Preview -->
                 <div class="collapsible-section">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
-                        <h2>Branding App (Vista de Firma)</h2>
+                        <h2>Opciones de App (Vista de Firma)</h2>
                         <span class="collapsible-icon">&#9660;</span>
                     </div>
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
                             <div class="info-box" style="margin-bottom: 14px;">
-                                Previsualiza como se vera la <strong>aplicacion de firma</strong> de Signaturit con tu branding.
-                                Estos parametros corresponden al endpoint <strong>Create Branding</strong> de la API.
+                                Opciones adicionales de la <strong>aplicacion de firma</strong> de Signaturit.
+                                Los colores se configuran en la seccion <strong>Colores Generales</strong>.
                             </div>
-
-                            <div class="form-group">
-                                <label>Header Color (header_color)</label>
-                                <div class="color-input">
-                                    <input type="color" id="brandingHeaderColor" value="#3d3d3d">
-                                    <input type="text" class="color-value" id="brandingHeaderColorValue" value="#3d3d3d">
-                                </div>
-                                <small style="color: #6c757d;">Color de la barra superior de la app de firma</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Footer Color (footer_color)</label>
-                                <div class="color-input">
-                                    <input type="color" id="brandingFooterColor" value="#3d3d3d">
-                                    <input type="text" class="color-value" id="brandingFooterColorValue" value="#3d3d3d">
-                                </div>
-                                <small style="color: #6c757d;">Color del pie de pagina de la app de firma</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Layout Color / Botones (layout_color)</label>
-                                <div class="color-input">
-                                    <input type="color" id="brandingLayoutColor" value="#77d401">
-                                    <input type="text" class="color-value" id="brandingLayoutColorValue" value="#77d401">
-                                </div>
-                                <small style="color: #6c757d;">Color de los botones (Empezar, Rellenar, Acepto)</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Text Color (text_color)</label>
-                                <div class="color-input">
-                                    <input type="color" id="brandingTextColor" value="#333333">
-                                    <input type="text" class="color-value" id="brandingTextColorValue" value="#333333">
-                                </div>
-                                <small style="color: #6c757d;">Color del texto principal del documento</small>
-                            </div>
-
 
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -501,10 +506,6 @@
                                 </select>
                                 <small style="color: #6c757d;">Posicion del sello CSV en el documento firmado</small>
                             </div>
-
-                            <button class="btn-branding-preview" onclick="updateBrandingPreview()">
-                                Actualizar Preview
-                            </button>
                         </div>
                     </div>
                 </div>
