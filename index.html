@@ -227,12 +227,19 @@
                                     </div>
                                 </div>
                                 <small style="color: #6c757d; display: block; margin-top: 6px;">
-                                    Tip: Usa **texto** para negrita por linea, o [center]texto[/center] para centrar una linea especifica
+                                    La alineacion se aplica a todo el email. Usa los botones B/I/U sobre el textarea para formato inline.
                                 </small>
                             </div>
 
                             <div class="form-group">
                                 <label>Contenido Completo del Email</label>
+                                <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                    <button type="button" onclick="wrapEmailSelection('**', '**')" title="Negrita" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;">B</button>
+                                    <button type="button" onclick="wrapEmailSelection('*', '*')" title="Cursiva" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-style: italic; font-size: 13px;">I</button>
+                                    <button type="button" onclick="wrapEmailSelection('__', '__')" title="Subrayado" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; text-decoration: underline; font-size: 13px;">U</button>
+                                    <span style="border-left: 1px solid #d1d5db; margin: 0 4px;"></span>
+                                    <small style="color: #999; align-self: center;">Selecciona texto y pulsa un boton para darle formato</small>
+                                </div>
                                 <textarea id="emailContent" style="min-height: 300px;" placeholder="Escribe aquí el contenido de tu email...&#10;&#10;Ejemplo:&#10;Estimado/a {{signer_name}}, le hacemos llegar la documentación:&#10;&#10;{{filename}}&#10;&#10;Para firmar, haga clic en: {{sign_button}}&#10;&#10;{{email_body}}"></textarea>
                             </div>
 

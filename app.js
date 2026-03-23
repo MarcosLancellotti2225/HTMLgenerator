@@ -1423,18 +1423,14 @@ function generateHTML() {
             if (line.includes('{{validate_button}}')) {
                 return line.replace('{{validate_button}}', buttonHTML.replace('{{sign_button}}', '{{validate_button}}'));
             }
-            // Soporte para alineacion por linea: [center]texto[/center], [right]texto[/right]
-            let lineAlign = textAlign;
             let processedLine = line;
-            const alignMatch = line.match(/^\[(center|right|left)\](.*)\[\/\1\]$/);
-            if (alignMatch) {
-                lineAlign = alignMatch[1];
-                processedLine = alignMatch[2];
-            }
-            // Soporte para negrita por linea: **texto**
+            // Negrita: **texto**
             processedLine = processedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-            const lineStyle = baseTextStyle.replace(`text-align:${textAlign}`, `text-align:${lineAlign}`);
-            return `\t\t\t\t\t\t\t\t\t\t<p style="${lineStyle}">\n\t\t\t\t\t\t\t\t\t\t${processedLine}</p>`;
+            // Cursiva: *texto* (sin ser parte de **)
+            processedLine = processedLine.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+            // Subrayado: __texto__
+            processedLine = processedLine.replace(/__(.+?)__/g, '<u>$1</u>');
+            return `\t\t\t\t\t\t\t\t\t\t<p style="${baseTextStyle}">\n\t\t\t\t\t\t\t\t\t\t${processedLine}</p>`;
         })
         .join('\n');
 
@@ -2038,6 +2034,23 @@ function isColorDark(hexColor) {
     const b = parseInt(hex.substring(4, 6), 16);
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
     return luminance < 0.5;
+}
+
+// ── Email Content Format Helpers ──
+function wrapEmailSelection(before, after) {
+    const textarea = document.getElementById('emailContent');
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    const wrapped = before + (selected || 'texto') + after;
+    textarea.value = textarea.value.substring(0, start) + wrapped + textarea.value.substring(end);
+    textarea.focus();
+    // Select the inner text for easy replacement
+    const innerStart = start + before.length;
+    const innerEnd = innerStart + (selected || 'texto').length;
+    textarea.setSelectionRange(innerStart, innerEnd);
+    updatePreview();
 }
 
 // ── HTML Format Helpers for Terms ──
