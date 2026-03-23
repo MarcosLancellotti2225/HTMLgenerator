@@ -69,7 +69,12 @@ const defaults = {
     buttonMarginRight: '0',
     buttonMarginBottom: '10',
     buttonMarginLeft: '0',
-    buttonWidth: '200'
+    buttonWidth: '200',
+    textFontSize: '16',
+    textLineHeight: '24',
+    textLetterSpacing: '0',
+    textAlign: 'left',
+    textFontWeight: 'normal'
 };
 
 // Todos los tipos de template posibles
@@ -390,9 +395,14 @@ async function apiCall(method, path, body) {
     };
 
     if (body) {
-        fetchOptions.body = body;
         if (body instanceof URLSearchParams) {
+            fetchOptions.body = body;
             headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        } else if (typeof body === 'object') {
+            fetchOptions.body = JSON.stringify(body);
+            headers['Content-Type'] = 'application/json';
+        } else {
+            fetchOptions.body = body;
         }
     }
 
@@ -846,10 +856,16 @@ function showConfirmPushModal(method, templateType, brandingName, brandingId) {
     }
 
     Object.keys(appParams).forEach(key => {
-        const displayKey = key.replace('application_texts[terms_and_conditions]', 'terms_and_conditions');
         const val = appParams[key];
-        const colorPreview = val.startsWith('#') ? ' <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:' + val + ';vertical-align:middle;border:1px solid #ddd;"></span>' : '';
-        details += '<div style="margin-bottom: 3px;"><span style="color: #374151;">' + displayKey + ':</span> ' + escapeHTML(val) + colorPreview + '</div>';
+        if (key === 'application_texts' && typeof val === 'object') {
+            Object.keys(val).forEach(subKey => {
+                details += '<div style="margin-bottom: 3px;"><span style="color: #374151;">application_texts.' + subKey + ':</span> ' + escapeHTML(val[subKey]) + '</div>';
+            });
+            return;
+        }
+        const displayVal = String(val);
+        const colorPreview = displayVal.startsWith('#') ? ' <span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:' + displayVal + ';vertical-align:middle;border:1px solid #ddd;"></span>' : '';
+        details += '<div style="margin-bottom: 3px;"><span style="color: #374151;">' + key + ':</span> ' + escapeHTML(displayVal) + colorPreview + '</div>';
     });
 
     details += '</div></div>';
@@ -962,24 +978,29 @@ function collectBrandingAppParams() {
     if (footerColor) params.footer_color = footerColor.value;
     if (layoutColor) params.layout_color = layoutColor.value;
     if (textColor) params.text_color = textColor.value;
-    if (termsText && termsText.value.trim()) params['application_texts[terms_and_conditions]'] = termsText.value.trim();
-    if (openSignButton && openSignButton.value.trim()) params['application_texts[open_sign_button]'] = openSignButton.value.trim();
-    if (openEmailButton && openEmailButton.value.trim()) params['application_texts[open_email_button]'] = openEmailButton.value.trim();
-    if (sendButton && sendButton.value.trim()) params['application_texts[send_button]'] = sendButton.value.trim();
-    if (showWelcome) params.show_welcome_page = showWelcome.checked ? '1' : '0';
-    if (showCsv) params.show_csv = showCsv.checked ? '1' : '0';
-    if (showBiometricHash) params.show_biometric_hash = showBiometricHash.checked ? '1' : '0';
+
+    // application_texts como objeto anidado para JSON
+    const appTexts = {};
+    if (termsText && termsText.value.trim()) appTexts.terms_and_conditions = termsText.value.trim();
+    if (openSignButton && openSignButton.value.trim()) appTexts.open_sign_button = openSignButton.value.trim();
+    if (openEmailButton && openEmailButton.value.trim()) appTexts.open_email_button = openEmailButton.value.trim();
+    if (sendButton && sendButton.value.trim()) appTexts.send_button = sendButton.value.trim();
+    if (Object.keys(appTexts).length > 0) params.application_texts = appTexts;
+
+    if (showWelcome) params.show_welcome_page = showWelcome.checked ? 1 : 0;
+    if (showCsv) params.show_csv = showCsv.checked ? 1 : 0;
+    if (showBiometricHash) params.show_biometric_hash = showBiometricHash.checked ? 1 : 0;
     if (signatureColor && signatureColor.value) params.signature_color = signatureColor.value;
     if (csvPosition && csvPosition.value) params.csv_position = csvPosition.value;
 
     return params;
 }
 
-// Helper: agregar parametros de branding app al body
-function appendBrandingAppParams(body) {
+// Helper: agregar parametros de branding app al body JSON
+function appendBrandingAppParams(jsonBody) {
     const params = collectBrandingAppParams();
     Object.keys(params).forEach(key => {
-        body.append(key, params[key]);
+        jsonBody[key] = params[key];
     });
 }
 
@@ -996,9 +1017,11 @@ async function createNewBranding(templateType) {
         html = minifyHTML(html);
     }
 
-    const body = new URLSearchParams();
-    body.append('name', name);
-    body.append('templates[' + templateType + ']', html);
+    const body = {
+        name: name,
+        templates: {}
+    };
+    body.templates[templateType] = html;
     appendBrandingAppParams(body);
 
     try {
@@ -1032,13 +1055,15 @@ async function updateExistingBranding(brandingId, templateType) {
         html = minifyHTML(html);
     }
 
-    const body = new URLSearchParams();
+    const body = {
+        templates: {}
+    };
     // Enviar nombre actualizado
     const brandingName = document.getElementById('editorBrandingName').value.trim();
     if (brandingName) {
-        body.append('name', brandingName);
+        body.name = brandingName;
     }
-    body.append('templates[' + templateType + ']', html);
+    body.templates[templateType] = html;
     appendBrandingAppParams(body);
 
     try {
@@ -1350,6 +1375,16 @@ function generateHTML() {
 \t\t\t\t\t\t\t\t\t\t\t</tr>
 \t\t\t\t\t\t\t\t\t\t</table>`;
 
+    const textFontSize = document.getElementById('textFontSize').value || defaults.textFontSize;
+    const textLineHeight = document.getElementById('textLineHeight').value || defaults.textLineHeight;
+    const textLetterSpacing = document.getElementById('textLetterSpacing').value || defaults.textLetterSpacing;
+    const textAlign = document.getElementById('textAlign').value || defaults.textAlign;
+    const textFontWeight = document.getElementById('textFontWeight').value || defaults.textFontWeight;
+
+    const letterSpacingStyle = textLetterSpacing !== '0' ? `letter-spacing:${textLetterSpacing}px;` : '';
+    const fontWeightStyle = textFontWeight !== 'normal' ? `font-weight:${textFontWeight};` : '';
+    const baseTextStyle = `margin:0 0 12px 0;font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}text-align:${textAlign};font-family:'Helvetica Neue', Helvetica, Arial;`;
+
     const contentParagraphs = emailContent
         .split('\n')
         .filter(line => line.trim() !== '')
@@ -1363,7 +1398,18 @@ function generateHTML() {
             if (line.includes('{{validate_button}}')) {
                 return line.replace('{{validate_button}}', buttonHTML.replace('{{sign_button}}', '{{validate_button}}'));
             }
-            return `\t\t\t\t\t\t\t\t\t\t<p style="margin:0 0 12px 0;font-size:16px;line-height:24px;font-family:'Helvetica Neue', Helvetica, Arial;">\n\t\t\t\t\t\t\t\t\t\t${line}</p>`;
+            // Soporte para alineacion por linea: [center]texto[/center], [right]texto[/right]
+            let lineAlign = textAlign;
+            let processedLine = line;
+            const alignMatch = line.match(/^\[(center|right|left)\](.*)\[\/\1\]$/);
+            if (alignMatch) {
+                lineAlign = alignMatch[1];
+                processedLine = alignMatch[2];
+            }
+            // Soporte para negrita por linea: **texto**
+            processedLine = processedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            const lineStyle = baseTextStyle.replace(`text-align:${textAlign}`, `text-align:${lineAlign}`);
+            return `\t\t\t\t\t\t\t\t\t\t<p style="${lineStyle}">\n\t\t\t\t\t\t\t\t\t\t${processedLine}</p>`;
         })
         .join('\n');
 
