@@ -692,14 +692,13 @@
                             </div>
 
                             <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e5e7eb;">
-                                <div class="info-box" style="margin-bottom: 12px;">
-                                    URL a la que se redirige al firmante despues de completar la firma. Se envia como <strong>callback_url</strong> en el branding.
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Redirect post-firma (callback_url)</label>
-                                    <input type="url" id="brandingCallbackUrl" placeholder="https://ejemplo.com/firma-completada">
-                                    <small style="color: #6c757d;">Dejalo vacio para no redirigir (se queda en la pantalla de Signaturit)</small>
+                                <div class="info-box" style="margin-bottom: 12px; background: #fff3cd; border-color: #ffc107;">
+                                    <strong>Nota:</strong> El redirect post-firma (<code>callback_url</code>) NO es un parametro del branding.
+                                    Se configura en el <strong>signature request</strong> (al crear la solicitud de firma via API).
+                                    <br><br>
+                                    Ejemplo en el body del POST <code>/signatures</code>:
+                                    <br>
+                                    <code style="background:#f8f9fa;padding:2px 6px;border-radius:3px;">callback_url=https://tuempresa.com/gracias</code>
                                 </div>
                             </div>
                         </div>
