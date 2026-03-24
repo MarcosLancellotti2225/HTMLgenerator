@@ -714,10 +714,11 @@ async function renameBranding(brandingId, currentName) {
     const newName = prompt('Nuevo nombre para el branding:', currentName);
     if (!newName || newName.trim() === '' || newName.trim() === currentName) return;
 
-    const body = { name: newName.trim() };
+    const formBody = new URLSearchParams();
+    formBody.append('name', newName.trim());
 
     try {
-        await apiCall('PATCH', '/brandings/' + brandingId + '.json', body);
+        await apiCall('PATCH', '/brandings/' + brandingId + '.json', formBody);
         showToast('Branding renombrado a "' + newName.trim() + '"');
 
         // Actualizar en la lista local
@@ -763,8 +764,10 @@ async function duplicateBranding(brandingId, currentName) {
         if (fullBranding.show_csv !== undefined) body.show_csv = fullBranding.show_csv;
         if (fullBranding.show_biometric_hash !== undefined) body.show_biometric_hash = fullBranding.show_biometric_hash;
         if (fullBranding.application_texts) body.application_texts = fullBranding.application_texts;
+        if (fullBranding.callback_url) body.callback_url = fullBranding.callback_url;
 
-        const result = await apiCall('POST', '/brandings.json', body);
+        const formBody = objectToFormParams(body);
+        const result = await apiCall('POST', '/brandings.json', formBody);
         showToast('Branding duplicado como "' + newName.trim() + '"');
 
         // Reload brandings list
@@ -1041,6 +1044,11 @@ function loadBrandingAppParams(branding) {
         const csvPosEl = document.getElementById('brandingCsvPosition');
         if (csvPosEl) csvPosEl.value = branding.csv_position;
     }
+    // callback_url
+    if (branding.callback_url) {
+        const callbackEl = document.getElementById('brandingCallbackUrl');
+        if (callbackEl) callbackEl.value = branding.callback_url;
+    }
 }
 
 // Helper: recoger todos los parametros de branding app
@@ -1089,16 +1097,47 @@ function collectBrandingAppParams() {
     if (showBiometricHash) params.show_biometric_hash = showBiometricHash.checked ? 1 : 0;
     if (signatureColor && signatureColor.value) params.signature_color = signatureColor.value;
     if (csvPosition && csvPosition.value) params.csv_position = csvPosition.value;
+    const callbackUrl = document.getElementById('brandingCallbackUrl');
+    if (callbackUrl && callbackUrl.value.trim()) params.callback_url = callbackUrl.value.trim();
 
     return params;
 }
 
-// Helper: agregar parametros de branding app al body JSON
-function appendBrandingAppParams(jsonBody) {
+// Helper: agregar parametros de branding app al body
+function appendBrandingAppParams(target) {
     const params = collectBrandingAppParams();
-    Object.keys(params).forEach(key => {
-        jsonBody[key] = params[key];
+    if (target instanceof URLSearchParams) {
+        Object.keys(params).forEach(key => {
+            const val = params[key];
+            if (typeof val === 'object' && val !== null) {
+                Object.keys(val).forEach(subKey => {
+                    target.append(key + '[' + subKey + ']', val[subKey]);
+                });
+            } else {
+                target.append(key, val);
+            }
+        });
+    } else {
+        Object.keys(params).forEach(key => {
+            target[key] = params[key];
+        });
+    }
+}
+
+// Helper: convertir objeto a URLSearchParams con bracket notation
+function objectToFormParams(obj) {
+    const params = new URLSearchParams();
+    Object.keys(obj).forEach(key => {
+        const val = obj[key];
+        if (typeof val === 'object' && val !== null) {
+            Object.keys(val).forEach(subKey => {
+                params.append(key + '[' + subKey + ']', val[subKey]);
+            });
+        } else {
+            params.append(key, val);
+        }
     });
+    return params;
 }
 
 async function createNewBranding(templateType) {
@@ -1114,15 +1153,16 @@ async function createNewBranding(templateType) {
         html = minifyHTML(html);
     }
 
-    const body = {
+    const bodyObj = {
         name: name,
         templates: {}
     };
-    body.templates[templateType] = html;
-    appendBrandingAppParams(body);
+    bodyObj.templates[templateType] = html;
+    const formBody = objectToFormParams(bodyObj);
+    appendBrandingAppParams(formBody);
 
     try {
-        const result = await apiCall('POST', '/brandings.json', body);
+        const result = await apiCall('POST', '/brandings.json', formBody);
         showToast('Branding "' + name + '" creado con ID: ' + result.id.substring(0, 8) + '...');
 
         // Recargar lista de brandings
@@ -1152,19 +1192,20 @@ async function updateExistingBranding(brandingId, templateType) {
         html = minifyHTML(html);
     }
 
-    const body = {
+    const bodyObj = {
         templates: {}
     };
     // Enviar nombre actualizado
     const brandingName = document.getElementById('editorBrandingName').value.trim();
     if (brandingName) {
-        body.name = brandingName;
+        bodyObj.name = brandingName;
     }
-    body.templates[templateType] = html;
-    appendBrandingAppParams(body);
+    bodyObj.templates[templateType] = html;
+    const formBody = objectToFormParams(bodyObj);
+    appendBrandingAppParams(formBody);
 
     try {
-        await apiCall('PATCH', '/brandings/' + brandingId + '.json', body);
+        await apiCall('PATCH', '/brandings/' + brandingId + '.json', formBody);
         showToast('Branding actualizado correctamente');
 
         // Recargar la lista para reflejar cambios
