@@ -1573,6 +1573,18 @@ function generateHTML() {
 \t\t\t\t\t\t\t\t\t\t</table>`;
     const buttonHTML = buildButtonHTML('{{url}}');
 
+    // For email_button and validate_button: Signaturit replaces the magic word with its own button,
+    // so we use <span> with the magic word as text (not <a href>)
+    const buildMagicWordButtonHTML = (magicWord) => `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
+\t\t\t\t\t\t\t\t\t\t\t<tr>
+\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px;${buttonNoWrapStyle}'>
+\t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;${buttonNoWrapStyle}'>
+\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}${buttonNoWrapStyle}text-transform:none !important;'>${magicWord}</span>
+\t\t\t\t\t\t\t\t\t\t\t\t\t</p>
+\t\t\t\t\t\t\t\t\t\t\t\t</td>
+\t\t\t\t\t\t\t\t\t\t\t</tr>
+\t\t\t\t\t\t\t\t\t\t</table>`;
+
     const textFontSize = document.getElementById('textFontSize').value || defaults.textFontSize;
     const textLineHeight = document.getElementById('textLineHeight').value || defaults.textLineHeight;
     const textLetterSpacing = document.getElementById('textLetterSpacing').value || defaults.textLetterSpacing;
@@ -1591,10 +1603,10 @@ function generateHTML() {
                 return buttonHTML;
             }
             if (line.includes('{{email_button}}')) {
-                return buildButtonHTML('{{url}}');
+                return buildMagicWordButtonHTML('{{email_button}}');
             }
             if (line.includes('{{validate_button}}')) {
-                return buildButtonHTML('{{url}}');
+                return buildMagicWordButtonHTML('{{validate_button}}');
             }
             let processedLine = line;
             // Negrita: **texto**
@@ -2087,12 +2099,7 @@ function parseHTMLTemplate(htmlString) {
                     if (btnText.includes('{{email_button}}')) return '{{email_button}}';
                     if (btnText.includes('{{validate_button}}')) return '{{validate_button}}';
                     if (btnText.includes('{{sign_button}}')) return '{{sign_button}}';
-                    // New-style: <a href="{{url}}"> with custom text
-                    var link = node.querySelector('a[href]');
-                    if (link) {
-                        var href = link.getAttribute('href') || '';
-                        if (href.includes('{{email_url}}')) return '{{email_button}}';
-                    }
+                    // Default: assume sign_button for .miboton with <a href="{{url}}">
                     return '{{sign_button}}';
                 }
 
