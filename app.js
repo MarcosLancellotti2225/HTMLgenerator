@@ -73,6 +73,7 @@ const defaults = {
     buttonFontSize: '18',
     buttonLineHeight: '22',
     buttonFontWeight: 'normal',
+    buttonNoWrap: 'yes',
     textFontSize: '16',
     textLineHeight: '24',
     textLetterSpacing: '0',
@@ -1466,11 +1467,13 @@ function generateHTML() {
     const buttonPaddingStyle = `padding:${buttonPaddingTop}px ${buttonPaddingRight}px ${buttonPaddingBottom}px ${buttonPaddingLeft}px;`;
     const buttonMarginStyle = `margin:${buttonMarginTop}px ${buttonMarginRight}px ${buttonMarginBottom}px ${buttonMarginLeft}px;`;
     const buttonFontWeightStyle = buttonFontWeight !== 'normal' ? `font-weight:${buttonFontWeight};` : '';
+    const buttonNoWrap = document.getElementById('buttonNoWrap').value || defaults.buttonNoWrap;
+    const buttonNoWrapStyle = buttonNoWrap === 'yes' ? 'white-space:nowrap;' : '';
     const buttonHTML = `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}text-transform:none !important;'>{{sign_button}}</span>
+\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px;${buttonNoWrapStyle}'>
+\t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;${buttonNoWrapStyle}'>
+\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}${buttonNoWrapStyle}text-transform:none !important;'>{{sign_button}}</span>
 \t\t\t\t\t\t\t\t\t\t\t\t\t</p>
 \t\t\t\t\t\t\t\t\t\t\t\t</td>
 \t\t\t\t\t\t\t\t\t\t\t</tr>
@@ -1873,6 +1876,12 @@ function parseHTMLTemplate(htmlString) {
                 document.getElementById('buttonFontWeight').value = btnFontWeightMatch[1];
             } else {
                 document.getElementById('buttonFontWeight').value = 'normal';
+            }
+            // Nowrap
+            if (spanStyle.includes('white-space') && spanStyle.includes('nowrap')) {
+                document.getElementById('buttonNoWrap').value = 'yes';
+            } else {
+                document.getElementById('buttonNoWrap').value = 'no';
             }
         }
     }
