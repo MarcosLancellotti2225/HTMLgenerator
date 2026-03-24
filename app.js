@@ -1927,37 +1927,47 @@ function parseHTMLTemplate(htmlString) {
 
     if (contentArea) {
         const extractTextAndVariables = (element) => {
-            let content = '';
-            const walker = document.createTreeWalker(
-                element,
-                NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-                null,
-                false
-            );
-
-            let node;
-            let skipElement = null;
-            while (node = walker.nextNode()) {
-                if (skipElement && skipElement.contains(node)) continue;
-                skipElement = null;
+            // Recursively extract text, converting <strong>/<b> to **, <em>/<i> to *, <u> to __
+            const processNode = (node) => {
+                let result = '';
                 if (node.nodeType === Node.TEXT_NODE) {
-                    const text = node.textContent.trim();
-                    if (text) {
-                        content += text + '\n';
-                    }
-                } else if (node.nodeName === 'BR') {
-                    content += '\n';
-                } else if (node.classList && node.classList.contains('miboton')) {
-                    var btnText = node.textContent.trim();
-                    if (btnText.includes('{{email_button}}')) {
-                        content += '{{email_button}}\n';
-                    } else if (btnText.includes('{{validate_button}}')) {
-                        content += '{{validate_button}}\n';
-                    } else {
-                        content += '{{sign_button}}\n';
-                    }
-                    skipElement = node;
+                    return node.textContent;
                 }
+                if (node.nodeName === 'BR') {
+                    return '\n';
+                }
+                // Skip button elements - extract variable
+                if (node.classList && node.classList.contains('miboton')) {
+                    var btnText = node.textContent.trim();
+                    if (btnText.includes('{{email_button}}')) return '{{email_button}}';
+                    if (btnText.includes('{{validate_button}}')) return '{{validate_button}}';
+                    return '{{sign_button}}';
+                }
+
+                // Process child nodes
+                let childContent = '';
+                for (const child of node.childNodes) {
+                    childContent += processNode(child);
+                }
+
+                const tag = node.nodeName;
+                if (tag === 'STRONG' || tag === 'B') {
+                    result = '**' + childContent + '**';
+                } else if (tag === 'EM' || tag === 'I') {
+                    result = '*' + childContent + '*';
+                } else if (tag === 'U') {
+                    result = '__' + childContent + '__';
+                } else if (tag === 'P') {
+                    result = childContent.trim() + '\n';
+                } else {
+                    result = childContent;
+                }
+                return result;
+            };
+
+            let content = '';
+            for (const child of element.childNodes) {
+                content += processNode(child);
             }
             return content;
         };
@@ -2070,10 +2080,21 @@ function parseHTMLTemplate(htmlString) {
                 const footerPs = footerTd.querySelectorAll('p');
                 let footerText = '';
                 let firstFooterP = true;
+                const extractInlineFormatting = (el) => {
+                    let r = '';
+                    for (const ch of el.childNodes) {
+                        if (ch.nodeType === Node.TEXT_NODE) { r += ch.textContent; }
+                        else if (ch.nodeName === 'STRONG' || ch.nodeName === 'B') { r += '**' + extractInlineFormatting(ch) + '**'; }
+                        else if (ch.nodeName === 'EM' || ch.nodeName === 'I') { r += '*' + extractInlineFormatting(ch) + '*'; }
+                        else if (ch.nodeName === 'U') { r += '__' + extractInlineFormatting(ch) + '__'; }
+                        else { r += extractInlineFormatting(ch); }
+                    }
+                    return r;
+                };
                 footerPs.forEach(p => {
                     if (!firstFooterP) footerText += '\n';
                     firstFooterP = false;
-                    footerText += p.textContent.trim();
+                    footerText += extractInlineFormatting(p).trim();
 
                     // Extract text styling from first <p>
                     const pStyle = p.getAttribute('style') || '';
