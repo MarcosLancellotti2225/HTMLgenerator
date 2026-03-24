@@ -764,8 +764,6 @@ async function duplicateBranding(brandingId, currentName) {
         if (fullBranding.show_csv !== undefined) body.show_csv = fullBranding.show_csv;
         if (fullBranding.show_biometric_hash !== undefined) body.show_biometric_hash = fullBranding.show_biometric_hash;
         if (fullBranding.application_texts) body.application_texts = fullBranding.application_texts;
-        if (fullBranding.callback_url) body.callback_url = fullBranding.callback_url;
-
         const formBody = objectToFormParams(body);
         const result = await apiCall('POST', '/brandings.json', formBody);
         showToast('Branding duplicado como "' + newName.trim() + '"');
@@ -1044,11 +1042,6 @@ function loadBrandingAppParams(branding) {
         const csvPosEl = document.getElementById('brandingCsvPosition');
         if (csvPosEl) csvPosEl.value = branding.csv_position;
     }
-    // callback_url
-    if (branding.callback_url) {
-        const callbackEl = document.getElementById('brandingCallbackUrl');
-        if (callbackEl) callbackEl.value = branding.callback_url;
-    }
 }
 
 // Helper: recoger todos los parametros de branding app
@@ -1097,8 +1090,6 @@ function collectBrandingAppParams() {
     if (showBiometricHash) params.show_biometric_hash = showBiometricHash.checked ? 1 : 0;
     if (signatureColor && signatureColor.value) params.signature_color = signatureColor.value;
     if (csvPosition && csvPosition.value) params.csv_position = csvPosition.value;
-    const callbackUrl = document.getElementById('brandingCallbackUrl');
-    if (callbackUrl && callbackUrl.value.trim()) params.callback_url = callbackUrl.value.trim();
 
     return params;
 }
