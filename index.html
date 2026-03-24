@@ -518,6 +518,17 @@
                     </div>
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
+                            <div class="info-box" style="margin-bottom: 12px; background: #e8f4fd; border-color: #0d6efd;">
+                                Signaturit no permite <code>{{sign_button}}</code> en templates custom.
+                                El boton se genera con <code>&lt;a href="{{url}}"&gt;</code> y tu texto/estilo.
+                            </div>
+
+                            <div class="form-group">
+                                <label>Texto del Boton</label>
+                                <input type="text" id="emailButtonText" value="Firma Ora" placeholder="Ej: Firmar, Sign Now, Firma Ora...">
+                                <small style="color: #6c757d;">Este texto aparece dentro del boton en el email.</small>
+                            </div>
+
                             <div class="form-group">
                                 <label>Color de Fondo del Boton</label>
                                 <div class="color-input">
