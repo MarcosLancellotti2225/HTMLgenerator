@@ -381,6 +381,7 @@ const SIGNBOOK_HTML_TEMPLATES = {
 // ── Estado global ──
 let apiBrandings = [];
 let selectedBrandingId = null;
+let selectedBrandingTemplates = {}; // {templateName: htmlContent}
 let isNewBranding = false;
 let currentPage = 1;
 const ITEMS_PER_PAGE = 10;
@@ -453,6 +454,7 @@ function showView(viewId) {
 
 function goToDashboard() {
     selectedBrandingId = null;
+    selectedBrandingTemplates = {};
     isNewBranding = false;
     renderBrandingsPage();
     showView('viewDashboard');
@@ -460,6 +462,7 @@ function goToDashboard() {
 
 function goToEditorNew() {
     selectedBrandingId = null;
+    selectedBrandingTemplates = {};
     isNewBranding = true;
 
     document.getElementById('editorBrandingName').value = 'Nuevo Branding';
@@ -502,6 +505,12 @@ async function goToEditorExisting(brandingId) {
     try {
         const fullBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
         const templatesArray = fullBranding.templates || [];
+
+        // Guardar todos los templates para poder cambiar entre ellos
+        selectedBrandingTemplates = {};
+        templatesArray.forEach(t => {
+            if (t && t.name) selectedBrandingTemplates[t.name] = t.content || '';
+        });
 
         if (templatesArray.length > 0) {
             // Tomar el primer template del array (generalmente sign_request)
@@ -2862,6 +2871,27 @@ function initEditorListeners() {
 
     document.querySelectorAll('#viewEditor input:not([type="range"]):not([type="checkbox"]):not([type="file"]), #viewEditor textarea, #viewEditor select').forEach(element => {
         element.addEventListener('input', updateActivePreview);
+    });
+
+    // Al cambiar tipo de template, cargar el contenido correspondiente del branding
+    document.getElementById('templateType').addEventListener('change', function() {
+        const newType = this.value;
+        const templateHTML = selectedBrandingTemplates[newType];
+        if (templateHTML) {
+            try {
+                parseHTMLTemplate(templateHTML);
+            } catch (e) {
+                document.getElementById('emailContent').value = templateHTML;
+                updatePreview();
+            }
+            showToast('Template "' + newType + '" cargado');
+        } else {
+            // Template vacío - limpiar editor
+            document.getElementById('emailContent').value = '';
+            updatePreview();
+            showToast('Template "' + newType + '" vacío');
+        }
+        renderVariables();
     });
 
     // Checkboxes de la app
