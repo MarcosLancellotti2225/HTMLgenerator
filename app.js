@@ -117,6 +117,8 @@ const ALL_TEMPLATE_TYPES = [
 ];
 
 // Magic words obligatorias por tipo de template
+// Validacion: los botones se convierten en HTML con href={{url}}/{{email_url}},
+// asi que validamos contra el contenido del textarea, no contra el HTML generado.
 const REQUIRED_MAGIC_WORDS = {
     signatures_request: ['{{sign_button}}'],
     pending_sign: ['{{sign_button}}'],
@@ -853,16 +855,13 @@ function setColorField(fieldId, hexColor) {
 async function saveTemplateToAPI() {
     const templateType = document.getElementById('templateType').value;
 
-    // Validar magic words obligatorias
+    // Validar magic words obligatorias contra el textarea (no el HTML generado,
+    // porque los botones como {{email_button}} se convierten en <table> con href)
     const requiredWords = REQUIRED_MAGIC_WORDS[templateType];
     if (requiredWords) {
-        let html = generateHTML();
-        const shouldMinify = document.getElementById('minifyHTML').checked;
-        if (shouldMinify) {
-            html = minifyHTML(html);
-        }
+        const textareaContent = document.getElementById('emailContent').value;
 
-        const missing = requiredWords.filter(w => !html.includes(w));
+        const missing = requiredWords.filter(w => !textareaContent.includes(w));
         if (missing.length > 0) {
             showToast('Faltan variables obligatorias: ' + missing.join(', '));
             return;
