@@ -117,13 +117,28 @@ const ALL_TEMPLATE_TYPES = [
 ];
 
 // Magic words obligatorias por tipo de template
-// Validacion: los botones se convierten en HTML con href={{url}},
-// asi que validamos contra el contenido del textarea, no contra el HTML generado.
 const REQUIRED_MAGIC_WORDS = {
     signatures_request: ['{{sign_button}}'],
     pending_sign: ['{{sign_button}}'],
     emails_request: ['{{email_button}}'],
     validation_request: ['{{validate_button}}']
+};
+
+// Magic words PERMITIDAS por tipo de template
+// Si un template no está en esta lista, solo se permiten las universales
+const UNIVERSAL_MAGIC_WORDS = ['{{signer_name}}', '{{signer_email}}', '{{sender_email}}', '{{filename}}', '{{logo}}'];
+const ALLOWED_MAGIC_WORDS = {
+    sign_request: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}'],
+    signatures_request: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}', '{{email_body}}'],
+    signatures_receipt: [...UNIVERSAL_MAGIC_WORDS],
+    request_expired: [...UNIVERSAL_MAGIC_WORDS],
+    pending_sign: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}', '{{remaining_time}}'],
+    document_canceled: [...UNIVERSAL_MAGIC_WORDS],
+    emails_request: [...UNIVERSAL_MAGIC_WORDS, '{{email_button}}', '{{email_body}}'],
+    validation_request: [...UNIVERSAL_MAGIC_WORDS, '{{validate_button}}'],
+    signed_document: [...UNIVERSAL_MAGIC_WORDS, '{{signers}}'],
+    document_declined: [...UNIVERSAL_MAGIC_WORDS, '{{reason}}', '{{dashboard_button}}'],
+    request_expired_requester: [...UNIVERSAL_MAGIC_WORDS]
 };
 
 // ═══════════════════════════════════
@@ -864,15 +879,25 @@ function setColorField(fieldId, hexColor) {
 async function saveTemplateToAPI() {
     const templateType = document.getElementById('templateType').value;
 
-    // Validar magic words obligatorias contra el textarea (no el HTML generado,
-    // porque los botones como {{email_button}} se convierten en <table> con href)
+    const textareaContent = document.getElementById('emailContent').value;
+
+    // Validar magic words obligatorias
     const requiredWords = REQUIRED_MAGIC_WORDS[templateType];
     if (requiredWords) {
-        const textareaContent = document.getElementById('emailContent').value;
-
         const missing = requiredWords.filter(w => !textareaContent.includes(w));
         if (missing.length > 0) {
             showToast('Faltan variables obligatorias: ' + missing.join(', '));
+            return;
+        }
+    }
+
+    // Validar que no se usen magic words no permitidas para este template
+    const allowed = ALLOWED_MAGIC_WORDS[templateType];
+    if (allowed) {
+        const usedWords = textareaContent.match(/\{\{[a-z_]+\}\}/g) || [];
+        const forbidden = usedWords.filter(w => !allowed.includes(w));
+        if (forbidden.length > 0) {
+            showToast('Variables no permitidas en ' + templateType + ': ' + [...new Set(forbidden)].join(', '));
             return;
         }
     }
@@ -2714,14 +2739,14 @@ function updatePreview() {
         let html = generateHTML();
 
         // Reemplazar magic words con valores de preview
+        const emailButtonText = document.getElementById('emailButtonText').value.trim();
         const openSignBtn = document.getElementById('brandingOpenSignButton');
         const openEmailBtn = document.getElementById('brandingOpenEmailButton');
-        const signBtnText = (openSignBtn && openSignBtn.value.trim()) || 'VER DOCUMENTO';
-        const emailBtnText = (openEmailBtn && openEmailBtn.value.trim()) || 'VER EMAIL';
 
-        html = html.replace(/\{\{sign_button\}\}/g, signBtnText);
-        html = html.replace(/\{\{email_button\}\}/g, emailBtnText);
-        html = html.replace(/\{\{validate_button\}\}/g, 'VALIDAR');
+        html = html.replace(/\{\{sign_button\}\}/g, emailButtonText || (openSignBtn && openSignBtn.value.trim()) || 'VER DOCUMENTO');
+        html = html.replace(/\{\{email_button\}\}/g, emailButtonText || (openEmailBtn && openEmailBtn.value.trim()) || 'VER EMAIL');
+        html = html.replace(/\{\{validate_button\}\}/g, emailButtonText || 'VALIDAR');
+        html = html.replace(/\{\{dashboard_button\}\}/g, emailButtonText || 'IR AL DASHBOARD');
         html = html.replace(/\{\{signer_name\}\}/g, 'Nombre Firmante');
         html = html.replace(/\{\{signer_email\}\}/g, 'firmante@ejemplo.com');
         html = html.replace(/\{\{sender_email\}\}/g, 'remitente@ejemplo.com');
@@ -2730,7 +2755,6 @@ function updatePreview() {
         html = html.replace(/\{\{email_body\}\}/g, 'Texto adicional del email');
         html = html.replace(/\{\{code\}\}/g, '123456');
         html = html.replace(/\{\{reason\}\}/g, 'Motivo de rechazo');
-        html = html.replace(/\{\{dashboard_button\}\}/g, 'IR AL DASHBOARD');
         html = html.replace(/\{\{signers\}\}/g, 'Firmante 1, Firmante 2');
 
         // Logo: usar URL del logo si existe
