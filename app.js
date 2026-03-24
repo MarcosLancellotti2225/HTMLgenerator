@@ -1221,6 +1221,32 @@ function hexToRgba(hex, opacity) {
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
+// Parses any CSS color (rgba, rgb, #hex) and returns { hex: '#rrggbb', opacity: '0'-'1' }
+// Returns null if the color string cannot be parsed.
+function parseColor(colorStr) {
+    if (!colorStr) return null;
+    colorStr = colorStr.trim();
+
+    // #hex
+    if (colorStr.startsWith('#')) {
+        return { hex: colorStr.length === 4
+            ? '#' + colorStr[1]+colorStr[1] + colorStr[2]+colorStr[2] + colorStr[3]+colorStr[3]
+            : colorStr, opacity: '1' };
+    }
+
+    // rgba(r, g, b, a)
+    const rgbaMatch = colorStr.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/);
+    if (rgbaMatch) {
+        const r = parseInt(rgbaMatch[1]).toString(16).padStart(2, '0');
+        const g = parseInt(rgbaMatch[2]).toString(16).padStart(2, '0');
+        const b = parseInt(rgbaMatch[3]).toString(16).padStart(2, '0');
+        const a = rgbaMatch[4] !== undefined ? rgbaMatch[4] : '1';
+        return { hex: '#' + r + g + b, opacity: a };
+    }
+
+    return null;
+}
+
 function copyBrandingId() {
     const idEl = document.getElementById('editorBrandingId');
     const id = idEl.textContent.trim();
@@ -1793,10 +1819,15 @@ function parseHTMLTemplate(htmlString) {
         const bodyStyle = body.getAttribute('style') || '';
         const bgColorMatch = bodyStyle.match(/background-color:\s*([^;]+)/);
         if (bgColorMatch) {
-            const bgColor = bgColorMatch[1].trim();
-            document.getElementById('bgColor').value = bgColor.startsWith('#') ? bgColor : '#ffffff';
-            document.getElementById('bgColorValue').value = bgColor.startsWith('#') ? bgColor : '#ffffff';
-            extractedSomething = true;
+            const parsed = parseColor(bgColorMatch[1]);
+            if (parsed) {
+                document.getElementById('bgColor').value = parsed.hex;
+                document.getElementById('bgColorValue').value = parsed.hex;
+                document.getElementById('bgColorOpacity').value = parsed.opacity;
+                const opLabel = document.getElementById('bgColorOpacityValue');
+                if (opLabel) opLabel.textContent = parsed.opacity;
+                extractedSomething = true;
+            }
         }
     }
 
@@ -1807,21 +1838,81 @@ function parseHTMLTemplate(htmlString) {
             const bgcolor = table.getAttribute('bgcolor');
             const style = table.getAttribute('style') || '';
 
-            if (bgcolor && bgcolor.startsWith('#')) {
-                document.getElementById('containerColor').value = bgcolor;
-                document.getElementById('containerColorValue').value = bgcolor;
+            const parsedBg = parseColor(bgcolor);
+            if (parsedBg) {
+                document.getElementById('containerColor').value = parsedBg.hex;
+                document.getElementById('containerColorValue').value = parsedBg.hex;
+                document.getElementById('containerColorOpacity').value = parsedBg.opacity;
+                const opLabel = document.getElementById('containerColorOpacityValue');
+                if (opLabel) opLabel.textContent = parsedBg.opacity;
                 extractedSomething = true;
                 break;
             }
 
             const bgMatch = style.match(/background(?:-color)?:\s*([^;]+)/);
-            if (bgMatch && bgMatch[1].trim().startsWith('#')) {
-                document.getElementById('containerColor').value = bgMatch[1].trim();
-                document.getElementById('containerColorValue').value = bgMatch[1].trim();
-                extractedSomething = true;
-                break;
+            if (bgMatch) {
+                const parsedStyle = parseColor(bgMatch[1]);
+                if (parsedStyle) {
+                    document.getElementById('containerColor').value = parsedStyle.hex;
+                    document.getElementById('containerColorValue').value = parsedStyle.hex;
+                    document.getElementById('containerColorOpacity').value = parsedStyle.opacity;
+                    const opLabel = document.getElementById('containerColorOpacityValue');
+                    if (opLabel) opLabel.textContent = parsedStyle.opacity;
+                    extractedSomething = true;
+                    break;
+                }
             }
         }
+    }
+
+    // Border color & text color from main container table
+    const mainTable = doc.querySelector('table[style*="width:800px"]');
+    if (mainTable) {
+        const mtStyle = mainTable.getAttribute('style') || '';
+        const borderMatch = mtStyle.match(/border:\s*\d+px solid ([^;]+)/);
+        if (borderMatch) {
+            const parsedBorder = parseColor(borderMatch[1]);
+            if (parsedBorder) {
+                document.getElementById('borderColor').value = parsedBorder.hex;
+                document.getElementById('borderColorValue').value = parsedBorder.hex;
+                document.getElementById('borderColorOpacity').value = parsedBorder.opacity;
+                const opLabel = document.getElementById('borderColorOpacityValue');
+                if (opLabel) opLabel.textContent = parsedBorder.opacity;
+            }
+        }
+    }
+
+    // Text color from content td
+    const contentTd = doc.querySelector('td[style*="padding:0 0 25px 0"]');
+    if (contentTd) {
+        const ctStyle = contentTd.getAttribute('style') || '';
+        const colorMatch = ctStyle.match(/color:\s*([^;]+)/);
+        if (colorMatch) {
+            const parsedTxt = parseColor(colorMatch[1]);
+            if (parsedTxt) {
+                document.getElementById('textColor').value = parsedTxt.hex;
+                document.getElementById('textColorValue').value = parsedTxt.hex;
+                document.getElementById('textColorOpacity').value = parsedTxt.opacity;
+                const opLabel = document.getElementById('textColorOpacityValue');
+                if (opLabel) opLabel.textContent = parsedTxt.opacity;
+            }
+        }
+    }
+
+    // Text format (font-size, line-height, text-align, font-weight, letter-spacing) from first <p> in content
+    const firstP = doc.querySelector('td[style*="padding:0 0 25px 0"] p');
+    if (firstP) {
+        const pStyle = firstP.getAttribute('style') || '';
+        const fsMatch = pStyle.match(/font-size:\s*(\d+)px/);
+        if (fsMatch) document.getElementById('textFontSize').value = fsMatch[1];
+        const lhMatch = pStyle.match(/line-height:\s*(\d+)px/);
+        if (lhMatch) document.getElementById('textLineHeight').value = lhMatch[1];
+        const taMatch = pStyle.match(/text-align:\s*(\w+)/);
+        if (taMatch) document.getElementById('textAlign').value = taMatch[1];
+        const fwMatch = pStyle.match(/font-weight:\s*(\w+)/);
+        if (fwMatch) document.getElementById('textFontWeight').value = fwMatch[1];
+        const lsMatch = pStyle.match(/letter-spacing:\s*(\d+)px/);
+        if (lsMatch) document.getElementById('textLetterSpacing').value = lsMatch[1];
     }
 
     // Button styles
@@ -1839,10 +1930,13 @@ function parseHTMLTemplate(htmlString) {
 
         const bgMatch = buttonStyle.match(/background(?:-color)?:\s*([^;]+)/);
         if (bgMatch) {
-            const btnColor = bgMatch[1].trim();
-            if (btnColor.startsWith('#')) {
-                document.getElementById('buttonColor').value = btnColor;
-                document.getElementById('buttonColorValue').value = btnColor;
+            const parsedBtn = parseColor(bgMatch[1]);
+            if (parsedBtn) {
+                document.getElementById('buttonColor').value = parsedBtn.hex;
+                document.getElementById('buttonColorValue').value = parsedBtn.hex;
+                document.getElementById('buttonColorOpacity').value = parsedBtn.opacity;
+                const opLabel = document.getElementById('buttonColorOpacityValue');
+                if (opLabel) opLabel.textContent = parsedBtn.opacity;
                 extractedSomething = true;
             }
         }
@@ -1855,10 +1949,13 @@ function parseHTMLTemplate(htmlString) {
         const borderMatch = buttonStyle.match(/border:\s*(\d+)px solid ([^;]+)/);
         if (borderMatch) {
             document.getElementById('buttonBorderWidth').value = borderMatch[1];
-            const bdrColor = borderMatch[2].trim();
-            if (bdrColor.startsWith('#')) {
-                document.getElementById('buttonBorderColor').value = bdrColor;
-                document.getElementById('buttonBorderColorValue').value = bdrColor;
+            const parsedBdr = parseColor(borderMatch[2]);
+            if (parsedBdr) {
+                document.getElementById('buttonBorderColor').value = parsedBdr.hex;
+                document.getElementById('buttonBorderColorValue').value = parsedBdr.hex;
+                document.getElementById('buttonBorderColorOpacity').value = parsedBdr.opacity;
+                const opLabel = document.getElementById('buttonBorderColorOpacityValue');
+                if (opLabel) opLabel.textContent = parsedBdr.opacity;
             }
         } else {
             document.getElementById('buttonBorderWidth').value = '0';
@@ -1889,11 +1986,16 @@ function parseHTMLTemplate(htmlString) {
                          buttonTable.querySelector('a');
         if (buttonSpan) {
             const spanStyle = buttonSpan.getAttribute('style') || '';
-            const colorMatch = spanStyle.match(/color:\s*([^;]+)/);
-            if (colorMatch && colorMatch[1].trim().startsWith('#')) {
-                const txtColor = colorMatch[1].trim();
-                document.getElementById('buttonTextColor').value = txtColor;
-                document.getElementById('buttonTextColorValue').value = txtColor;
+            const colorMatch = spanStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
+            if (colorMatch) {
+                const parsedTxtColor = parseColor(colorMatch[1]);
+                if (parsedTxtColor) {
+                    document.getElementById('buttonTextColor').value = parsedTxtColor.hex;
+                    document.getElementById('buttonTextColorValue').value = parsedTxtColor.hex;
+                    document.getElementById('buttonTextColorOpacity').value = parsedTxtColor.opacity;
+                    const opLabel = document.getElementById('buttonTextColorOpacityValue');
+                    if (opLabel) opLabel.textContent = parsedTxtColor.opacity;
+                }
             }
             const btnFontSizeMatch = spanStyle.match(/font-size:\s*(\d+)px/);
             if (btnFontSizeMatch) {
@@ -2031,9 +2133,12 @@ function parseHTMLTemplate(htmlString) {
 
                 // Background color
                 const ftBgMatch = ftdStyle.match(/background:\s*([^;]+)/);
-                if (ftBgMatch && ftBgMatch[1].trim().startsWith('#')) {
-                    document.getElementById('footerBgColor').value = ftBgMatch[1].trim();
-                    document.getElementById('footerBgColorValue').value = ftBgMatch[1].trim();
+                if (ftBgMatch) {
+                    const parsedFtBg = parseColor(ftBgMatch[1]);
+                    if (parsedFtBg) {
+                        document.getElementById('footerBgColor').value = parsedFtBg.hex;
+                        document.getElementById('footerBgColorValue').value = parsedFtBg.hex;
+                    }
                 }
 
                 // Padding
@@ -2057,9 +2162,12 @@ function parseHTMLTemplate(htmlString) {
                 if (ftBorderLeftMatch) document.getElementById('footerBorderLeft').value = ftBorderLeftMatch[1];
 
                 const borderColorSource = ftBorderTopMatch || ftBorderRightMatch || ftBorderBottomMatch || ftBorderLeftMatch;
-                if (borderColorSource && borderColorSource[2].trim().startsWith('#')) {
-                    document.getElementById('footerBorderColor').value = borderColorSource[2].trim();
-                    document.getElementById('footerBorderColorValue').value = borderColorSource[2].trim();
+                if (borderColorSource) {
+                    const parsedFtBdr = parseColor(borderColorSource[2]);
+                    if (parsedFtBdr) {
+                        document.getElementById('footerBorderColor').value = parsedFtBdr.hex;
+                        document.getElementById('footerBorderColorValue').value = parsedFtBdr.hex;
+                    }
                 }
 
                 // Footer image
@@ -2098,10 +2206,13 @@ function parseHTMLTemplate(htmlString) {
 
                     // Extract text styling from first <p>
                     const pStyle = p.getAttribute('style') || '';
-                    const ftColorMatch = pStyle.match(/color:\s*([^;]+)/);
-                    if (ftColorMatch && ftColorMatch[1].trim().startsWith('#')) {
-                        document.getElementById('footerTextColor').value = ftColorMatch[1].trim();
-                        document.getElementById('footerTextColorValue').value = ftColorMatch[1].trim();
+                    const ftColorMatch = pStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
+                    if (ftColorMatch) {
+                        const parsedFtTxt = parseColor(ftColorMatch[1]);
+                        if (parsedFtTxt) {
+                            document.getElementById('footerTextColor').value = parsedFtTxt.hex;
+                            document.getElementById('footerTextColorValue').value = parsedFtTxt.hex;
+                        }
                     }
                     const ftFsMatch = pStyle.match(/font-size:\s*(\d+)px/);
                     if (ftFsMatch) document.getElementById('footerFontSize').value = ftFsMatch[1];
