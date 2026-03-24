@@ -483,7 +483,7 @@ async function goToEditorExisting(brandingId) {
     document.getElementById('editorBrandingName').value = branding.name || firstTplName || 'Sin nombre';
     document.getElementById('editorBrandingId').textContent = branding.id;
     document.getElementById('newBrandingNameGroup').style.display = 'none';
-    document.getElementById('templateTypeGroup').style.display = 'none';
+    document.getElementById('templateTypeGroup').style.display = '';
 
     // Cargar colores del branding si existen
     if (branding.text_color) {
