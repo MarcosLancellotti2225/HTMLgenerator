@@ -1247,6 +1247,39 @@ function parseColor(colorStr) {
     return null;
 }
 
+function copyCallbackSnippet() {
+    const url = document.getElementById('callbackUrlRef').value.trim();
+    if (!url) {
+        showToast('Ingresa una URL primero');
+        return;
+    }
+    const snippet = `// Ejemplo: crear signature request con callback_url
+// POST https://api.signaturit.com/v3/signatures.json
+
+const formData = new FormData();
+formData.append('recipients[0][name]', 'Nombre Firmante');
+formData.append('recipients[0][email]', 'firmante@email.com');
+formData.append('callback_url', '${url}');
+// formData.append('files[0]', file);  // tu documento
+
+fetch('https://api.signaturit.com/v3/signatures.json', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer TU_API_TOKEN' },
+  body: formData
+});`;
+
+    const box = document.getElementById('callbackSnippetBox');
+    const code = document.getElementById('callbackSnippetCode');
+    code.textContent = snippet;
+    box.style.display = 'block';
+
+    navigator.clipboard.writeText(snippet).then(() => {
+        showToast('Snippet copiado al portapapeles');
+    }).catch(() => {
+        showToast('Snippet generado (copia manualmente)');
+    });
+}
+
 function copyBrandingId() {
     const idEl = document.getElementById('editorBrandingId');
     const id = idEl.textContent.trim();
