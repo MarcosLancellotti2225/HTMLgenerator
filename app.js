@@ -1247,6 +1247,39 @@ function parseColor(colorStr) {
     return null;
 }
 
+function copyCallbackSnippet() {
+    const url = document.getElementById('callbackUrlRef').value.trim();
+    if (!url) {
+        showToast('Ingresa una URL primero');
+        return;
+    }
+    const snippet = `// Ejemplo: crear signature request con callback_url
+// POST https://api.signaturit.com/v3/signatures.json
+
+const formData = new FormData();
+formData.append('recipients[0][name]', 'Nombre Firmante');
+formData.append('recipients[0][email]', 'firmante@email.com');
+formData.append('callback_url', '${url}');
+// formData.append('files[0]', file);  // tu documento
+
+fetch('https://api.signaturit.com/v3/signatures.json', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer TU_API_TOKEN' },
+  body: formData
+});`;
+
+    const box = document.getElementById('callbackSnippetBox');
+    const code = document.getElementById('callbackSnippetCode');
+    code.textContent = snippet;
+    box.style.display = 'block';
+
+    navigator.clipboard.writeText(snippet).then(() => {
+        showToast('Snippet copiado al portapapeles');
+    }).catch(() => {
+        showToast('Snippet generado (copia manualmente)');
+    });
+}
+
 function copyBrandingId() {
     const idEl = document.getElementById('editorBrandingId');
     const id = idEl.textContent.trim();
@@ -1527,15 +1560,19 @@ function generateHTML() {
     const buttonFontWeightStyle = buttonFontWeight !== 'normal' ? `font-weight:${buttonFontWeight};` : '';
     const buttonNoWrap = document.getElementById('buttonNoWrap').value || defaults.buttonNoWrap;
     const buttonNoWrapStyle = buttonNoWrap === 'yes' ? 'white-space:nowrap;' : '';
-    const buttonHTML = `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
+    const emailButtonText = document.getElementById('emailButtonText').value.trim() || 'Firmar';
+
+    // Build button as <a href="{{url}}"> - Signaturit does not allow {{sign_button}} in custom templates
+    const buildButtonHTML = (urlVar) => `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t<tr>
 \t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px;${buttonNoWrapStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;${buttonNoWrapStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}${buttonNoWrapStyle}text-transform:none !important;'>{{sign_button}}</span>
+\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="${urlVar}" target="_blank" class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}${buttonNoWrapStyle}text-decoration:none;text-transform:none !important;'>${emailButtonText}</a>
 \t\t\t\t\t\t\t\t\t\t\t\t\t</p>
 \t\t\t\t\t\t\t\t\t\t\t\t</td>
 \t\t\t\t\t\t\t\t\t\t\t</tr>
 \t\t\t\t\t\t\t\t\t\t</table>`;
+    const buttonHTML = buildButtonHTML('{{url}}');
 
     const textFontSize = document.getElementById('textFontSize').value || defaults.textFontSize;
     const textLineHeight = document.getElementById('textLineHeight').value || defaults.textLineHeight;
@@ -1552,13 +1589,13 @@ function generateHTML() {
         .filter(line => line.trim() !== '')
         .map(line => {
             if (line.includes('{{sign_button}}')) {
-                return line.replace('{{sign_button}}', buttonHTML);
+                return buttonHTML;
             }
             if (line.includes('{{email_button}}')) {
-                return line.replace('{{email_button}}', buttonHTML.replace('{{sign_button}}', '{{email_button}}'));
+                return buildButtonHTML('{{email_url}}');
             }
             if (line.includes('{{validate_button}}')) {
-                return line.replace('{{validate_button}}', buttonHTML.replace('{{sign_button}}', '{{validate_button}}'));
+                return buildButtonHTML('{{url}}');
             }
             let processedLine = line;
             // Negrita: **texto**
@@ -2017,6 +2054,12 @@ function parseHTMLTemplate(htmlString) {
             } else {
                 document.getElementById('buttonNoWrap').value = 'no';
             }
+
+            // Button text (from <a> or <span> text content)
+            const btnTextContent = buttonSpan.textContent.trim();
+            if (btnTextContent && !btnTextContent.startsWith('{{')) {
+                document.getElementById('emailButtonText').value = btnTextContent;
+            }
         }
     }
 
@@ -2040,9 +2083,17 @@ function parseHTMLTemplate(htmlString) {
                 }
                 // Skip button elements - extract variable
                 if (node.classList && node.classList.contains('miboton')) {
+                    // Check for old-style {{sign_button}} text or new-style <a href="{{url}}">
                     var btnText = node.textContent.trim();
                     if (btnText.includes('{{email_button}}')) return '{{email_button}}';
                     if (btnText.includes('{{validate_button}}')) return '{{validate_button}}';
+                    if (btnText.includes('{{sign_button}}')) return '{{sign_button}}';
+                    // New-style: <a href="{{url}}"> with custom text
+                    var link = node.querySelector('a[href]');
+                    if (link) {
+                        var href = link.getAttribute('href') || '';
+                        if (href.includes('{{email_url}}')) return '{{email_button}}';
+                    }
                     return '{{sign_button}}';
                 }
 
