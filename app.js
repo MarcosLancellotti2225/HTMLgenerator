@@ -1026,19 +1026,19 @@ function loadBrandingAppParams(branding) {
         }
     }
     // show_welcome_page: 1 = true, 0 = false
-    if (branding.show_welcome_page !== undefined) {
-        const welcomeEl = document.getElementById('brandingShowWelcome');
-        if (welcomeEl) welcomeEl.checked = branding.show_welcome_page !== 0 && branding.show_welcome_page !== '0';
+    const welcomeEl = document.getElementById('brandingShowWelcome');
+    if (welcomeEl) {
+        welcomeEl.checked = branding.show_welcome_page === 1 || branding.show_welcome_page === '1' || branding.show_welcome_page === true;
     }
     // show_csv: 1 = true, 0 = false
-    if (branding.show_csv !== undefined) {
-        const csvEl = document.getElementById('brandingShowCsv');
-        if (csvEl) csvEl.checked = branding.show_csv !== 0 && branding.show_csv !== '0';
+    const csvEl = document.getElementById('brandingShowCsv');
+    if (csvEl) {
+        csvEl.checked = branding.show_csv === 1 || branding.show_csv === '1' || branding.show_csv === true;
     }
     // show_biometric_hash: 1 = true, 0 = false
-    if (branding.show_biometric_hash !== undefined) {
-        const hashEl = document.getElementById('brandingShowBiometricHash');
-        if (hashEl) hashEl.checked = branding.show_biometric_hash !== 0 && branding.show_biometric_hash !== '0';
+    const hashEl = document.getElementById('brandingShowBiometricHash');
+    if (hashEl) {
+        hashEl.checked = branding.show_biometric_hash === 1 || branding.show_biometric_hash === '1' || branding.show_biometric_hash === true;
     }
     // signature_color
     if (branding.signature_color) {
