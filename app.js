@@ -1561,19 +1561,7 @@ function generateHTML() {
     const buttonNoWrapStyle = buttonNoWrap === 'yes' ? 'white-space:nowrap;' : '';
     const emailButtonText = document.getElementById('emailButtonText').value.trim() || 'Firmar';
 
-    // Build button as <a href="{{url}}"> - Signaturit does not allow {{sign_button}} in custom templates
-    const buildButtonHTML = (urlVar) => `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px;${buttonNoWrapStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;${buttonNoWrapStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="${urlVar}" target="_blank" class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}${buttonNoWrapStyle}text-decoration:none;text-transform:none !important;'>${emailButtonText}</a>
-\t\t\t\t\t\t\t\t\t\t\t\t\t</p>
-\t\t\t\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t\t\t\t</table>`;
-    const buttonHTML = buildButtonHTML('{{url}}');
-
-    // For email_button and validate_button: Signaturit replaces the magic word with its own button,
+    // Signaturit replaces magic words with its own buttons,
     // so we use <span> with the magic word as text (not <a href>)
     const buildMagicWordButtonHTML = (magicWord) => `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t<tr>
@@ -1600,13 +1588,16 @@ function generateHTML() {
         .filter(line => line.trim() !== '')
         .map(line => {
             if (line.includes('{{sign_button}}')) {
-                return buttonHTML;
+                return buildMagicWordButtonHTML('{{sign_button}}');
             }
             if (line.includes('{{email_button}}')) {
                 return buildMagicWordButtonHTML('{{email_button}}');
             }
             if (line.includes('{{validate_button}}')) {
                 return buildMagicWordButtonHTML('{{validate_button}}');
+            }
+            if (line.includes('{{dashboard_button}}')) {
+                return buildMagicWordButtonHTML('{{dashboard_button}}');
             }
             let processedLine = line;
             // Negrita: **texto**
