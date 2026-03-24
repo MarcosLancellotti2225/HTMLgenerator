@@ -135,7 +135,7 @@ const ALLOWED_MAGIC_WORDS = {
     pending_sign: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}', '{{remaining_time}}'],
     document_canceled: [...UNIVERSAL_MAGIC_WORDS],
     emails_request: [...UNIVERSAL_MAGIC_WORDS, '{{email_button}}', '{{email_body}}'],
-    validation_request: [...UNIVERSAL_MAGIC_WORDS, '{{validate_button}}'],
+    validation_request: [...UNIVERSAL_MAGIC_WORDS, '{{validate_button}}', '{{email_body}}'],
     signed_document: [...UNIVERSAL_MAGIC_WORDS, '{{signers}}'],
     document_declined: [...UNIVERSAL_MAGIC_WORDS, '{{reason}}', '{{dashboard_button}}'],
     request_expired_requester: [...UNIVERSAL_MAGIC_WORDS]
@@ -535,7 +535,9 @@ async function goToEditorExisting(brandingId) {
 
             // Setear el dropdown al tipo detectado
             if (loadedType) {
-                document.getElementById('templateType').value = loadedType;
+                const tplDropdown = document.getElementById('templateType');
+                tplDropdown.value = loadedType;
+                tplDropdown._previousValue = loadedType;
             }
 
             if (templateHTML) {
@@ -2897,9 +2899,17 @@ function initEditorListeners() {
         element.addEventListener('input', updateActivePreview);
     });
 
-    // Al cambiar tipo de template, cargar el contenido correspondiente del branding
+    // Al cambiar tipo de template, guardar el actual y cargar el nuevo
     document.getElementById('templateType').addEventListener('change', function() {
         const newType = this.value;
+
+        // Guardar el HTML actual del template anterior en memoria
+        const prevType = this._previousValue || '';
+        if (prevType) {
+            selectedBrandingTemplates[prevType] = generateHTML();
+        }
+        this._previousValue = newType;
+
         const templateHTML = selectedBrandingTemplates[newType];
         if (templateHTML) {
             try {
