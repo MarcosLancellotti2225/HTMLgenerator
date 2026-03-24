@@ -117,7 +117,7 @@ const ALL_TEMPLATE_TYPES = [
 ];
 
 // Magic words obligatorias por tipo de template
-// Validacion: los botones se convierten en HTML con href={{url}}/{{email_url}},
+// Validacion: los botones se convierten en HTML con href={{url}},
 // asi que validamos contra el contenido del textarea, no contra el HTML generado.
 const REQUIRED_MAGIC_WORDS = {
     signatures_request: ['{{sign_button}}'],
@@ -1591,7 +1591,7 @@ function generateHTML() {
                 return buttonHTML;
             }
             if (line.includes('{{email_button}}')) {
-                return buildButtonHTML('{{email_url}}');
+                return buildButtonHTML('{{url}}');
             }
             if (line.includes('{{validate_button}}')) {
                 return buildButtonHTML('{{url}}');
