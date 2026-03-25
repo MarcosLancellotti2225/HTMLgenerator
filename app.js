@@ -1224,14 +1224,12 @@ async function createNewBranding(templateType) {
 
     const bodyObj = {
         name: name,
-        templates: {}
+        templates: [{ name: templateType, content: html }]
     };
-    bodyObj.templates[templateType] = html;
-    const formBody = objectToFormParams(bodyObj);
-    appendBrandingAppParams(formBody);
+    appendBrandingAppParams(bodyObj);
 
     try {
-        const result = await apiCall('POST', '/brandings.json', formBody);
+        const result = await apiCall('POST', '/brandings.json', bodyObj);
         showToast('Branding "' + name + '" creado con ID: ' + result.id.substring(0, 8) + '...');
 
         // Recargar lista de brandings
@@ -1266,31 +1264,31 @@ async function updateExistingBranding(brandingId, templateType) {
         html = minifyHTML(html);
     }
 
-    const bodyObj = {
-        templates: {}
-    };
+    const bodyObj = {};
     // Enviar nombre actualizado
     const brandingName = document.getElementById('editorBrandingName').value.trim();
     if (brandingName) {
         bodyObj.name = brandingName;
     }
 
-    // Enviar TODOS los templates existentes + el actual actualizado
-    // Si no, Signaturit reemplaza todos con solo el que mandemos
+    // Construir array de templates: [{name, content}, ...]
+    // Enviar TODOS los existentes + el actual actualizado
+    const templatesArray = [];
     for (const [tplName, tplContent] of Object.entries(selectedBrandingTemplates)) {
         if (tplName !== templateType && tplContent) {
-            bodyObj.templates[tplName] = tplContent;
+            templatesArray.push({ name: tplName, content: tplContent });
         }
     }
-    bodyObj.templates[templateType] = html;
+    templatesArray.push({ name: templateType, content: html });
+    bodyObj.templates = templatesArray;
 
-    console.log('PATCH templates:', Object.keys(bodyObj.templates));
+    console.log('PATCH templates:', templatesArray.map(t => t.name));
 
-    const formBody = objectToFormParams(bodyObj);
-    appendBrandingAppParams(formBody);
+    // Enviar como JSON
+    appendBrandingAppParams(bodyObj);
 
     try {
-        await apiCall('PATCH', '/brandings/' + brandingId + '.json', formBody);
+        await apiCall('PATCH', '/brandings/' + brandingId + '.json', bodyObj);
 
         // Actualizar el template en memoria para que no se pierda al cambiar tipo
         selectedBrandingTemplates[templateType] = html;
