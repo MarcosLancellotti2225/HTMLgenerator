@@ -1153,7 +1153,7 @@ function collectBrandingAppParams() {
     if (voiceText && voiceText.value.trim()) appTexts.voice = voiceText.value.trim();
 
     if (Object.keys(appTexts).length > 0) params.application_texts = appTexts;
-    console.log('collectBrandingAppParams - application_texts:', appTexts);
+    console.log('collectBrandingAppParams - application_texts:', JSON.stringify(appTexts));
 
     if (showWelcome) params.show_welcome_page = showWelcome.checked ? 1 : 0;
     if (showCsv) params.show_csv = showCsv.checked ? 1 : 0;
@@ -1312,7 +1312,7 @@ async function updateExistingBranding(brandingId, templateType) {
             debugParams[k] = v;
         }
     }
-    console.log('PATCH params completos:', debugParams);
+    console.log('PATCH params completos:', JSON.stringify(debugParams));
 
     try {
         await apiCall('PATCH', patchUrl, formBody);
@@ -1323,7 +1323,7 @@ async function updateExistingBranding(brandingId, templateType) {
             const savedTemplates = verifyBranding.templates || [];
             const savedNames = savedTemplates.map(t => normalizeTemplateName(t.name));
             console.log('Templates guardados en API:', savedNames, '(' + savedNames.length + ' total)');
-            console.log('application_texts en API despues de guardar:', verifyBranding.application_texts);
+            console.log('application_texts en API despues de guardar:', JSON.stringify(verifyBranding.application_texts));
 
             // Sincronizar selectedBrandingTemplates con lo real de la API (normalizando nombres)
             selectedBrandingTemplates = {};
