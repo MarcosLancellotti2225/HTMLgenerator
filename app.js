@@ -978,6 +978,15 @@ function showConfirmPushModal(method, templateType, brandingName, brandingId) {
         '<span class="confirm-label">Template:</span> <span class="confirm-value">' + templateType + '</span>' +
         '</div>';
 
+    // Mostrar todos los templates que se enviarán en el PATCH
+    if (method === 'PATCH') {
+        const allTypes = Object.keys(selectedBrandingTemplates).filter(t => selectedBrandingTemplates[t]);
+        if (!allTypes.includes(templateType)) allTypes.push(templateType);
+        details += '<div style="margin-bottom: 6px;">' +
+            '<span class="confirm-label">Templates totales:</span> ' + allTypes.length + ' (' + allTypes.join(', ') + ')' +
+            '</div>';
+    }
+
     details += '<div style="margin-bottom: 6px;">' +
         '<span class="confirm-label">Entorno:</span> <span style="font-weight:600;' +
         (env === 'production' ? 'color:#dc2626;"' : 'color:#2563eb;"') + '>' + envLabel + '</span>' +
@@ -1274,6 +1283,8 @@ async function updateExistingBranding(brandingId, templateType) {
         }
     }
     bodyObj.templates[templateType] = html;
+
+    console.log('PATCH templates:', Object.keys(bodyObj.templates));
 
     const formBody = objectToFormParams(bodyObj);
     appendBrandingAppParams(formBody);
