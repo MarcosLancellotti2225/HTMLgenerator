@@ -1270,73 +1270,57 @@ async function createNewBranding(templateType) {
 
 async function updateExistingBranding(brandingId, templateType) {
     let html = generateHTML();
-    const shouldMinify = document.getElementById('minifyHTML').checked;
-    if (shouldMinify) {
-        html = minifyHTML(html);
-    }
+    // Siempre minificar para reducir tamaño del body
+    html = minifyHTML(html);
 
     // Actualizar el template actual en memoria antes de guardar
     selectedBrandingTemplates[templateType] = html;
-
-    // Construir lista de TODOS los templates con contenido
-    const templatesList = [];
-    for (const [tplName, tplContent] of Object.entries(selectedBrandingTemplates)) {
-        if (tplContent) {
-            templatesList.push({ name: tplName, content: tplContent });
-        }
-    }
-
-    console.log('Guardando templates individualmente:', templatesList.map(t => t.name));
 
     const brandingName = document.getElementById('editorBrandingName').value.trim();
     const appParams = collectBrandingAppParams();
     const patchUrl = '/brandings/' + brandingId + '.json';
 
-    try {
-        // Enviar cada template en un PATCH individual para evitar 502 por body grande
-        let savedCount = 0;
-        let errors = [];
+    // Construir UN solo request con TODOS los templates usando formato key-value
+    // templates[sign_request]=<html>&templates[emails_request]=<html>
+    const formBody = new URLSearchParams();
+    if (brandingName) {
+        formBody.append('name', brandingName);
+    }
 
-        for (let i = 0; i < templatesList.length; i++) {
-            const tpl = templatesList[i];
-            const formBody = new URLSearchParams();
-
-            // Solo enviar nombre y params de branding en el primer request
-            if (i === 0) {
-                if (brandingName) {
-                    formBody.append('name', brandingName);
-                }
-                Object.keys(appParams).forEach(key => {
-                    const val = appParams[key];
-                    if (typeof val === 'object' && val !== null) {
-                        Object.keys(val).forEach(subKey => {
-                            formBody.append(key + '[' + subKey + ']', val[subKey]);
-                        });
-                    } else {
-                        formBody.append(key, val);
-                    }
-                });
-            }
-
-            // Enviar UN solo template por request: templates[name]=content
-            formBody.append('templates[' + tpl.name + ']', tpl.content);
-
-            try {
-                await apiCall('PATCH', patchUrl, formBody);
-                savedCount++;
-                console.log('Template guardado (' + (i + 1) + '/' + templatesList.length + '):', tpl.name);
-            } catch (err) {
-                console.error('Error guardando template ' + tpl.name + ':', err.message);
-                errors.push(tpl.name + ': ' + err.message);
-            }
+    // Agregar branding app params
+    Object.keys(appParams).forEach(key => {
+        const val = appParams[key];
+        if (typeof val === 'object' && val !== null) {
+            Object.keys(val).forEach(subKey => {
+                formBody.append(key + '[' + subKey + ']', val[subKey]);
+            });
+        } else {
+            formBody.append(key, val);
         }
+    });
+
+    // Agregar TODOS los templates con contenido, minificados
+    let templateCount = 0;
+    for (const [tplName, tplContent] of Object.entries(selectedBrandingTemplates)) {
+        if (tplContent) {
+            const minified = minifyHTML(tplContent);
+            formBody.append('templates[' + tplName + ']', minified);
+            templateCount++;
+        }
+    }
+
+    console.log('PATCH enviando ' + templateCount + ' templates:', Object.keys(selectedBrandingTemplates).filter(k => selectedBrandingTemplates[k]));
+    console.log('Body size aprox:', formBody.toString().length, 'chars');
+
+    try {
+        await apiCall('PATCH', patchUrl, formBody);
 
         // Verificar: recargar el branding completo para confirmar qué se guardó realmente
         try {
             const verifyBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
             const savedTemplates = verifyBranding.templates || [];
             const savedNames = savedTemplates.map(t => t.name);
-            console.log('Templates guardados en API:', savedNames);
+            console.log('Templates guardados en API:', savedNames, '(' + savedNames.length + ' total)');
 
             // Sincronizar selectedBrandingTemplates con lo real de la API
             selectedBrandingTemplates = {};
@@ -1344,17 +1328,13 @@ async function updateExistingBranding(brandingId, templateType) {
                 if (t && t.name) selectedBrandingTemplates[t.name] = t.content || '';
             });
 
-            if (errors.length > 0) {
-                showToast('Guardados ' + savedCount + '/' + templatesList.length + ' templates. Errores: ' + errors.join('; '));
+            if (savedNames.length < templateCount) {
+                showToast('ATENCION: Se enviaron ' + templateCount + ' pero solo se guardaron ' + savedNames.length + ': ' + savedNames.join(', '));
             } else {
-                showToast('Todos los templates guardados (' + savedNames.length + '/' + ALL_TEMPLATE_TYPES.length + ' en API)');
+                showToast('Guardado OK (' + savedNames.length + ' templates)');
             }
         } catch (e) {
-            if (errors.length > 0) {
-                showToast('Guardados ' + savedCount + '/' + templatesList.length + '. Errores: ' + errors.join('; '));
-            } else {
-                showToast('Templates guardados correctamente (' + savedCount + '/' + templatesList.length + ')');
-            }
+            showToast('Template "' + templateType + '" guardado');
         }
 
         updateTemplateDropdownLabels();
@@ -1366,7 +1346,17 @@ async function updateExistingBranding(brandingId, templateType) {
 
     } catch (error) {
         console.error('Error updating branding:', error);
-        showToast('Error al actualizar: ' + error.message);
+        // Si falla con todos, intentar guardar SOLO el template actual
+        console.log('Reintentando con solo el template actual...');
+        try {
+            const fallbackBody = new URLSearchParams();
+            if (brandingName) fallbackBody.append('name', brandingName);
+            fallbackBody.append('templates[' + templateType + ']', html);
+            await apiCall('PATCH', patchUrl, fallbackBody);
+            showToast('Solo se guardó "' + templateType + '" (error al guardar todos: ' + error.message + ')');
+        } catch (error2) {
+            showToast('Error al actualizar: ' + error.message);
+        }
     }
 }
 
