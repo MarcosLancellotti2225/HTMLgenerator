@@ -1224,12 +1224,14 @@ async function createNewBranding(templateType) {
 
     const bodyObj = {
         name: name,
-        templates: [{ name: templateType, content: html }]
+        templates: {}
     };
+    bodyObj.templates[templateType] = html;
     appendBrandingAppParams(bodyObj);
+    const formBody = objectToFormParams(bodyObj);
 
     try {
-        const result = await apiCall('POST', '/brandings.json', bodyObj);
+        const result = await apiCall('POST', '/brandings.json', formBody);
         showToast('Branding "' + name + '" creado con ID: ' + result.id.substring(0, 8) + '...');
 
         // Recargar lista de brandings
@@ -1264,31 +1266,30 @@ async function updateExistingBranding(brandingId, templateType) {
         html = minifyHTML(html);
     }
 
-    const bodyObj = {};
+    const bodyObj = {
+        templates: {}
+    };
     // Enviar nombre actualizado
     const brandingName = document.getElementById('editorBrandingName').value.trim();
     if (brandingName) {
         bodyObj.name = brandingName;
     }
 
-    // Construir array de templates: [{name, content}, ...]
-    // Enviar TODOS los existentes + el actual actualizado
-    const templatesArray = [];
+    // Enviar TODOS los templates existentes + el actual actualizado
     for (const [tplName, tplContent] of Object.entries(selectedBrandingTemplates)) {
         if (tplName !== templateType && tplContent) {
-            templatesArray.push({ name: tplName, content: tplContent });
+            bodyObj.templates[tplName] = tplContent;
         }
     }
-    templatesArray.push({ name: templateType, content: html });
-    bodyObj.templates = templatesArray;
+    bodyObj.templates[templateType] = html;
 
-    console.log('PATCH templates:', templatesArray.map(t => t.name));
+    console.log('PATCH templates:', Object.keys(bodyObj.templates));
 
-    // Enviar como JSON
     appendBrandingAppParams(bodyObj);
+    const formBody = objectToFormParams(bodyObj);
 
     try {
-        await apiCall('PATCH', '/brandings/' + brandingId + '.json', bodyObj);
+        await apiCall('PATCH', '/brandings/' + brandingId + '.json', formBody);
 
         // Actualizar el template en memoria para que no se pierda al cambiar tipo
         selectedBrandingTemplates[templateType] = html;
