@@ -101,9 +101,8 @@ const defaults = {
     footerPaddingLeft: '25'
 };
 
-// Todos los tipos de template posibles
+// Todos los tipos de template posibles (nombres oficiales de la API de Signaturit)
 const ALL_TEMPLATE_TYPES = [
-    'sign_request',
     'signatures_request',
     'signatures_receipt',
     'request_expired',
@@ -115,6 +114,18 @@ const ALL_TEMPLATE_TYPES = [
     'document_declined',
     'request_expired_requester'
 ];
+
+// Mapeo de nombres que la API devuelve (shorthand) a nombres oficiales
+const API_NAME_MAP = {
+    'sign_request': 'signatures_request',
+    'sign_receipt': 'signatures_receipt',
+    'email_request': 'emails_request'
+};
+
+// Normalizar nombre de template de la API a nombre oficial
+function normalizeTemplateName(name) {
+    return API_NAME_MAP[name] || name;
+}
 
 // Magic words obligatorias por tipo de template
 const REQUIRED_MAGIC_WORDS = {
@@ -128,7 +139,6 @@ const REQUIRED_MAGIC_WORDS = {
 // Si un template no está en esta lista, solo se permiten las universales
 const UNIVERSAL_MAGIC_WORDS = ['{{signer_name}}', '{{signer_email}}', '{{sender_email}}', '{{filename}}', '{{logo}}'];
 const ALLOWED_MAGIC_WORDS = {
-    sign_request: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}'],
     signatures_request: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}', '{{email_body}}'],
     signatures_receipt: [...UNIVERSAL_MAGIC_WORDS],
     request_expired: [...UNIVERSAL_MAGIC_WORDS],
@@ -147,10 +157,6 @@ const ALLOWED_MAGIC_WORDS = {
 
 const EMAIL_TEMPLATES = {
     es: {
-        sign_request: {
-            subject: 'Solicitud de firma',
-            content: 'Estimado/a {{signer_name}},\n\nLe hacemos llegar la siguiente documentacion para su firma:\n\n{{filename}}\n\nPor favor, revise el documento y proceda a firmarlo haciendo clic en el siguiente boton:\n\n{{sign_button}}\n\nSi tiene alguna duda, puede contactarnos en {{sender_email}}.\n\nSaludos cordiales.'
-        },
         signatures_request: {
             subject: 'Solicitud de firmas',
             content: 'Estimado/a {{signer_name}},\n\nTiene documentacion pendiente de firma:\n\n{{filename}}\n\n{{email_body}}\n\nPara firmar, haga clic en el siguiente boton:\n\n{{sign_button}}\n\nPara cualquier consulta, contacte con {{sender_email}}.\n\nSaludos cordiales.'
@@ -193,10 +199,6 @@ const EMAIL_TEMPLATES = {
         }
     },
     en: {
-        sign_request: {
-            subject: 'Signature request',
-            content: 'Dear {{signer_name}},\n\nPlease find attached the following document for your signature:\n\n{{filename}}\n\nPlease review the document and proceed to sign it by clicking the button below:\n\n{{sign_button}}\n\nIf you have any questions, please contact us at {{sender_email}}.\n\nBest regards.'
-        },
         signatures_request: {
             subject: 'Signatures request',
             content: 'Dear {{signer_name}},\n\nYou have documentation pending signature:\n\n{{filename}}\n\n{{email_body}}\n\nTo sign, please click the button below:\n\n{{sign_button}}\n\nFor any questions, please contact {{sender_email}}.\n\nBest regards.'
@@ -239,10 +241,6 @@ const EMAIL_TEMPLATES = {
         }
     },
     ca: {
-        sign_request: {
-            subject: 'Sol·licitud de signatura',
-            content: 'Benvolgut/da {{signer_name}},\n\nLi fem arribar la seguent documentacio per a la seva signatura:\n\n{{filename}}\n\nSi us plau, revisi el document i procedeixi a signar-lo fent clic al seguent boto:\n\n{{sign_button}}\n\nSi te algun dubte, pot contactar-nos a {{sender_email}}.\n\nSalutacions cordials.'
-        },
         signatures_request: {
             subject: 'Sol·licitud de signatures',
             content: 'Benvolgut/da {{signer_name}},\n\nTe documentacio pendent de signatura:\n\n{{filename}}\n\n{{email_body}}\n\nPer signar, faci clic al seguent boto:\n\n{{sign_button}}\n\nPer a qualsevol consulta, contacti amb {{sender_email}}.\n\nSalutacions cordials.'
@@ -330,13 +328,6 @@ function buildSignbookHTML(bodyHTML) {
 
 const SIGNBOOK_HTML_TEMPLATES = {
     es: {
-        sign_request: buildSignbookHTML(
-            SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para su firma:') +
-            SIGNBOOK_P('{{filename}}', true) +
-            SIGNBOOK_P('Para proceder con la revisión y firma de la documentación presione el siguiente botón:') +
-            SIGNBOOK_BUTTON('{{sign_button}}') +
-            SIGNBOOK_P('{{email_body}}')
-        ),
         signatures_request: buildSignbookHTML(
             SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para firmar:') +
             SIGNBOOK_P('{{filename}}', true) +
@@ -520,10 +511,10 @@ async function goToEditorExisting(brandingId) {
         const fullBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
         const templatesArray = fullBranding.templates || [];
 
-        // Guardar todos los templates para poder cambiar entre ellos
+        // Guardar todos los templates para poder cambiar entre ellos (normalizando nombres)
         selectedBrandingTemplates = {};
         templatesArray.forEach(t => {
-            if (t && t.name) selectedBrandingTemplates[t.name] = t.content || '';
+            if (t && t.name) selectedBrandingTemplates[normalizeTemplateName(t.name)] = t.content || '';
         });
 
         // Actualizar dropdown para mostrar cuáles templates tienen contenido
@@ -532,7 +523,7 @@ async function goToEditorExisting(brandingId) {
         if (templatesArray.length > 0) {
             // Tomar el primer template del array
             const firstTemplate = templatesArray[0];
-            const loadedType = firstTemplate.name;
+            const loadedType = normalizeTemplateName(firstTemplate.name);
             const templateHTML = firstTemplate.content;
 
             // Setear el dropdown al tipo detectado
@@ -665,10 +656,10 @@ function renderBrandingsPage() {
         const name = b.name || firstTemplateName || 'Sin nombre';
         const initial = name.charAt(0).toUpperCase();
 
-        // Convertir array [{name, content}] a map {name: content}
+        // Convertir array [{name, content}] a map {name: content} (normalizando nombres)
         const templatesMap = {};
         templatesArray.forEach(t => {
-            if (t && t.name) templatesMap[t.name] = t.content || '';
+            if (t && t.name) templatesMap[normalizeTemplateName(t.name)] = t.content || '';
         });
 
         // Contar templates con contenido
@@ -779,7 +770,7 @@ async function duplicateBranding(brandingId, currentName) {
         if (fullBranding.templates && Array.isArray(fullBranding.templates)) {
             fullBranding.templates.forEach(t => {
                 if (t.name && t.content) {
-                    body.templates[t.name] = t.content;
+                    body.templates[normalizeTemplateName(t.name)] = t.content;
                 }
             });
         }
@@ -824,8 +815,8 @@ async function loadTemplateFromAPI() {
         const templateType = document.getElementById('templateType').value;
         const templatesArray = branding.templates || [];
 
-        // Buscar el template por nombre en el array
-        const found = templatesArray.find(t => t.name === templateType);
+        // Buscar el template por nombre en el array (normalizando nombres de API)
+        const found = templatesArray.find(t => normalizeTemplateName(t.name) === templateType);
 
         if (found && found.content) {
             try {
@@ -839,7 +830,7 @@ async function loadTemplateFromAPI() {
         } else if (templatesArray.length > 0) {
             // Si no existe el tipo seleccionado, cargar el primero disponible
             const first = templatesArray[0];
-            document.getElementById('templateType').value = first.name;
+            document.getElementById('templateType').value = normalizeTemplateName(first.name);
             try {
                 parseHTMLTemplate(first.content);
                 showToast('Template "' + first.name + '" cargado (auto-detectado)');
@@ -908,8 +899,7 @@ async function saveTemplateToAPI() {
     };
     for (const [btn, expectedType] of Object.entries(buttonToTemplate)) {
         if (textareaContent.includes(btn) && templateType !== expectedType
-            && !(btn === '{{sign_button}}' && templateType === 'pending_sign')
-            && !(btn === '{{sign_button}}' && templateType === 'sign_request')) {
+            && !(btn === '{{sign_button}}' && templateType === 'pending_sign')) {
             document.getElementById('templateType').value = expectedType;
             templateType = expectedType;
             showToast('Tipo de template auto-corregido a "' + expectedType + '"');
@@ -1061,6 +1051,7 @@ function loadBrandingAppParams(branding) {
         setColorField('brandingTextColor', branding.text_color);
     }
     // application_texts puede ser un objeto con varios campos
+    console.log('API application_texts:', branding.application_texts);
     if (branding.application_texts) {
         if (branding.application_texts.terms_and_conditions) {
             const termsEl = document.getElementById('brandingTermsText');
@@ -1162,6 +1153,7 @@ function collectBrandingAppParams() {
     if (voiceText && voiceText.value.trim()) appTexts.voice = voiceText.value.trim();
 
     if (Object.keys(appTexts).length > 0) params.application_texts = appTexts;
+    console.log('collectBrandingAppParams - application_texts:', appTexts);
 
     if (showWelcome) params.show_welcome_page = showWelcome.checked ? 1 : 0;
     if (showCsv) params.show_csv = showCsv.checked ? 1 : 0;
@@ -1311,6 +1303,16 @@ async function updateExistingBranding(brandingId, templateType) {
 
     console.log('PATCH enviando ' + templateCount + ' templates:', Object.keys(selectedBrandingTemplates).filter(k => selectedBrandingTemplates[k]));
     console.log('Body size aprox:', formBody.toString().length, 'chars');
+    // Debug: mostrar todos los params que se envian
+    const debugParams = {};
+    for (const [k, v] of formBody.entries()) {
+        if (k.startsWith('templates[')) {
+            debugParams[k] = v.substring(0, 50) + '...';
+        } else {
+            debugParams[k] = v;
+        }
+    }
+    console.log('PATCH params completos:', debugParams);
 
     try {
         await apiCall('PATCH', patchUrl, formBody);
@@ -1319,13 +1321,14 @@ async function updateExistingBranding(brandingId, templateType) {
         try {
             const verifyBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
             const savedTemplates = verifyBranding.templates || [];
-            const savedNames = savedTemplates.map(t => t.name);
+            const savedNames = savedTemplates.map(t => normalizeTemplateName(t.name));
             console.log('Templates guardados en API:', savedNames, '(' + savedNames.length + ' total)');
+            console.log('application_texts en API despues de guardar:', verifyBranding.application_texts);
 
-            // Sincronizar selectedBrandingTemplates con lo real de la API
+            // Sincronizar selectedBrandingTemplates con lo real de la API (normalizando nombres)
             selectedBrandingTemplates = {};
             savedTemplates.forEach(t => {
-                if (t && t.name) selectedBrandingTemplates[t.name] = t.content || '';
+                if (t && t.name) selectedBrandingTemplates[normalizeTemplateName(t.name)] = t.content || '';
             });
 
             if (savedNames.length < templateCount) {
