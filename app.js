@@ -1291,11 +1291,28 @@ async function updateExistingBranding(brandingId, templateType) {
     try {
         await apiCall('PATCH', '/brandings/' + brandingId + '.json', formBody);
 
-        // Actualizar el template en memoria para que no se pierda al cambiar tipo
+        // Actualizar el template en memoria
         selectedBrandingTemplates[templateType] = html;
-        updateTemplateDropdownLabels();
 
-        showToast('Template "' + templateType + '" guardado correctamente');
+        // Verificar: recargar el branding completo para confirmar qué se guardó realmente
+        try {
+            const verifyBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
+            const savedTemplates = verifyBranding.templates || [];
+            const savedNames = savedTemplates.map(t => t.name);
+            console.log('Templates guardados en API:', savedNames);
+
+            // Sincronizar selectedBrandingTemplates con lo real de la API
+            selectedBrandingTemplates = {};
+            savedTemplates.forEach(t => {
+                if (t && t.name) selectedBrandingTemplates[t.name] = t.content || '';
+            });
+
+            showToast('Template "' + templateType + '" guardado (' + savedNames.length + '/' + ALL_TEMPLATE_TYPES.length + ' templates)');
+        } catch (e) {
+            showToast('Template "' + templateType + '" guardado correctamente');
+        }
+
+        updateTemplateDropdownLabels();
 
         // Recargar la lista para reflejar cambios
         try {
@@ -3010,15 +3027,12 @@ function initEditorListeners() {
         element.addEventListener('input', updateActivePreview);
     });
 
-    // Al cambiar tipo de template, guardar el actual y cargar el nuevo
+    // Al cambiar tipo de template, cargar el contenido del nuevo tipo
+    // NO regeneramos HTML del tipo anterior para evitar contaminar con magic words incorrectas.
+    // Los templates originales de la API se preservan intactos en selectedBrandingTemplates.
+    // Solo se actualizan cuando el usuario hace "Guardar" explícitamente.
     document.getElementById('templateType').addEventListener('change', function() {
         const newType = this.value;
-
-        // Guardar el HTML actual del template anterior en memoria
-        const prevType = this._previousValue || '';
-        if (prevType) {
-            selectedBrandingTemplates[prevType] = generateHTML();
-        }
         this._previousValue = newType;
 
         const templateHTML = selectedBrandingTemplates[newType];
