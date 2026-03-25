@@ -1265,7 +1265,16 @@ async function updateExistingBranding(brandingId, templateType) {
     if (brandingName) {
         bodyObj.name = brandingName;
     }
+
+    // Enviar TODOS los templates existentes + el actual actualizado
+    // Si no, Signaturit reemplaza todos con solo el que mandemos
+    for (const [tplName, tplContent] of Object.entries(selectedBrandingTemplates)) {
+        if (tplName !== templateType && tplContent) {
+            bodyObj.templates[tplName] = tplContent;
+        }
+    }
     bodyObj.templates[templateType] = html;
+
     const formBody = objectToFormParams(bodyObj);
     appendBrandingAppParams(formBody);
 
