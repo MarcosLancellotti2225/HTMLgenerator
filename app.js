@@ -896,9 +896,26 @@ function updateTemplateDropdownLabels() {
 // ═══════════════════════════════════
 
 async function saveTemplateToAPI() {
-    const templateType = document.getElementById('templateType').value;
+    let templateType = document.getElementById('templateType').value;
 
     const textareaContent = document.getElementById('emailContent').value;
+
+    // Auto-detectar tipo de template basado en el botón usado en el contenido
+    const buttonToTemplate = {
+        '{{sign_button}}': 'signatures_request',
+        '{{email_button}}': 'emails_request',
+        '{{validate_button}}': 'validation_request'
+    };
+    for (const [btn, expectedType] of Object.entries(buttonToTemplate)) {
+        if (textareaContent.includes(btn) && templateType !== expectedType
+            && !(btn === '{{sign_button}}' && templateType === 'pending_sign')
+            && !(btn === '{{sign_button}}' && templateType === 'sign_request')) {
+            document.getElementById('templateType').value = expectedType;
+            templateType = expectedType;
+            showToast('Tipo de template auto-corregido a "' + expectedType + '"');
+            break;
+        }
+    }
 
     // Validar magic words obligatorias
     const requiredWords = REQUIRED_MAGIC_WORDS[templateType];
