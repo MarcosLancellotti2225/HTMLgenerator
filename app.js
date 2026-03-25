@@ -1838,6 +1838,54 @@ function loadPastedHTML() {
     }
 }
 
+// Parsear solo el contenido del email (textarea) sin modificar estilos del formulario
+function parseEmailContentOnly(htmlString) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
+                       doc.querySelector('.note') ||
+                       doc.querySelector('table[bgcolor="#ffffff"] td') ||
+                       doc.querySelector('body');
+
+    if (!contentArea) {
+        document.getElementById('emailContent').value = '';
+        return;
+    }
+
+    // Reusar la misma lógica de extracción de texto que parseHTMLTemplate
+    const processNode = (node) => {
+        let result = '';
+        if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+        if (node.nodeName === 'BR') return '\n';
+        if (node.classList && node.classList.contains('miboton')) {
+            var btnText = node.textContent.trim();
+            if (btnText.includes('{{email_button}}')) return '{{email_button}}';
+            if (btnText.includes('{{validate_button}}')) return '{{validate_button}}';
+            if (btnText.includes('{{sign_button}}')) return '{{sign_button}}';
+            if (btnText.includes('{{dashboard_button}}')) return '{{dashboard_button}}';
+            return '{{sign_button}}';
+        }
+        let childContent = '';
+        for (const child of node.childNodes) childContent += processNode(child);
+        const tag = node.nodeName;
+        if (tag === 'STRONG' || tag === 'B') result = '**' + childContent + '**';
+        else if (tag === 'EM' || tag === 'I') result = '*' + childContent + '*';
+        else if (tag === 'U') result = '__' + childContent + '__';
+        else if (tag === 'P') result = childContent.trim() + '\n';
+        else result = childContent;
+        return result;
+    };
+
+    let emailContent = '';
+    for (const child of contentArea.childNodes) emailContent += processNode(child);
+
+    if (!emailContent.trim()) emailContent = contentArea.textContent || '';
+
+    emailContent = emailContent.replace(/\n{3,}/g, '\n\n').trim();
+    document.getElementById('emailContent').value = emailContent;
+}
+
 function parseHTMLTemplate(htmlString) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
@@ -2912,17 +2960,18 @@ function initEditorListeners() {
         const templateHTML = selectedBrandingTemplates[newType];
         if (templateHTML) {
             try {
-                parseHTMLTemplate(templateHTML);
+                // Parsear solo el contenido del email, no resetear estilos
+                parseEmailContentOnly(templateHTML);
             } catch (e) {
-                document.getElementById('emailContent').value = templateHTML;
-                updatePreview();
+                document.getElementById('emailContent').value = '';
             }
+            updatePreview();
             showToast('Template "' + newType + '" cargado');
         } else {
-            // Template vacío - limpiar editor
+            // Template vacío - solo limpiar textarea, mantener estilos
             document.getElementById('emailContent').value = '';
             updatePreview();
-            showToast('Template "' + newType + '" vacío');
+            showToast('Template "' + newType + '" — nuevo (sin contenido previo)');
         }
         renderVariables();
     });
