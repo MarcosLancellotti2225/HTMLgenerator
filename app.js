@@ -1222,13 +1222,22 @@ async function createNewBranding(templateType) {
         html = minifyHTML(html);
     }
 
-    const bodyObj = {
-        name: name,
-        templates: {}
-    };
-    bodyObj.templates[templateType] = html;
-    appendBrandingAppParams(bodyObj);
-    const formBody = objectToFormParams(bodyObj);
+    const formBody = new URLSearchParams();
+    formBody.append('name', name);
+    formBody.append('templates[0][name]', templateType);
+    formBody.append('templates[0][content]', html);
+
+    const appParams = collectBrandingAppParams();
+    Object.keys(appParams).forEach(key => {
+        const val = appParams[key];
+        if (typeof val === 'object' && val !== null) {
+            Object.keys(val).forEach(subKey => {
+                formBody.append(key + '[' + subKey + ']', val[subKey]);
+            });
+        } else {
+            formBody.append(key, val);
+        }
+    });
 
     try {
         const result = await apiCall('POST', '/brandings.json', formBody);
@@ -1266,27 +1275,43 @@ async function updateExistingBranding(brandingId, templateType) {
         html = minifyHTML(html);
     }
 
-    const bodyObj = {
-        templates: {}
-    };
+    // Construir lista de templates a enviar
+    const templatesList = [];
     // Enviar nombre actualizado
     const brandingName = document.getElementById('editorBrandingName').value.trim();
-    if (brandingName) {
-        bodyObj.name = brandingName;
-    }
 
-    // Enviar TODOS los templates existentes + el actual actualizado
+    // Incluir TODOS los templates existentes + el actual actualizado
     for (const [tplName, tplContent] of Object.entries(selectedBrandingTemplates)) {
         if (tplName !== templateType && tplContent) {
-            bodyObj.templates[tplName] = tplContent;
+            templatesList.push({ name: tplName, content: tplContent });
         }
     }
-    bodyObj.templates[templateType] = html;
+    templatesList.push({ name: templateType, content: html });
 
-    console.log('PATCH templates:', Object.keys(bodyObj.templates));
+    console.log('PATCH templates:', templatesList.map(t => t.name));
 
-    appendBrandingAppParams(bodyObj);
-    const formBody = objectToFormParams(bodyObj);
+    // Construir FormData con formato array: templates[0][name]=x&templates[0][content]=y
+    const formBody = new URLSearchParams();
+    if (brandingName) {
+        formBody.append('name', brandingName);
+    }
+    templatesList.forEach((tpl, i) => {
+        formBody.append('templates[' + i + '][name]', tpl.name);
+        formBody.append('templates[' + i + '][content]', tpl.content);
+    });
+
+    // Agregar branding app params
+    const appParams = collectBrandingAppParams();
+    Object.keys(appParams).forEach(key => {
+        const val = appParams[key];
+        if (typeof val === 'object' && val !== null) {
+            Object.keys(val).forEach(subKey => {
+                formBody.append(key + '[' + subKey + ']', val[subKey]);
+            });
+        } else {
+            formBody.append(key, val);
+        }
+    });
 
     try {
         await apiCall('PATCH', '/brandings/' + brandingId + '.json', formBody);
