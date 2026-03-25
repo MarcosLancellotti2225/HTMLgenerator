@@ -135,7 +135,7 @@ const ALLOWED_MAGIC_WORDS = {
     pending_sign: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}', '{{remaining_time}}'],
     document_canceled: [...UNIVERSAL_MAGIC_WORDS],
     emails_request: [...UNIVERSAL_MAGIC_WORDS, '{{email_button}}', '{{email_body}}'],
-    validation_request: [...UNIVERSAL_MAGIC_WORDS, '{{validate_button}}', '{{email_body}}'],
+    validation_request: [...UNIVERSAL_MAGIC_WORDS, '{{validate_button}}'],
     signed_document: [...UNIVERSAL_MAGIC_WORDS, '{{signers}}'],
     document_declined: [...UNIVERSAL_MAGIC_WORDS, '{{reason}}', '{{dashboard_button}}'],
     request_expired_requester: [...UNIVERSAL_MAGIC_WORDS]
@@ -372,8 +372,7 @@ const SIGNBOOK_HTML_TEMPLATES = {
             SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para su validación:') +
             SIGNBOOK_P('{{filename}}', true) +
             SIGNBOOK_P('Para proceder con la validación de la documentación presione el siguiente botón:') +
-            SIGNBOOK_BUTTON('{{validate_button}}') +
-            SIGNBOOK_P('{{email_body}}')
+            SIGNBOOK_BUTTON('{{validate_button}}')
         ),
         signed_document: buildSignbookHTML(
             SIGNBOOK_P('Estimado/a {{signer_name}}, le informamos que se ha completado la firma de la siguiente documentación:') +
