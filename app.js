@@ -526,8 +526,11 @@ async function goToEditorExisting(brandingId) {
             if (t && t.name) selectedBrandingTemplates[t.name] = t.content || '';
         });
 
+        // Actualizar dropdown para mostrar cuáles templates tienen contenido
+        updateTemplateDropdownLabels();
+
         if (templatesArray.length > 0) {
-            // Tomar el primer template del array (generalmente sign_request)
+            // Tomar el primer template del array
             const firstTemplate = templatesArray[0];
             const loadedType = firstTemplate.name;
             const templateHTML = firstTemplate.content;
@@ -546,11 +549,12 @@ async function goToEditorExisting(brandingId) {
                     document.getElementById('emailContent').value = templateHTML;
                     updatePreview();
                 }
-                showToast('Template "' + loadedType + '" cargado');
+                showToast('Template "' + loadedType + '" cargado (' + templatesArray.length + '/' + ALL_TEMPLATE_TYPES.length + ' templates configurados)');
             } else {
                 updatePreview();
             }
         } else {
+            document.getElementById('templateType')._previousValue = document.getElementById('templateType').value;
             updatePreview();
         }
 
@@ -870,6 +874,20 @@ function setColorField(fieldId, hexColor) {
     if (picker && hexColor && hexColor.startsWith('#')) {
         picker.value = hexColor;
         if (textInput) textInput.value = hexColor;
+    }
+}
+
+// Actualizar labels del dropdown para mostrar cuáles templates tienen contenido
+function updateTemplateDropdownLabels() {
+    const select = document.getElementById('templateType');
+    for (const option of select.options) {
+        const type = option.value;
+        const hasContent = !!selectedBrandingTemplates[type];
+        const required = REQUIRED_MAGIC_WORDS[type];
+        let label = type;
+        if (required) label += ' (requiere ' + required.join(', ') + ')';
+        if (hasContent) label = '● ' + label;
+        option.textContent = label;
     }
 }
 
@@ -1198,11 +1216,16 @@ async function createNewBranding(templateType) {
 
         // Cambiar a modo edicion del branding recien creado
         selectedBrandingId = result.id;
+        selectedBrandingTemplates = {};
+        selectedBrandingTemplates[templateType] = html;
         isNewBranding = false;
         document.getElementById('editorBrandingName').value = name;
         document.getElementById('editorBrandingId').textContent = result.id;
         document.getElementById('newBrandingNameGroup').style.display = 'none';
-        document.getElementById('templateTypeGroup').style.display = 'none';
+        document.getElementById('templateTypeGroup').style.display = '';
+        const tplDropdown = document.getElementById('templateType');
+        tplDropdown.value = templateType;
+        tplDropdown._previousValue = templateType;
 
     } catch (error) {
         console.error('Error creating branding:', error);
@@ -1231,7 +1254,12 @@ async function updateExistingBranding(brandingId, templateType) {
 
     try {
         await apiCall('PATCH', '/brandings/' + brandingId + '.json', formBody);
-        showToast('Branding actualizado correctamente');
+
+        // Actualizar el template en memoria para que no se pierda al cambiar tipo
+        selectedBrandingTemplates[templateType] = html;
+        updateTemplateDropdownLabels();
+
+        showToast('Template "' + templateType + '" guardado correctamente');
 
         // Recargar la lista para reflejar cambios
         try {
