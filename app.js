@@ -1051,6 +1051,7 @@ function loadBrandingAppParams(branding) {
         setColorField('brandingTextColor', branding.text_color);
     }
     // application_texts puede ser un objeto con varios campos
+    console.log('API application_texts:', branding.application_texts);
     if (branding.application_texts) {
         if (branding.application_texts.terms_and_conditions) {
             const termsEl = document.getElementById('brandingTermsText');
@@ -1152,6 +1153,7 @@ function collectBrandingAppParams() {
     if (voiceText && voiceText.value.trim()) appTexts.voice = voiceText.value.trim();
 
     if (Object.keys(appTexts).length > 0) params.application_texts = appTexts;
+    console.log('collectBrandingAppParams - application_texts:', appTexts);
 
     if (showWelcome) params.show_welcome_page = showWelcome.checked ? 1 : 0;
     if (showCsv) params.show_csv = showCsv.checked ? 1 : 0;
@@ -1301,6 +1303,16 @@ async function updateExistingBranding(brandingId, templateType) {
 
     console.log('PATCH enviando ' + templateCount + ' templates:', Object.keys(selectedBrandingTemplates).filter(k => selectedBrandingTemplates[k]));
     console.log('Body size aprox:', formBody.toString().length, 'chars');
+    // Debug: mostrar todos los params que se envian
+    const debugParams = {};
+    for (const [k, v] of formBody.entries()) {
+        if (k.startsWith('templates[')) {
+            debugParams[k] = v.substring(0, 50) + '...';
+        } else {
+            debugParams[k] = v;
+        }
+    }
+    console.log('PATCH params completos:', debugParams);
 
     try {
         await apiCall('PATCH', patchUrl, formBody);
@@ -1311,6 +1323,7 @@ async function updateExistingBranding(brandingId, templateType) {
             const savedTemplates = verifyBranding.templates || [];
             const savedNames = savedTemplates.map(t => normalizeTemplateName(t.name));
             console.log('Templates guardados en API:', savedNames, '(' + savedNames.length + ' total)');
+            console.log('application_texts en API despues de guardar:', verifyBranding.application_texts);
 
             // Sincronizar selectedBrandingTemplates con lo real de la API (normalizando nombres)
             selectedBrandingTemplates = {};
