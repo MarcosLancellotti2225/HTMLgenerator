@@ -1275,49 +1275,61 @@ async function updateExistingBranding(brandingId, templateType) {
         html = minifyHTML(html);
     }
 
-    // Construir lista de templates a enviar
-    const templatesList = [];
-    // Enviar nombre actualizado
-    const brandingName = document.getElementById('editorBrandingName').value.trim();
+    // Actualizar el template actual en memoria antes de guardar
+    selectedBrandingTemplates[templateType] = html;
 
-    // Incluir TODOS los templates existentes + el actual actualizado
+    // Construir lista de TODOS los templates con contenido
+    const templatesList = [];
     for (const [tplName, tplContent] of Object.entries(selectedBrandingTemplates)) {
-        if (tplName !== templateType && tplContent) {
+        if (tplContent) {
             templatesList.push({ name: tplName, content: tplContent });
         }
     }
-    templatesList.push({ name: templateType, content: html });
 
-    console.log('PATCH templates:', templatesList.map(t => t.name));
+    console.log('Guardando templates individualmente:', templatesList.map(t => t.name));
 
-    // Construir FormData con formato array: templates[0][name]=x&templates[0][content]=y
-    const formBody = new URLSearchParams();
-    if (brandingName) {
-        formBody.append('name', brandingName);
-    }
-    templatesList.forEach((tpl, i) => {
-        formBody.append('templates[' + i + '][name]', tpl.name);
-        formBody.append('templates[' + i + '][content]', tpl.content);
-    });
-
-    // Agregar branding app params
+    const brandingName = document.getElementById('editorBrandingName').value.trim();
     const appParams = collectBrandingAppParams();
-    Object.keys(appParams).forEach(key => {
-        const val = appParams[key];
-        if (typeof val === 'object' && val !== null) {
-            Object.keys(val).forEach(subKey => {
-                formBody.append(key + '[' + subKey + ']', val[subKey]);
-            });
-        } else {
-            formBody.append(key, val);
-        }
-    });
+    const patchUrl = '/brandings/' + brandingId + '.json';
 
     try {
-        await apiCall('PATCH', '/brandings/' + brandingId + '.json', formBody);
+        // Enviar cada template en un PATCH individual para evitar 502 por body grande
+        let savedCount = 0;
+        let errors = [];
 
-        // Actualizar el template en memoria
-        selectedBrandingTemplates[templateType] = html;
+        for (let i = 0; i < templatesList.length; i++) {
+            const tpl = templatesList[i];
+            const formBody = new URLSearchParams();
+
+            // Solo enviar nombre y params de branding en el primer request
+            if (i === 0) {
+                if (brandingName) {
+                    formBody.append('name', brandingName);
+                }
+                Object.keys(appParams).forEach(key => {
+                    const val = appParams[key];
+                    if (typeof val === 'object' && val !== null) {
+                        Object.keys(val).forEach(subKey => {
+                            formBody.append(key + '[' + subKey + ']', val[subKey]);
+                        });
+                    } else {
+                        formBody.append(key, val);
+                    }
+                });
+            }
+
+            // Enviar UN solo template por request: templates[name]=content
+            formBody.append('templates[' + tpl.name + ']', tpl.content);
+
+            try {
+                await apiCall('PATCH', patchUrl, formBody);
+                savedCount++;
+                console.log('Template guardado (' + (i + 1) + '/' + templatesList.length + '):', tpl.name);
+            } catch (err) {
+                console.error('Error guardando template ' + tpl.name + ':', err.message);
+                errors.push(tpl.name + ': ' + err.message);
+            }
+        }
 
         // Verificar: recargar el branding completo para confirmar qué se guardó realmente
         try {
@@ -1332,9 +1344,17 @@ async function updateExistingBranding(brandingId, templateType) {
                 if (t && t.name) selectedBrandingTemplates[t.name] = t.content || '';
             });
 
-            showToast('Template "' + templateType + '" guardado (' + savedNames.length + '/' + ALL_TEMPLATE_TYPES.length + ' templates)');
+            if (errors.length > 0) {
+                showToast('Guardados ' + savedCount + '/' + templatesList.length + ' templates. Errores: ' + errors.join('; '));
+            } else {
+                showToast('Todos los templates guardados (' + savedNames.length + '/' + ALL_TEMPLATE_TYPES.length + ' en API)');
+            }
         } catch (e) {
-            showToast('Template "' + templateType + '" guardado correctamente');
+            if (errors.length > 0) {
+                showToast('Guardados ' + savedCount + '/' + templatesList.length + '. Errores: ' + errors.join('; '));
+            } else {
+                showToast('Templates guardados correctamente (' + savedCount + '/' + templatesList.length + ')');
+            }
         }
 
         updateTemplateDropdownLabels();
