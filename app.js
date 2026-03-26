@@ -3187,5 +3187,178 @@ function initApp() {
     showView('viewLogin');
 }
 
+// ═══════════════════════════════════
+//  EXPORTAR / IMPORTAR BRANDING
+// ═══════════════════════════════════
+
+// IDs de todos los campos del formulario para exportar/importar
+const EXPORT_FIELD_IDS = [
+    // Email content
+    'logoUrl', 'logoWidth', 'logoHeight', 'logoObjectFit', 'emailContent', 'emailButtonText',
+    // Email colors
+    'bgColor', 'bgColorOpacity', 'containerColor', 'containerColorOpacity',
+    'borderColor', 'borderColorOpacity', 'textColor', 'textColorOpacity',
+    // Button style
+    'buttonColor', 'buttonColorOpacity', 'buttonTextColor', 'buttonTextColorOpacity',
+    'buttonBorderColor', 'buttonBorderColorOpacity',
+    'buttonBorderWidth', 'buttonBorderRadius',
+    'buttonPaddingTop', 'buttonPaddingRight', 'buttonPaddingBottom', 'buttonPaddingLeft',
+    'buttonMarginTop', 'buttonMarginRight', 'buttonMarginBottom', 'buttonMarginLeft',
+    'buttonWidth', 'buttonFontSize', 'buttonLineHeight', 'buttonFontWeight', 'buttonNoWrap',
+    // Text format
+    'textFontSize', 'textLineHeight', 'textLetterSpacing', 'textAlign', 'textFontWeight',
+    // Footer
+    'footerEnabled', 'footerWidth', 'footerContent', 'footerImageUrl', 'footerImageWidth', 'footerImageHeight',
+    'footerBgColor', 'footerTextColor', 'footerFontSize', 'footerLineHeight', 'footerTextAlign',
+    'footerBorderColor', 'footerBorderTop', 'footerBorderRight', 'footerBorderBottom', 'footerBorderLeft',
+    'footerPaddingTop', 'footerPaddingRight', 'footerPaddingBottom', 'footerPaddingLeft',
+    // App branding colors
+    'brandingHeaderColor', 'brandingFooterColor', 'brandingLayoutColor', 'brandingTextColor',
+    // App branding flags
+    'brandingShowWelcome', 'brandingShowCsv', 'brandingShowBiometricHash',
+    'brandingSignatureColor', 'brandingCsvPosition',
+    // App branding application_texts
+    'brandingSignButton', 'brandingSendButton', 'brandingOpenSignButton', 'brandingOpenEmailButton',
+    'brandingMultiPage', 'brandingPhotoText', 'brandingVoiceText', 'brandingTermsText',
+    // Callback ref
+    'callbackUrlRef'
+];
+
+function exportBranding() {
+    const brandingName = document.getElementById('editorBrandingName').value || 'branding';
+    const data = {
+        _exportVersion: 1,
+        _exportDate: new Date().toISOString(),
+        brandingName: brandingName,
+        templates: {},
+        formFields: {}
+    };
+
+    // Export all templates
+    for (const [name, content] of Object.entries(selectedBrandingTemplates)) {
+        if (content) {
+            data.templates[name] = content;
+        }
+    }
+
+    // Export all form field values
+    for (const id of EXPORT_FIELD_IDS) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        if (el.type === 'checkbox') {
+            data.formFields[id] = el.checked;
+        } else {
+            data.formFields[id] = el.value;
+        }
+    }
+
+    // Export variables list
+    if (typeof variables !== 'undefined' && variables.length > 0) {
+        data.variables = variables;
+    }
+
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeName = brandingName.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 30);
+    a.href = url;
+    a.download = safeName + '_branding.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Branding exportado: ' + a.download);
+}
+
+function importBranding() {
+    document.getElementById('importBrandingFile').click();
+}
+
+function handleImportBranding(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (!data.formFields && !data.templates) {
+                showToast('Archivo no valido: no contiene datos de branding');
+                return;
+            }
+
+            // Restore branding name
+            if (data.brandingName) {
+                document.getElementById('editorBrandingName').value = data.brandingName;
+            }
+
+            // Restore form fields
+            if (data.formFields) {
+                for (const [id, value] of Object.entries(data.formFields)) {
+                    const el = document.getElementById(id);
+                    if (!el) continue;
+                    if (el.type === 'checkbox') {
+                        el.checked = !!value;
+                    } else {
+                        el.value = value;
+                    }
+                    // Sync color text inputs
+                    const colorValueEl = document.getElementById(id + 'Value');
+                    if (colorValueEl && el.type === 'color') {
+                        colorValueEl.value = value;
+                    }
+                    // Sync opacity display spans
+                    const opacitySpan = document.getElementById(id + 'Value');
+                    if (id.endsWith('Opacity') && opacitySpan) {
+                        opacitySpan.textContent = Math.round(parseFloat(value) * 100) + '%';
+                    }
+                }
+
+                // Show/hide footer options
+                const footerEnabled = document.getElementById('footerEnabled');
+                const footerOptions = document.getElementById('footerOptions');
+                if (footerEnabled && footerOptions) {
+                    footerOptions.style.display = footerEnabled.value === 'yes' ? '' : 'none';
+                }
+
+                // Sync footer width slider display
+                const footerWidth = document.getElementById('footerWidth');
+                const footerWidthValue = document.getElementById('footerWidthValue');
+                if (footerWidth && footerWidthValue) {
+                    footerWidthValue.textContent = footerWidth.value + '%';
+                }
+            }
+
+            // Restore templates
+            if (data.templates) {
+                selectedBrandingTemplates = {};
+                for (const [name, content] of Object.entries(data.templates)) {
+                    selectedBrandingTemplates[name] = content;
+                }
+            }
+
+            // Restore variables list
+            if (data.variables && Array.isArray(data.variables)) {
+                variables = data.variables;
+            }
+
+            // Update UI
+            updatePreview();
+            renderVariables();
+            renderVariablesInline();
+            updateVariableCount();
+
+            showToast('Branding importado: ' + (data.brandingName || file.name));
+        } catch (err) {
+            showToast('Error al importar: ' + err.message);
+            console.error('Import error:', err);
+        }
+    };
+    reader.readAsText(file);
+    // Reset para permitir re-importar el mismo archivo
+    event.target.value = '';
+}
+
 // Arrancar cuando el DOM este listo
 document.addEventListener('DOMContentLoaded', initApp);

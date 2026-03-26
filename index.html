@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v33</span>
+                        <span style="color:#999;font-size:12px;">v34</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -140,6 +140,19 @@
                                     Guardar
                                 </button>
                             </div>
+
+                            <div class="api-button-row" style="margin-top: 8px;">
+                                <button class="btn-api-action" onclick="exportBranding()" style="background: #198754; color: #fff; border-color: #198754;">
+                                    Exportar Branding
+                                </button>
+                                <button class="btn-api-action" onclick="importBranding()" style="background: #0d6efd; color: #fff; border-color: #0d6efd;">
+                                    Importar Branding
+                                </button>
+                                <input type="file" id="importBrandingFile" accept=".json" style="display:none;" onchange="handleImportBranding(event)">
+                            </div>
+                            <small style="color: #6c757d; display: block; margin-top: 4px;">
+                                Exporta/importa toda la config (templates + estilos + app) como JSON para pasar de sandbox a produccion.
+                            </small>
                         </div>
                     </div>
                 </div>
