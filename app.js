@@ -1272,50 +1272,48 @@ async function updateExistingBranding(brandingId, templateType) {
     const appParams = collectBrandingAppParams();
     const patchUrl = '/brandings/' + brandingId + '.json';
 
-    // Construir UN solo request con TODOS los templates usando formato key-value
-    // templates[sign_request]=<html>&templates[emails_request]=<html>
-    const formBody = new URLSearchParams();
+    // PATCH 1: Branding params + application_texts (SIN templates)
+    const paramsBody = new URLSearchParams();
     if (brandingName) {
-        formBody.append('name', brandingName);
+        paramsBody.append('name', brandingName);
     }
-
-    // Agregar branding app params
     Object.keys(appParams).forEach(key => {
         const val = appParams[key];
         if (typeof val === 'object' && val !== null) {
             Object.keys(val).forEach(subKey => {
-                formBody.append(key + '[' + subKey + ']', val[subKey]);
+                paramsBody.append(key + '[' + subKey + ']', val[subKey]);
             });
         } else {
-            formBody.append(key, val);
+            paramsBody.append(key, val);
         }
     });
 
-    // Agregar TODOS los templates con contenido, minificados
+    console.log('PATCH 1 - Branding params (sin templates):', paramsBody.toString().substring(0, 500));
+
+    try {
+        await apiCall('PATCH', patchUrl, paramsBody);
+        console.log('PATCH 1 OK - params guardados');
+    } catch (error) {
+        console.error('PATCH 1 error:', error.message);
+    }
+
+    // PATCH 2: SOLO templates
+    const templatesBody = new URLSearchParams();
     let templateCount = 0;
     for (const [tplName, tplContent] of Object.entries(selectedBrandingTemplates)) {
         if (tplContent) {
             const minified = minifyHTML(tplContent);
-            formBody.append('templates[' + tplName + ']', minified);
+            templatesBody.append('templates[' + tplName + ']', minified);
             templateCount++;
         }
     }
 
-    console.log('PATCH enviando ' + templateCount + ' templates:', Object.keys(selectedBrandingTemplates).filter(k => selectedBrandingTemplates[k]));
-    console.log('Body size aprox:', formBody.toString().length, 'chars');
-    // Debug: mostrar todos los params que se envian
-    const debugParams = {};
-    for (const [k, v] of formBody.entries()) {
-        if (k.startsWith('templates[')) {
-            debugParams[k] = v.substring(0, 50) + '...';
-        } else {
-            debugParams[k] = v;
-        }
-    }
-    console.log('PATCH params completos:', JSON.stringify(debugParams));
+    console.log('PATCH 2 - Enviando ' + templateCount + ' templates');
+    console.log('Body size aprox:', templatesBody.toString().length, 'chars');
 
     try {
-        await apiCall('PATCH', patchUrl, formBody);
+        await apiCall('PATCH', patchUrl, templatesBody);
+        console.log('PATCH 2 OK - templates guardados');
 
         // Verificar: recargar el branding completo para confirmar qué se guardó realmente
         try {
@@ -1323,7 +1321,8 @@ async function updateExistingBranding(brandingId, templateType) {
             const savedTemplates = verifyBranding.templates || [];
             const savedNames = savedTemplates.map(t => normalizeTemplateName(t.name));
             console.log('Templates guardados en API:', savedNames, '(' + savedNames.length + ' total)');
-            console.log('application_texts en API despues de guardar:', JSON.stringify(verifyBranding.application_texts));
+            console.log('application_texts en API:', JSON.stringify(verifyBranding.application_texts));
+            console.log('layout_color en API:', verifyBranding.layout_color);
 
             // Sincronizar selectedBrandingTemplates con lo real de la API (normalizando nombres)
             selectedBrandingTemplates = {};
