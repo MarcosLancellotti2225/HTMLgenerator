@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v30</span>
+                        <span style="color:#999;font-size:12px;">v31</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -144,6 +144,7 @@
                     </div>
                 </div>
 
+                <div data-preview-tab="email">
                 <h2>Variables</h2>
                 <div class="info-box">
                     Incluye las <strong>14 variables oficiales de Signaturit</strong> + las tuyas personalizadas.
@@ -153,6 +154,7 @@
                     Gestionar Variables
                     <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; font-size: 12px;" id="variableCount">14</span>
                 </button>
+                </div>
 
                 <!-- Sección: Contenido del Email -->
                 <div class="collapsible-section" data-preview-tab="email">
@@ -757,7 +759,7 @@ window.addEventListener('message', function(event) {
                 </div>
 
                 <!-- Seccion: Textos de la App (application_texts) -->
-                <div class="collapsible-section">
+                <div class="collapsible-section" data-preview-tab="app">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
                         <h2>Textos de Botones y Mensajes</h2>
                         <span class="collapsible-icon">&#9660;</span>
@@ -835,7 +837,8 @@ window.addEventListener('message', function(event) {
                     </div>
                 </div>
 
-                <!-- Botones de accion -->
+                <!-- Botones de accion (solo email) -->
+                <div data-preview-tab="email">
                 <div class="button-group">
                     <button class="btn-primary" onclick="downloadHTML()">Descargar</button>
                     <button class="btn-secondary" onclick="resetToDefault()">Reset</button>
@@ -852,6 +855,7 @@ window.addEventListener('message', function(event) {
                     <small style="color: #6c757d; display: block; margin-top: 5px;">
                         Recomendado para envio via API. Reduce el tamano del HTML.
                     </small>
+                </div>
                 </div>
             </div>
 
@@ -945,6 +949,6 @@ window.addEventListener('message', function(event) {
         </div>
     </div>
 
-    <script src="app.js?v=30"></script>
+    <script src="app.js?v=31"></script>
 </body>
 </html>
