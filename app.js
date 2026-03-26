@@ -1292,26 +1292,18 @@ async function updateExistingBranding(brandingId, templateType) {
     const appParams = collectBrandingAppParams();
     const patchUrl = '/brandings/' + brandingId + '.json';
 
-    // PATCH 1: Branding params + application_texts (SIN templates)
-    const paramsBody = new URLSearchParams();
-    if (brandingName) {
-        paramsBody.append('name', brandingName);
-    }
+    // PATCH 1: Branding params + application_texts como JSON (SIN templates)
+    // application_texts es un objeto anidado que requiere JSON, no form-urlencoded
+    const jsonParams = {};
+    if (brandingName) jsonParams.name = brandingName;
     Object.keys(appParams).forEach(key => {
-        const val = appParams[key];
-        if (typeof val === 'object' && val !== null) {
-            Object.keys(val).forEach(subKey => {
-                paramsBody.append(key + '[' + subKey + ']', val[subKey]);
-            });
-        } else {
-            paramsBody.append(key, val);
-        }
+        jsonParams[key] = appParams[key];
     });
 
-    console.log('PATCH 1 - Branding params (sin templates):', paramsBody.toString().substring(0, 500));
+    console.log('PATCH 1 - Branding params JSON (sin templates):', JSON.stringify(jsonParams));
 
     try {
-        await apiCall('PATCH', patchUrl, paramsBody);
+        await apiCall('PATCH', patchUrl, jsonParams);
         console.log('PATCH 1 OK - params guardados');
     } catch (error) {
         console.error('PATCH 1 error:', error.message);
