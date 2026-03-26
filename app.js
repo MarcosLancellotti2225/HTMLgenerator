@@ -2870,6 +2870,15 @@ function updateEditorSectionsVisibility(tab) {
         const sectionTab = el.getAttribute('data-preview-tab');
         if (sectionTab === tab) {
             el.style.display = '';
+            // Auto-expandir secciones colapsables cuando se muestran
+            if (el.classList.contains('collapsible-section')) {
+                const header = el.querySelector('.collapsible-header');
+                const content = el.querySelector('.collapsible-content');
+                if (header && content && !content.classList.contains('active')) {
+                    header.classList.add('active');
+                    content.classList.add('active');
+                }
+            }
         } else {
             el.style.display = 'none';
         }
