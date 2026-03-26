@@ -23,7 +23,7 @@ let variables = [
 // Descripciones de variables oficiales
 const variableDescriptions = {
     'sender_email': 'Email del remitente',
-    'sign_button': 'Boton de Signaturit (solo signatures_request y pending_sign)',
+    'sign_button': 'Boton de Signaturit (sign_request, signatures_request y pending_sign)',
     'validate_button': 'Boton de validar documento (solo validation_request)',
     'signer_name': 'Nombre del firmante',
     'signer_email': 'Email del firmante',
@@ -103,6 +103,7 @@ const defaults = {
 
 // Todos los tipos de template posibles (nombres oficiales de la API de Signaturit)
 const ALL_TEMPLATE_TYPES = [
+    'sign_request',
     'signatures_request',
     'signatures_receipt',
     'request_expired',
@@ -117,7 +118,6 @@ const ALL_TEMPLATE_TYPES = [
 
 // Mapeo de nombres que la API devuelve (shorthand) a nombres oficiales
 const API_NAME_MAP = {
-    'sign_request': 'signatures_request',
     'sign_receipt': 'signatures_receipt',
     'email_request': 'emails_request'
 };
@@ -139,6 +139,7 @@ const REQUIRED_MAGIC_WORDS = {
 // Si un template no está en esta lista, solo se permiten las universales
 const UNIVERSAL_MAGIC_WORDS = ['{{signer_name}}', '{{signer_email}}', '{{sender_email}}', '{{filename}}', '{{logo}}'];
 const ALLOWED_MAGIC_WORDS = {
+    sign_request: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}'],
     signatures_request: [...UNIVERSAL_MAGIC_WORDS, '{{sign_button}}', '{{email_body}}'],
     signatures_receipt: [...UNIVERSAL_MAGIC_WORDS],
     request_expired: [...UNIVERSAL_MAGIC_WORDS],
@@ -157,6 +158,10 @@ const ALLOWED_MAGIC_WORDS = {
 
 const EMAIL_TEMPLATES = {
     es: {
+        sign_request: {
+            subject: 'Solicitud de firma',
+            content: 'Estimado/a {{signer_name}},\n\nLe hacemos llegar la siguiente documentacion para su firma:\n\n{{filename}}\n\nPor favor, revise el documento y proceda a firmarlo haciendo clic en el siguiente boton:\n\n{{sign_button}}\n\nSi tiene alguna duda, puede contactarnos en {{sender_email}}.\n\nSaludos cordiales.'
+        },
         signatures_request: {
             subject: 'Solicitud de firmas',
             content: 'Estimado/a {{signer_name}},\n\nTiene documentacion pendiente de firma:\n\n{{filename}}\n\n{{email_body}}\n\nPara firmar, haga clic en el siguiente boton:\n\n{{sign_button}}\n\nPara cualquier consulta, contacte con {{sender_email}}.\n\nSaludos cordiales.'
@@ -199,6 +204,10 @@ const EMAIL_TEMPLATES = {
         }
     },
     en: {
+        sign_request: {
+            subject: 'Signature request',
+            content: 'Dear {{signer_name}},\n\nPlease find attached the following document for your signature:\n\n{{filename}}\n\nPlease review the document and proceed to sign it by clicking the button below:\n\n{{sign_button}}\n\nIf you have any questions, please contact us at {{sender_email}}.\n\nBest regards.'
+        },
         signatures_request: {
             subject: 'Signatures request',
             content: 'Dear {{signer_name}},\n\nYou have documentation pending signature:\n\n{{filename}}\n\n{{email_body}}\n\nTo sign, please click the button below:\n\n{{sign_button}}\n\nFor any questions, please contact {{sender_email}}.\n\nBest regards.'
@@ -241,6 +250,10 @@ const EMAIL_TEMPLATES = {
         }
     },
     ca: {
+        sign_request: {
+            subject: 'Sol·licitud de signatura',
+            content: 'Benvolgut/da {{signer_name}},\n\nLi fem arribar la seguent documentacio per a la seva signatura:\n\n{{filename}}\n\nSi us plau, revisi el document i procedeixi a signar-lo fent clic al seguent boto:\n\n{{sign_button}}\n\nSi te algun dubte, pot contactar-nos a {{sender_email}}.\n\nSalutacions cordials.'
+        },
         signatures_request: {
             subject: 'Sol·licitud de signatures',
             content: 'Benvolgut/da {{signer_name}},\n\nTe documentacio pendent de signatura:\n\n{{filename}}\n\n{{email_body}}\n\nPer signar, faci clic al seguent boto:\n\n{{sign_button}}\n\nPer a qualsevol consulta, contacti amb {{sender_email}}.\n\nSalutacions cordials.'
@@ -328,6 +341,12 @@ function buildSignbookHTML(bodyHTML) {
 
 const SIGNBOOK_HTML_TEMPLATES = {
     es: {
+        sign_request: buildSignbookHTML(
+            SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para su firma:') +
+            SIGNBOOK_P('{{filename}}', true) +
+            SIGNBOOK_P('Para proceder con la revisión y firma de la documentación presione el siguiente botón:') +
+            SIGNBOOK_BUTTON('{{sign_button}}')
+        ),
         signatures_request: buildSignbookHTML(
             SIGNBOOK_P('Estimado/a {{signer_name}}, le hacemos llegar la siguiente documentación para firmar:') +
             SIGNBOOK_P('{{filename}}', true) +
@@ -899,7 +918,8 @@ async function saveTemplateToAPI() {
     };
     for (const [btn, expectedType] of Object.entries(buttonToTemplate)) {
         if (textareaContent.includes(btn) && templateType !== expectedType
-            && !(btn === '{{sign_button}}' && templateType === 'pending_sign')) {
+            && !(btn === '{{sign_button}}' && templateType === 'pending_sign')
+            && !(btn === '{{sign_button}}' && templateType === 'sign_request')) {
             document.getElementById('templateType').value = expectedType;
             templateType = expectedType;
             showToast('Tipo de template auto-corregido a "' + expectedType + '"');
