@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v27</span>
+                        <span style="color:#999;font-size:12px;">v28</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -404,15 +404,14 @@
                     </div>
                 </div>
 
-                <!-- Sección: Colores Generales -->
-                <div class="collapsible-section">
+                <!-- Sección: Colores Generales (solo email) -->
+                <div class="collapsible-section" data-preview-tab="email">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
-                        <h2>Colores Generales</h2>
+                        <h2>Colores Email</h2>
                         <span class="collapsible-icon">&#9660;</span>
                     </div>
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
-                            <div data-preview-tab="email">
                             <div class="form-group">
                                 <label>Color de Fondo Principal</label>
                                 <div class="color-input">
@@ -462,49 +461,6 @@
                                     <label style="margin: 0; font-size: 12px; min-width: 80px;">Opacidad:</label>
                                     <input type="range" id="textColorOpacity" min="0" max="1" step="0.01" value="1" style="flex: 1;">
                                     <span id="textColorOpacityValue" style="font-size: 12px; min-width: 35px;">100%</span>
-                                </div>
-                            </div>
-
-                            </div>
-                            <div data-preview-tab="app" style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e5e7eb;">
-                                <div class="info-box" style="margin-bottom: 12px;">
-                                    Colores adicionales para la <strong>app de firma</strong> de Signaturit (header, footer, botones de la app).
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Color Header App (header_color)</label>
-                                    <div class="color-input">
-                                        <input type="color" id="brandingHeaderColor" value="#3d3d3d">
-                                        <input type="text" class="color-value" id="brandingHeaderColorValue" value="#3d3d3d">
-                                    </div>
-                                    <small style="color: #6c757d;">Barra superior de la app de firma</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Color Footer App (footer_color)</label>
-                                    <div class="color-input">
-                                        <input type="color" id="brandingFooterColor" value="#3d3d3d">
-                                        <input type="text" class="color-value" id="brandingFooterColorValue" value="#3d3d3d">
-                                    </div>
-                                    <small style="color: #6c757d;">Pie de pagina de la app de firma</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Color Botones App (layout_color)</label>
-                                    <div class="color-input">
-                                        <input type="color" id="brandingLayoutColor" value="#77d401">
-                                        <input type="text" class="color-value" id="brandingLayoutColorValue" value="#77d401">
-                                    </div>
-                                    <small style="color: #6c757d;">Botones de la app (Empezar, Rellenar, Acepto)</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Color Texto App (text_color)</label>
-                                    <div class="color-input">
-                                        <input type="color" id="brandingTextColor" value="#333333">
-                                        <input type="text" class="color-value" id="brandingTextColorValue" value="#333333">
-                                    </div>
-                                    <small style="color: #6c757d;">Texto principal en la app de firma</small>
                                 </div>
                             </div>
                         </div>
@@ -640,8 +596,8 @@
                     </div>
                 </div>
 
-                <!-- Seccion: Branding App Preview -->
-                <div class="collapsible-section">
+                <!-- Seccion: Branding App Preview (solo app tab) -->
+                <div class="collapsible-section" data-preview-tab="app">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
                         <h2>Opciones de App (Vista de Firma)</h2>
                         <span class="collapsible-icon">&#9660;</span>
@@ -650,7 +606,49 @@
                         <div class="collapsible-inner">
                             <div class="info-box" style="margin-bottom: 14px;">
                                 Opciones adicionales de la <strong>aplicacion de firma</strong> de Signaturit.
-                                Los colores se configuran en la seccion <strong>Colores Generales</strong>.
+                            </div>
+
+                            <div style="margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #e5e7eb;">
+                                <div class="info-box" style="margin-bottom: 12px;">
+                                    Colores de la <strong>app de firma</strong> de Signaturit (header, footer, botones de la app).
+                                    <br><code>layout_color</code> controla el color de los botones en el email Y en la app.
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color Header App (header_color)</label>
+                                    <div class="color-input">
+                                        <input type="color" id="brandingHeaderColor" value="#3d3d3d">
+                                        <input type="text" class="color-value" id="brandingHeaderColorValue" value="#3d3d3d">
+                                    </div>
+                                    <small style="color: #6c757d;">Barra superior de la app de firma</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color Footer App (footer_color)</label>
+                                    <div class="color-input">
+                                        <input type="color" id="brandingFooterColor" value="#3d3d3d">
+                                        <input type="text" class="color-value" id="brandingFooterColorValue" value="#3d3d3d">
+                                    </div>
+                                    <small style="color: #6c757d;">Pie de pagina de la app de firma</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color Botones / Layout (layout_color)</label>
+                                    <div class="color-input">
+                                        <input type="color" id="brandingLayoutColor" value="#77d401">
+                                        <input type="text" class="color-value" id="brandingLayoutColorValue" value="#77d401">
+                                    </div>
+                                    <small style="color: #6c757d;">Color principal: botones de la app y boton en emails ({{sign_button}})</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Color Texto App (text_color)</label>
+                                    <div class="color-input">
+                                        <input type="color" id="brandingTextColor" value="#333333">
+                                        <input type="text" class="color-value" id="brandingTextColorValue" value="#333333">
+                                    </div>
+                                    <small style="color: #6c757d;">Texto principal en la app de firma</small>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -946,6 +944,6 @@ window.addEventListener('message', function(event) {
         </div>
     </div>
 
-    <script src="app.js?v=27"></script>
+    <script src="app.js?v=28"></script>
 </body>
 </html>
