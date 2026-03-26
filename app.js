@@ -2878,9 +2878,11 @@ function switchPreviewTab(tab) {
 }
 
 function updateEditorSectionsVisibility(tab) {
+    // Normalize: switchPreviewTab passes 'branding' but data attributes use 'app'
+    const normalizedTab = (tab === 'branding') ? 'app' : tab;
     document.querySelectorAll('[data-preview-tab]').forEach(el => {
         const sectionTab = el.getAttribute('data-preview-tab');
-        if (sectionTab === tab) {
+        if (sectionTab === normalizedTab) {
             el.style.display = '';
             // Auto-expandir secciones colapsables cuando se muestran
             if (el.classList.contains('collapsible-section')) {
