@@ -1131,6 +1131,11 @@ function loadBrandingAppParams(branding) {
         const csvPosEl = document.getElementById('brandingCsvPosition');
         if (csvPosEl) csvPosEl.value = branding.csv_position;
     }
+    // subject_tag
+    if (branding.subject_tag) {
+        const subjectTagEl = document.getElementById('brandingSubjectTag');
+        if (subjectTagEl) subjectTagEl.value = branding.subject_tag;
+    }
 }
 
 // Helper: recoger todos los parametros de branding app
@@ -1155,6 +1160,9 @@ function collectBrandingAppParams() {
     if (footerColor) params.footer_color = footerColor.value;
     if (layoutColor) params.layout_color = layoutColor.value;
     if (textColor) params.text_color = textColor.value;
+
+    const subjectTag = document.getElementById('brandingSubjectTag');
+    if (subjectTag && subjectTag.value.trim()) params.subject_tag = subjectTag.value.trim();
 
     // application_texts como objeto anidado para JSON
     const appTexts = {};
@@ -1854,7 +1862,7 @@ ${footerInner}
 \t<meta charset="UTF-8">
 \t<meta name="viewport" content="width=device-width,initial-scale=1">
 \t<meta name="x-apple-disable-message-reformatting">
-\t<title>Solicitud de Firma</title>
+\t<title>${(document.getElementById('emailSubject').value.trim()) || 'Solicitud de Firma'}</title>
 \t<!--[if mso]>
 \t<noscript>
 \t\t<xml>
@@ -2028,6 +2036,13 @@ function parseHTMLTemplate(htmlString) {
     }
 
     let extractedSomething = false;
+
+    // Email subject from <title>
+    const titleEl = doc.querySelector('title');
+    if (titleEl && titleEl.textContent.trim()) {
+        document.getElementById('emailSubject').value = titleEl.textContent.trim();
+        extractedSomething = true;
+    }
 
     // Logo
     const logoImg = doc.querySelector('img[alt="Logo"]') ||
@@ -3220,6 +3235,8 @@ const EXPORT_FIELD_IDS = [
     // App branding application_texts
     'brandingSignButton', 'brandingSendButton', 'brandingOpenSignButton', 'brandingOpenEmailButton',
     'brandingMultiPage', 'brandingPhotoText', 'brandingVoiceText', 'brandingTermsText',
+    // Subjects
+    'emailSubject', 'brandingSubjectTag',
     // Callback ref
     'callbackUrlRef'
 ];
