@@ -1709,9 +1709,8 @@ function generateHTML() {
     const buttonPaddingBottom = document.getElementById('buttonPaddingBottom').value || '15';
     const buttonPaddingLeft = document.getElementById('buttonPaddingLeft').value || '15';
     const buttonMarginTop = document.getElementById('buttonMarginTop').value || '10';
-    const buttonMarginRight = document.getElementById('buttonMarginRight').value || '0';
     const buttonMarginBottom = document.getElementById('buttonMarginBottom').value || '10';
-    const buttonMarginLeft = document.getElementById('buttonMarginLeft').value || '0';
+    const buttonAlign = document.getElementById('buttonAlign').value || 'center';
     const buttonWidth = document.getElementById('buttonWidth').value || '200';
     const buttonFontSize = document.getElementById('buttonFontSize').value || defaults.buttonFontSize;
     const buttonLineHeight = document.getElementById('buttonLineHeight').value || defaults.buttonLineHeight;
@@ -1728,7 +1727,10 @@ function generateHTML() {
 
     const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
     const buttonPaddingStyle = `padding:${buttonPaddingTop}px ${buttonPaddingRight}px ${buttonPaddingBottom}px ${buttonPaddingLeft}px;`;
-    const buttonMarginStyle = `margin:${buttonMarginTop}px ${buttonMarginRight}px ${buttonMarginBottom}px ${buttonMarginLeft}px;`;
+    const buttonMarginLeft = buttonAlign === 'center' ? 'auto' : (buttonAlign === 'right' ? 'auto' : '0');
+    const buttonMarginRight = buttonAlign === 'center' ? 'auto' : (buttonAlign === 'left' ? 'auto' : '0');
+    const buttonMarginStyle = `margin:${buttonMarginTop}px ${buttonMarginRight} ${buttonMarginBottom}px ${buttonMarginLeft};`;
+    const buttonAlignAttr = buttonAlign;
     const buttonFontWeightStyle = buttonFontWeight !== 'normal' ? `font-weight:${buttonFontWeight};` : '';
     const buttonNoWrap = document.getElementById('buttonNoWrap').value || defaults.buttonNoWrap;
     const buttonNoWrapStyle = buttonNoWrap === 'yes' ? 'white-space:nowrap;' : '';
@@ -1736,7 +1738,7 @@ function generateHTML() {
 
     // Signaturit replaces magic words with its own buttons,
     // so we use <span> with the magic word as text (not <a href>)
-    const buildMagicWordButtonHTML = (magicWord) => `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
+    const buildMagicWordButtonHTML = (magicWord) => `<table class="miboton" align="${buttonAlignAttr}" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t<tr>
 \t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px;${buttonNoWrapStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;${buttonNoWrapStyle}'>
@@ -1874,6 +1876,7 @@ ${footerInner}
 \t<![endif]-->
 \t<style>
 \t\ttable, td, div, h1, p {font-family: 'Helvetica Neue', Helvetica, Arial;}
+${getMobileCSS()}
 \t</style>
 </head>
 <body style="margin:0;padding:0;background-color: ${bgColor};">
@@ -2935,6 +2938,64 @@ function minifyHTML(html) {
 }
 
 // ═══════════════════════════════════
+//  MOBILE RESPONSIVE
+// ═══════════════════════════════════
+
+function getMobileCSS() {
+    const enabled = document.getElementById('mobileEnabled');
+    if (!enabled || !enabled.checked) return '';
+
+    const maxWidth = document.getElementById('mobileMaxWidth').value || '100';
+    const fontSize = document.getElementById('mobileFontSize').value || '14';
+    const lineHeight = document.getElementById('mobileLineHeight').value || '20';
+    const btnFontSize = document.getElementById('mobileButtonFontSize').value || '16';
+    const btnWidth = document.getElementById('mobileButtonWidth').value || '100';
+    const padding = document.getElementById('mobilePadding').value || '10';
+    const logoWidth = document.getElementById('mobileLogoWidth').value || '120';
+
+    return `
+\t\t@media only screen and (max-width: 600px) {
+\t\t\tbody { padding: 0 !important; margin: 0 !important; }
+\t\t\ttable[role="presentation"] { width: ${maxWidth}% !important; }
+\t\t\ttd { padding-left: ${padding}px !important; padding-right: ${padding}px !important; }
+\t\t\tp { font-size: ${fontSize}px !important; line-height: ${lineHeight}px !important; }
+\t\t\timg[alt="Logo"] { width: ${logoWidth}px !important; height: auto !important; }
+\t\t\ttable.miboton { width: ${btnWidth}% !important; margin-left: auto !important; margin-right: auto !important; }
+\t\t\ttable.miboton span.mititulo { font-size: ${btnFontSize}px !important; }
+\t\t}`;
+}
+
+let isMobilePreview = false;
+
+function toggleMobilePreview() {
+    isMobilePreview = !isMobilePreview;
+    const previewContainer = document.getElementById('previewContainer');
+    const btn = document.getElementById('btnMobilePreview');
+    const frame = document.getElementById('previewFrame');
+
+    if (isMobilePreview) {
+        previewContainer.style.display = 'flex';
+        previewContainer.style.justifyContent = 'center';
+        frame.style.maxWidth = '375px';
+        frame.style.width = '375px';
+        frame.style.margin = '0 auto';
+        frame.style.transition = 'max-width 0.3s ease';
+        btn.style.background = '#0d6efd';
+        btn.style.color = '#fff';
+        btn.textContent = 'Desktop';
+    } else {
+        frame.style.maxWidth = '';
+        frame.style.width = '100%';
+        frame.style.margin = '';
+        previewContainer.style.justifyContent = '';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.textContent = 'Mobile';
+    }
+    updatePreview();
+}
+
+// ═══════════════════════════════════
 //  PREVIEW
 // ═══════════════════════════════════
 
@@ -3218,7 +3279,7 @@ const EXPORT_FIELD_IDS = [
     'buttonBorderColor', 'buttonBorderColorOpacity',
     'buttonBorderWidth', 'buttonBorderRadius',
     'buttonPaddingTop', 'buttonPaddingRight', 'buttonPaddingBottom', 'buttonPaddingLeft',
-    'buttonMarginTop', 'buttonMarginRight', 'buttonMarginBottom', 'buttonMarginLeft',
+    'buttonMarginTop', 'buttonMarginBottom', 'buttonAlign',
     'buttonWidth', 'buttonFontSize', 'buttonLineHeight', 'buttonFontWeight', 'buttonNoWrap',
     // Text format
     'textFontSize', 'textLineHeight', 'textLetterSpacing', 'textAlign', 'textFontWeight',
@@ -3235,6 +3296,9 @@ const EXPORT_FIELD_IDS = [
     // App branding application_texts
     'brandingSignButton', 'brandingSendButton', 'brandingOpenSignButton', 'brandingOpenEmailButton',
     'brandingMultiPage', 'brandingPhotoText', 'brandingVoiceText', 'brandingTermsText',
+    // Mobile
+    'mobileEnabled', 'mobileMaxWidth', 'mobileFontSize', 'mobileLineHeight',
+    'mobileButtonFontSize', 'mobileButtonWidth', 'mobilePadding', 'mobileLogoWidth',
     // Subjects
     'emailSubject', 'brandingSubjectTag',
     // Callback ref
