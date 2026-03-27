@@ -1728,7 +1728,7 @@ function generateHTML() {
 
     const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
     const buttonPaddingStyle = `padding:${buttonPaddingTop}px ${buttonPaddingRight}px ${buttonPaddingBottom}px ${buttonPaddingLeft}px;`;
-    const buttonMarginStyle = `margin:${buttonMarginTop}px ${buttonMarginRight}px ${buttonMarginBottom}px ${buttonMarginLeft}px;`;
+    const buttonMarginStyle = `margin:${buttonMarginTop}px auto ${buttonMarginBottom}px auto;`;
     const buttonFontWeightStyle = buttonFontWeight !== 'normal' ? `font-weight:${buttonFontWeight};` : '';
     const buttonNoWrap = document.getElementById('buttonNoWrap').value || defaults.buttonNoWrap;
     const buttonNoWrapStyle = buttonNoWrap === 'yes' ? 'white-space:nowrap;' : '';
@@ -2958,7 +2958,7 @@ function getMobileCSS() {
 \t\t\ttd { padding-left: ${padding}px !important; padding-right: ${padding}px !important; }
 \t\t\tp { font-size: ${fontSize}px !important; line-height: ${lineHeight}px !important; }
 \t\t\timg[alt="Logo"] { width: ${logoWidth}px !important; height: auto !important; }
-\t\t\ttable.miboton { width: ${btnWidth}% !important; margin-left: 0 !important; margin-right: 0 !important; }
+\t\t\ttable.miboton { width: ${btnWidth}% !important; margin-left: auto !important; margin-right: auto !important; }
 \t\t\ttable.miboton span.mititulo { font-size: ${btnFontSize}px !important; }
 \t\t}`;
 }
