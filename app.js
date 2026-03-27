@@ -2298,12 +2298,27 @@ function parseHTMLTemplate(htmlString) {
 
     // Email content
     let emailContent = '';
-    const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
+    const contentArea = doc.querySelector('td[style*="padding:0 0 25px"]') ||
+                       doc.querySelector('td[style*="padding: 0 0 25px"]') ||
+                       doc.querySelector('td[style*="padding:0px 0px 25px"]') ||
                        doc.querySelector('.note') ||
-                       doc.querySelector('table[bgcolor="#ffffff"] td') ||
-                       doc.querySelector('body');
+                       doc.querySelector('table[bgcolor="#ffffff"] td');
+    // Fallback: if no content area found, try to find the main text container
+    const effectiveContentArea = contentArea || (function() {
+        // Look for the td with content paragraphs inside the 800px table
+        const mainTable = doc.querySelector('table[style*="width:800px"]');
+        if (mainTable) {
+            const tds = mainTable.querySelectorAll('td');
+            for (const td of tds) {
+                if (td.querySelector('p') && !td.querySelector('img[alt="Logo"]')) {
+                    return td;
+                }
+            }
+        }
+        return doc.querySelector('body');
+    })();
 
-    if (contentArea) {
+    if (effectiveContentArea) {
         const extractTextAndVariables = (element) => {
             // Recursively extract text, converting <strong>/<b> to **, <em>/<i> to *, <u> to __
             const processNode = (node) => {
@@ -2320,9 +2335,14 @@ function parseHTMLTemplate(htmlString) {
                     var btnText = node.textContent.trim();
                     if (btnText.includes('{{email_button}}')) return '{{email_button}}';
                     if (btnText.includes('{{validate_button}}')) return '{{validate_button}}';
+                    if (btnText.includes('{{dashboard_button}}')) return '{{dashboard_button}}';
                     if (btnText.includes('{{sign_button}}')) return '{{sign_button}}';
                     // Default: assume sign_button for .miboton with <a href="{{url}}">
                     return '{{sign_button}}';
+                }
+                // Skip non-miboton tables (footer wrappers, layout tables)
+                if (node.nodeName === 'TABLE') {
+                    return '';
                 }
 
                 // Process child nodes
@@ -2353,10 +2373,10 @@ function parseHTMLTemplate(htmlString) {
             return content;
         };
 
-        emailContent = extractTextAndVariables(contentArea);
+        emailContent = extractTextAndVariables(effectiveContentArea);
 
         if (!emailContent.trim()) {
-            emailContent = contentArea.textContent || '';
+            emailContent = effectiveContentArea.textContent || '';
         }
 
         extractedSomething = true;
