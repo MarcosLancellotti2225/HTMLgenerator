@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v41</span>
+                        <span style="color:#999;font-size:12px;">v42</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -127,9 +127,7 @@
                                         Cargar plantilla
                                     </button>
                                 </div>
-                                <small style="color: #6c757d; display: block; margin-top: 5px;">
-                                    Carga un template predefinido por idioma. Luego puedes editarlo.
-                                </small>
+                                <small style="color: #6c757d; display: block; margin-top: 3px;">Carga un template base por idioma.</small>
                             </div>
 
                             <div class="api-button-row">
@@ -150,22 +148,15 @@
                                 </button>
                                 <input type="file" id="importBrandingFile" accept=".json" style="display:none;" onchange="handleImportBranding(event)">
                             </div>
-                            <small style="color: #6c757d; display: block; margin-top: 4px;">
-                                Exporta/importa toda la config (templates + estilos + app) como JSON para pasar de sandbox a produccion.
-                            </small>
+                            <small style="color: #6c757d; display: block; margin-top: 3px;">Sandbox &rarr; Produccion via JSON.</small>
                         </div>
                     </div>
                 </div>
 
-                <div data-preview-tab="email">
-                <h2>Variables</h2>
-                <div class="info-box">
-                    Incluye las <strong>14 variables oficiales de Signaturit</strong> + las tuyas personalizadas.
-                </div>
-
-                <button class="btn-open-modal" onclick="openVariableModal()">
-                    Gestionar Variables
-                    <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; font-size: 12px;" id="variableCount">14</span>
+                <div data-preview-tab="email" style="margin-bottom: 6px;">
+                <button class="btn-open-modal" onclick="openVariableModal()" style="padding: 8px 14px; font-size: 12px;">
+                    Variables
+                    <span style="background: rgba(255,255,255,0.2); padding: 3px 7px; border-radius: 12px; font-size: 11px;" id="variableCount">14</span>
                 </button>
                 </div>
 
@@ -180,7 +171,7 @@
                             <div class="form-group">
                                 <label>Asunto del Email (subject)</label>
                                 <input type="text" id="emailSubject" placeholder="Ej: Tiene un documento para firmar" value="">
-                                <small style="color: #6c757d;">Se inyecta como <code>&lt;title&gt;</code> en el HTML. Signaturit lo usa como subject del email para este template.</small>
+                                <small style="color: #6c757d;">Signaturit usa el <code>&lt;title&gt;</code> como subject del email.</small>
                             </div>
 
                             <div class="form-group">
@@ -249,9 +240,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <small style="color: #6c757d; display: block; margin-top: 6px;">
-                                    La alineacion se aplica a todo el email. Usa los botones B/I/U sobre el textarea para formato inline.
-                                </small>
+                                <small style="color: #6c757d; display: block; margin-top: 4px;">Alineacion global. B/I/U para formato inline.</small>
                             </div>
 
                             <div class="form-group">
@@ -286,7 +275,7 @@
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
                             <div class="info-box" style="margin-bottom: 12px;">
-                                Configura el pie de pagina que aparece debajo del contenido del email. Dejalo vacio para no mostrar footer.
+                                Pie de pagina del email.
                             </div>
 
                             <div class="form-group">
@@ -304,7 +293,7 @@
                                         <input type="range" id="footerWidth" min="10" max="100" step="5" value="100" style="flex: 1;">
                                         <span id="footerWidthValue" style="font-size: 13px; min-width: 40px; font-weight: 600;">100%</span>
                                     </div>
-                                    <small style="color: #6c757d;">El footer se centra automaticamente dentro del contenedor.</small>
+                                    <small style="color: #6c757d;">Se centra automaticamente.</small>
                                 </div>
 
                                 <div class="form-group">
@@ -397,7 +386,7 @@
                                             <input type="number" id="footerBorderLeft" value="0" min="0" max="10" style="width: 100%;">
                                         </div>
                                     </div>
-                                    <small style="color: #6c757d; display: block; margin-top: 6px;">Pone 0 en un lado para no mostrar borde ahi.</small>
+                                    <small style="color: #6c757d; display: block; margin-top: 4px;">0 = sin borde.</small>
                                 </div>
 
                                 <div class="form-group">
@@ -497,15 +486,9 @@
                     </div>
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
-                            <div class="info-box" style="margin-bottom: 12px; background: #e8f4fd; border-color: #0d6efd;">
-                                Signaturit no permite <code>{{sign_button}}</code> en templates custom.
-                                El boton se genera con <code>&lt;a href="{{url}}"&gt;</code> y tu texto/estilo.
-                            </div>
-
                             <div class="form-group">
                                 <label>Texto del Boton (preview)</label>
                                 <input type="text" id="emailButtonText" value="" placeholder="Ej: Firmar, Sign Now, Validar...">
-                                <small style="color: #6c757d;">Texto del boton en el preview. Signaturit lo reemplaza con su propio boton.</small>
                             </div>
 
                             <div class="form-group">
@@ -625,7 +608,6 @@
                                     <option value="yes">Si - Forzar 1 linea (nowrap)</option>
                                     <option value="no">No - Permitir salto de linea</option>
                                 </select>
-                                <small style="color: #6c757d;">Si el texto se corta en 2 lineas, activa esto o agranda el ancho del boton.</small>
                             </div>
                         </div>
                     </div>
@@ -639,24 +621,18 @@
                     </div>
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
-                            <div class="info-box" style="margin-bottom: 14px;">
-                                Agrega media queries responsive al HTML para que el email se vea bien en celulares.
-                                Usa el boton <strong>Mobile</strong> en la barra del preview para previsualizar.
-                            </div>
 
                             <div class="form-group">
                                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                     <input type="checkbox" id="mobileEnabled" checked style="width: auto; cursor: pointer;">
                                     <span>Activar responsive mobile</span>
                                 </label>
-                                <small style="color: #6c757d;">Inyecta media queries <code>@media (max-width: 600px)</code> en el HTML.</small>
                             </div>
 
                             <div id="mobileOptions">
                                 <div class="form-group">
                                     <label>Ancho maximo del contenedor mobile (px)</label>
                                     <input type="number" id="mobileMaxWidth" value="100" min="80" max="100">
-                                    <small style="color: #6c757d;">Porcentaje del ancho. 100 = ocupa todo el ancho del celular.</small>
                                 </div>
 
                                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -704,21 +680,13 @@
                     </div>
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
-                            <div class="info-box" style="margin-bottom: 14px;">
-                                Opciones adicionales de la <strong>aplicacion de firma</strong> de Signaturit.
-                            </div>
-
                             <div class="form-group">
                                 <label>Subject Tag (subject_tag)</label>
                                 <input type="text" id="brandingSubjectTag" placeholder="Ej: MiEmpresa" value="">
-                                <small style="color: #6c757d;">Tag que aparece en el asunto de <strong>todos</strong> los emails de este branding. Se envia como parametro del branding.</small>
+                                <small style="color: #6c757d;">Prefijo en el asunto de todos los emails.</small>
                             </div>
 
-                            <div style="margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #e5e7eb;">
-                                <div class="info-box" style="margin-bottom: 12px;">
-                                    Colores de la <strong>app de firma</strong> de Signaturit (header, footer, botones de la app).
-                                    <br><code>layout_color</code> controla el color de los botones en el email Y en la app.
-                                </div>
+                            <div style="margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #e5e7eb;">
 
                                 <div class="form-group">
                                     <label>Color Header App (header_color)</label>
@@ -726,7 +694,7 @@
                                         <input type="color" id="brandingHeaderColor" value="#3d3d3d">
                                         <input type="text" class="color-value" id="brandingHeaderColorValue" value="#3d3d3d">
                                     </div>
-                                    <small style="color: #6c757d;">Barra superior de la app de firma</small>
+                                    <small style="color: #6c757d;">Header de la app</small>
                                 </div>
 
                                 <div class="form-group">
@@ -735,7 +703,7 @@
                                         <input type="color" id="brandingFooterColor" value="#3d3d3d">
                                         <input type="text" class="color-value" id="brandingFooterColorValue" value="#3d3d3d">
                                     </div>
-                                    <small style="color: #6c757d;">Pie de pagina de la app de firma</small>
+                                    <small style="color: #6c757d;">Footer de la app</small>
                                 </div>
 
                                 <div class="form-group">
@@ -744,7 +712,7 @@
                                         <input type="color" id="brandingLayoutColor" value="#77d401">
                                         <input type="text" class="color-value" id="brandingLayoutColorValue" value="#77d401">
                                     </div>
-                                    <small style="color: #6c757d;">Color principal: botones de la app y boton en emails ({{sign_button}})</small>
+                                    <small style="color: #6c757d;">Botones app + email</small>
                                 </div>
 
                                 <div class="form-group">
@@ -753,7 +721,7 @@
                                         <input type="color" id="brandingTextColor" value="#333333">
                                         <input type="text" class="color-value" id="brandingTextColorValue" value="#333333">
                                     </div>
-                                    <small style="color: #6c757d;">Texto principal en la app de firma</small>
+                                    <small style="color: #6c757d;">Texto de la app</small>
                                 </div>
                             </div>
 
@@ -762,9 +730,6 @@
                                     <input type="checkbox" id="brandingShowWelcome" checked style="width: auto; cursor: pointer;">
                                     <span>Mostrar pantalla de bienvenida (show_welcome_page)</span>
                                 </label>
-                                <small style="color: #6c757d; display: block; margin-top: 4px;">
-                                    Si se desmarca, se oculta la pantalla "Como funciona?" (show_welcome_page=0)
-                                </small>
                             </div>
 
                             <div class="form-group">
@@ -772,9 +737,6 @@
                                     <input type="checkbox" id="brandingShowCsv" checked style="width: auto; cursor: pointer;">
                                     <span>Mostrar sello CSV en documento firmado (show_csv)</span>
                                 </label>
-                                <small style="color: #6c757d; display: block; margin-top: 4px;">
-                                    Muestra la imagen y texto CSV estampado en el archivo firmado
-                                </small>
                             </div>
 
                             <div class="form-group">
@@ -782,9 +744,6 @@
                                     <input type="checkbox" id="brandingShowBiometricHash" checked style="width: auto; cursor: pointer;">
                                     <span>Mostrar Hash Biometrico (show_biometric_hash)</span>
                                 </label>
-                                <small style="color: #6c757d; display: block; margin-top: 4px;">
-                                    Muestra el hash biometrico en el documento firmado y audit trail
-                                </small>
                             </div>
 
                             <div class="form-group">
@@ -794,7 +753,6 @@
                                     <option value="black">Negro</option>
                                     <option value="blue">Azul</option>
                                 </select>
-                                <small style="color: #6c757d;">Color del trazo de la firma (solo negro o azul)</small>
                             </div>
 
                             <div class="form-group">
@@ -804,24 +762,16 @@
                                     <option value="right">Derecha</option>
                                     <option value="left">Izquierda</option>
                                 </select>
-                                <small style="color: #6c757d;">Posicion del sello CSV en el documento firmado</small>
                             </div>
 
-                            <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #e5e7eb;">
-                                <div class="info-box" style="margin-bottom: 12px; background: #fff3cd; border-color: #ffc107;">
-                                    <strong>Redirect post-firma (callback_url)</strong>
-                                    <br><br>
-                                    NO es un parametro del branding. Se configura en el <strong>signature request</strong> (POST <code>/v3/signatures</code>).
-                                    Al setear <code>callback_url</code>, Signaturit redirige al firmante a esa URL en vez de mostrar su pantalla final ("Prueba Signaturit", links de RRSS, etc.).
-                                </div>
-
+                            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e5e7eb;">
                                 <div class="form-group">
-                                    <label>callback_url (referencia para tu integracion)</label>
+                                    <label>callback_url (referencia)</label>
                                     <div style="display:flex;gap:6px;">
                                         <input type="url" id="callbackUrlRef" placeholder="https://tuempresa.com/firma-completada" style="flex:1;">
-                                        <button type="button" onclick="copyCallbackSnippet()" style="white-space:nowrap;padding:6px 12px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:12px;">Copiar snippet</button>
+                                        <button type="button" onclick="copyCallbackSnippet()" style="white-space:nowrap;padding:5px 10px;background:#6c757d;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:11px;">Snippet</button>
                                     </div>
-                                    <small style="color: #6c757d;">Este valor NO se envia al branding. Es una referencia para copiar el snippet de API.</small>
+                                    <small style="color: #6c757d;">No se envia al branding. Solo referencia para tu integracion.</small>
                                 </div>
 
                                 <div id="callbackSnippetBox" style="display:none;margin-top:10px;background:#1e1e1e;border-radius:6px;padding:12px;position:relative;">
@@ -869,35 +819,26 @@ window.addEventListener('message', function(event) {
                     </div>
                     <div class="collapsible-content">
                         <div class="collapsible-inner">
-                            <div class="info-box" style="margin-bottom: 14px;">
-                                Personaliza los textos de los <strong>botones</strong> en los emails y la app de firma.
-                                Corresponden a <strong>application_texts</strong> del endpoint Branding.
-                                El campo <em>terms_and_conditions</em> acepta <strong>HTML</strong> (negrita, links, etc).
-                            </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label>Boton firmar (sign_button)</label>
                                     <input type="text" id="brandingSignButton" placeholder='Ej: "FIRMAR", "Sign"...'>
-                                    <small style="color: #6c757d;">Boton de firma en la app</small>
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label>Boton enviar (send_button)</label>
-                                    <input type="text" id="brandingSendButton" placeholder='Ej: "ENVIAR", "Send"...'>
-                                    <small style="color: #6c757d;">Boton de envio en la app</small>
+                                    <label>Enviar (send_button)</label>
+                                    <input type="text" id="brandingSendButton" placeholder='Ej: "ENVIAR"'>
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label>Boton email firma (open_sign_button)</label>
-                                    <input type="text" id="brandingOpenSignButton" placeholder='Ej: "VER DOCUMENTO"...'>
-                                    <small style="color: #6c757d;">Boton en el email de firma</small>
+                                    <label>Email firma (open_sign_button)</label>
+                                    <input type="text" id="brandingOpenSignButton" placeholder='Ej: "VER DOCUMENTO"'>
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 0;">
-                                    <label>Boton email certificado (open_email_button)</label>
-                                    <input type="text" id="brandingOpenEmailButton" placeholder='Ej: "VER EMAIL"...'>
-                                    <small style="color: #6c757d;">Boton en el email certificado</small>
+                                    <label>Email cert. (open_email_button)</label>
+                                    <input type="text" id="brandingOpenEmailButton" placeholder='Ej: "VER EMAIL"'>
                                 </div>
                             </div>
 
@@ -905,19 +846,16 @@ window.addEventListener('message', function(event) {
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label>Multi-pagina (multi_page)</label>
                                     <input type="text" id="brandingMultiPage" placeholder='Ej: "Desliza para ver mas"...'>
-                                    <small style="color: #6c757d;">Instrucciones multi-pagina</small>
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label>Foto (photo)</label>
-                                    <input type="text" id="brandingPhotoText" placeholder='Ej: "Adjunta foto DNI"...'>
-                                    <small style="color: #6c757d;">Mensaje para foto</small>
+                                    <input type="text" id="brandingPhotoText" placeholder='Ej: "Adjunta foto"'>
                                 </div>
 
                                 <div class="form-group" style="margin-bottom: 0;">
                                     <label>Voz (voice)</label>
-                                    <input type="text" id="brandingVoiceText" placeholder='Ej: "Graba tu voz"...'>
-                                    <small style="color: #6c757d;">Mensaje para grabacion</small>
+                                    <input type="text" id="brandingVoiceText" placeholder='Ej: "Graba tu voz"'>
                                 </div>
                             </div>
 
@@ -943,22 +881,16 @@ window.addEventListener('message', function(event) {
                 <!-- Botones de accion (solo email) -->
                 <div data-preview-tab="email">
                 <div class="button-group">
-                    <button class="btn-primary" onclick="downloadHTML()">Descargar</button>
-                    <button class="btn-secondary" onclick="resetToDefault()">Reset</button>
-                    <button class="btn-secondary" onclick="document.getElementById('importHTML').click()">Importar</button>
-                    <button class="btn-secondary" onclick="openPasteHTMLModal()">Pegar HTML</button>
+                    <button class="btn-primary" onclick="downloadHTML()" style="font-size: 12px; padding: 7px 14px;">Descargar</button>
+                    <button class="btn-secondary" onclick="resetToDefault()" style="font-size: 12px; padding: 7px 14px;">Reset</button>
+                    <button class="btn-secondary" onclick="document.getElementById('importHTML').click()" style="font-size: 12px; padding: 7px 14px;">Importar</button>
+                    <button class="btn-secondary" onclick="openPasteHTMLModal()" style="font-size: 12px; padding: 7px 14px;">Pegar HTML</button>
                     <input type="file" id="importHTML" accept=".html,.htm" style="display:none;" onchange="importHTMLFile(event)">
                 </div>
-
-                <div class="form-group" style="margin-top: 15px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" id="minifyHTML" checked style="width: auto; cursor: pointer;">
-                        <span>Minificar HTML (para API - quita espacios)</span>
-                    </label>
-                    <small style="color: #6c757d; display: block; margin-top: 5px;">
-                        Recomendado para envio via API. Reduce el tamano del HTML.
-                    </small>
-                </div>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-top: 8px; font-size: 11px;">
+                    <input type="checkbox" id="minifyHTML" checked style="width: auto; cursor: pointer;">
+                    <span>Minificar HTML</span>
+                </label>
                 </div>
             </div>
 
@@ -1053,6 +985,6 @@ window.addEventListener('message', function(event) {
         </div>
     </div>
 
-    <script src="app.js?v=41"></script>
+    <script src="app.js?v=42"></script>
 </body>
 </html>
