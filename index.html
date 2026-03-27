@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v35</span>
+                        <span style="color:#999;font-size:12px;">v36</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -618,6 +618,71 @@
                     </div>
                 </div>
 
+                <!-- Seccion: Optimizacion Mobile -->
+                <div class="collapsible-section" data-preview-tab="email">
+                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
+                        <h2>Optimizacion Mobile</h2>
+                        <span class="collapsible-icon">&#9660;</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="collapsible-inner">
+                            <div class="info-box" style="margin-bottom: 14px;">
+                                Agrega media queries responsive al HTML para que el email se vea bien en celulares.
+                                Usa el boton <strong>Mobile</strong> en la barra del preview para previsualizar.
+                            </div>
+
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="mobileEnabled" checked style="width: auto; cursor: pointer;">
+                                    <span>Activar responsive mobile</span>
+                                </label>
+                                <small style="color: #6c757d;">Inyecta media queries <code>@media (max-width: 600px)</code> en el HTML.</small>
+                            </div>
+
+                            <div id="mobileOptions">
+                                <div class="form-group">
+                                    <label>Ancho maximo del contenedor mobile (px)</label>
+                                    <input type="number" id="mobileMaxWidth" value="100" min="80" max="100">
+                                    <small style="color: #6c757d;">Porcentaje del ancho. 100 = ocupa todo el ancho del celular.</small>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label>Texto mobile (px)</label>
+                                        <input type="number" id="mobileFontSize" value="14" min="10" max="28">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label>Interlineado mobile (px)</label>
+                                        <input type="number" id="mobileLineHeight" value="20" min="14" max="40">
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label>Boton mobile (px)</label>
+                                        <input type="number" id="mobileButtonFontSize" value="16" min="10" max="28">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label>Ancho boton mobile (%)</label>
+                                        <input type="number" id="mobileButtonWidth" value="100" min="50" max="100">
+                                    </div>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label>Padding lateral mobile (px)</label>
+                                        <input type="number" id="mobilePadding" value="10" min="0" max="30">
+                                    </div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <label>Ancho logo mobile (px)</label>
+                                        <input type="number" id="mobileLogoWidth" value="120" min="60" max="300">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Seccion: Branding App Preview (solo app tab) -->
                 <div class="collapsible-section" data-preview-tab="app">
                     <div class="collapsible-header" onclick="toggleCollapsible(this)">
@@ -892,6 +957,7 @@ window.addEventListener('message', function(event) {
                         <button class="preview-tab" id="tabBrandingPreview" onclick="switchPreviewTab('branding')">App Branding Preview</button>
                     </div>
                     <div class="preview-toolbar-actions">
+                        <button class="toolbar-btn" id="btnMobilePreview" onclick="toggleMobilePreview()" title="Vista mobile 375px">Mobile</button>
                         <button class="toolbar-btn" onclick="refreshCurrentPreview()">Refrescar</button>
                         <button class="toolbar-btn toolbar-btn-primary" onclick="copyToClipboard()">Copiar HTML</button>
                     </div>
@@ -974,6 +1040,6 @@ window.addEventListener('message', function(event) {
         </div>
     </div>
 
-    <script src="app.js?v=35"></script>
+    <script src="app.js?v=36"></script>
 </body>
 </html>

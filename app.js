@@ -1874,6 +1874,7 @@ ${footerInner}
 \t<![endif]-->
 \t<style>
 \t\ttable, td, div, h1, p {font-family: 'Helvetica Neue', Helvetica, Arial;}
+${getMobileCSS()}
 \t</style>
 </head>
 <body style="margin:0;padding:0;background-color: ${bgColor};">
@@ -2935,6 +2936,64 @@ function minifyHTML(html) {
 }
 
 // ═══════════════════════════════════
+//  MOBILE RESPONSIVE
+// ═══════════════════════════════════
+
+function getMobileCSS() {
+    const enabled = document.getElementById('mobileEnabled');
+    if (!enabled || !enabled.checked) return '';
+
+    const maxWidth = document.getElementById('mobileMaxWidth').value || '100';
+    const fontSize = document.getElementById('mobileFontSize').value || '14';
+    const lineHeight = document.getElementById('mobileLineHeight').value || '20';
+    const btnFontSize = document.getElementById('mobileButtonFontSize').value || '16';
+    const btnWidth = document.getElementById('mobileButtonWidth').value || '100';
+    const padding = document.getElementById('mobilePadding').value || '10';
+    const logoWidth = document.getElementById('mobileLogoWidth').value || '120';
+
+    return `
+\t\t@media only screen and (max-width: 600px) {
+\t\t\tbody { padding: 0 !important; margin: 0 !important; }
+\t\t\ttable[role="presentation"] { width: ${maxWidth}% !important; }
+\t\t\ttd { padding-left: ${padding}px !important; padding-right: ${padding}px !important; }
+\t\t\tp { font-size: ${fontSize}px !important; line-height: ${lineHeight}px !important; }
+\t\t\timg[alt="Logo"] { width: ${logoWidth}px !important; height: auto !important; }
+\t\t\ttable.miboton { width: ${btnWidth}% !important; margin-left: 0 !important; margin-right: 0 !important; }
+\t\t\ttable.miboton span.mititulo { font-size: ${btnFontSize}px !important; }
+\t\t}`;
+}
+
+let isMobilePreview = false;
+
+function toggleMobilePreview() {
+    isMobilePreview = !isMobilePreview;
+    const previewContainer = document.getElementById('previewContainer');
+    const btn = document.getElementById('btnMobilePreview');
+    const frame = document.getElementById('previewFrame');
+
+    if (isMobilePreview) {
+        previewContainer.style.display = 'flex';
+        previewContainer.style.justifyContent = 'center';
+        frame.style.maxWidth = '375px';
+        frame.style.width = '375px';
+        frame.style.margin = '0 auto';
+        frame.style.transition = 'max-width 0.3s ease';
+        btn.style.background = '#0d6efd';
+        btn.style.color = '#fff';
+        btn.textContent = 'Desktop';
+    } else {
+        frame.style.maxWidth = '';
+        frame.style.width = '100%';
+        frame.style.margin = '';
+        previewContainer.style.justifyContent = '';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.textContent = 'Mobile';
+    }
+    updatePreview();
+}
+
+// ═══════════════════════════════════
 //  PREVIEW
 // ═══════════════════════════════════
 
@@ -3235,6 +3294,9 @@ const EXPORT_FIELD_IDS = [
     // App branding application_texts
     'brandingSignButton', 'brandingSendButton', 'brandingOpenSignButton', 'brandingOpenEmailButton',
     'brandingMultiPage', 'brandingPhotoText', 'brandingVoiceText', 'brandingTermsText',
+    // Mobile
+    'mobileEnabled', 'mobileMaxWidth', 'mobileFontSize', 'mobileLineHeight',
+    'mobileButtonFontSize', 'mobileButtonWidth', 'mobilePadding', 'mobileLogoWidth',
     // Subjects
     'emailSubject', 'brandingSubjectTag',
     // Callback ref
