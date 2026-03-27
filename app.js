@@ -2302,23 +2302,10 @@ function parseHTMLTemplate(htmlString) {
                        doc.querySelector('td[style*="padding: 0 0 25px"]') ||
                        doc.querySelector('td[style*="padding:0px 0px 25px"]') ||
                        doc.querySelector('.note') ||
-                       doc.querySelector('table[bgcolor="#ffffff"] td');
-    // Fallback: if no content area found, try to find the main text container
-    const effectiveContentArea = contentArea || (function() {
-        // Look for the td with content paragraphs inside the 800px table
-        const mainTable = doc.querySelector('table[style*="width:800px"]');
-        if (mainTable) {
-            const tds = mainTable.querySelectorAll('td');
-            for (const td of tds) {
-                if (td.querySelector('p') && !td.querySelector('img[alt="Logo"]')) {
-                    return td;
-                }
-            }
-        }
-        return doc.querySelector('body');
-    })();
+                       doc.querySelector('table[bgcolor="#ffffff"] td') ||
+                       doc.querySelector('body');
 
-    if (effectiveContentArea) {
+    if (contentArea) {
         const extractTextAndVariables = (element) => {
             // Recursively extract text, converting <strong>/<b> to **, <em>/<i> to *, <u> to __
             const processNode = (node) => {
@@ -2340,11 +2327,6 @@ function parseHTMLTemplate(htmlString) {
                     // Default: assume sign_button for .miboton with <a href="{{url}}">
                     return '{{sign_button}}';
                 }
-                // Skip non-miboton tables (footer wrappers, layout tables)
-                if (node.nodeName === 'TABLE') {
-                    return '';
-                }
-
                 // Process child nodes
                 let childContent = '';
                 for (const child of node.childNodes) {
@@ -2373,10 +2355,10 @@ function parseHTMLTemplate(htmlString) {
             return content;
         };
 
-        emailContent = extractTextAndVariables(effectiveContentArea);
+        emailContent = extractTextAndVariables(contentArea);
 
         if (!emailContent.trim()) {
-            emailContent = effectiveContentArea.textContent || '';
+            emailContent = contentArea.textContent || '';
         }
 
         extractedSomething = true;
