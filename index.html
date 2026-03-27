@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v37</span>
+                        <span style="color:#999;font-size:12px;">v38</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -568,13 +568,26 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Margin (Top, Right, Bottom, Left en px)</label>
-                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-                                    <input type="number" id="buttonMarginTop" value="10" min="0" max="50" placeholder="Top">
-                                    <input type="number" id="buttonMarginRight" value="0" min="0" max="50" placeholder="Right">
-                                    <input type="number" id="buttonMarginBottom" value="10" min="0" max="50" placeholder="Bottom">
-                                    <input type="number" id="buttonMarginLeft" value="0" min="0" max="50" placeholder="Left">
+                                <label>Margen vertical del Boton (px)</label>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div>
+                                        <small style="color: #6c757d;">Arriba</small>
+                                        <input type="number" id="buttonMarginTop" value="10" min="0" max="50">
+                                    </div>
+                                    <div>
+                                        <small style="color: #6c757d;">Abajo</small>
+                                        <input type="number" id="buttonMarginBottom" value="10" min="0" max="50">
+                                    </div>
                                 </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Alineacion del Boton</label>
+                                <select id="buttonAlign">
+                                    <option value="center">Centro</option>
+                                    <option value="left">Izquierda</option>
+                                    <option value="right">Derecha</option>
+                                </select>
                             </div>
 
                             <div class="form-group">
@@ -1040,6 +1053,6 @@ window.addEventListener('message', function(event) {
         </div>
     </div>
 
-    <script src="app.js?v=37"></script>
+    <script src="app.js?v=38"></script>
 </body>
 </html>

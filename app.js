@@ -1709,9 +1709,8 @@ function generateHTML() {
     const buttonPaddingBottom = document.getElementById('buttonPaddingBottom').value || '15';
     const buttonPaddingLeft = document.getElementById('buttonPaddingLeft').value || '15';
     const buttonMarginTop = document.getElementById('buttonMarginTop').value || '10';
-    const buttonMarginRight = document.getElementById('buttonMarginRight').value || '0';
     const buttonMarginBottom = document.getElementById('buttonMarginBottom').value || '10';
-    const buttonMarginLeft = document.getElementById('buttonMarginLeft').value || '0';
+    const buttonAlign = document.getElementById('buttonAlign').value || 'center';
     const buttonWidth = document.getElementById('buttonWidth').value || '200';
     const buttonFontSize = document.getElementById('buttonFontSize').value || defaults.buttonFontSize;
     const buttonLineHeight = document.getElementById('buttonLineHeight').value || defaults.buttonLineHeight;
@@ -1728,7 +1727,10 @@ function generateHTML() {
 
     const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
     const buttonPaddingStyle = `padding:${buttonPaddingTop}px ${buttonPaddingRight}px ${buttonPaddingBottom}px ${buttonPaddingLeft}px;`;
-    const buttonMarginStyle = `margin:${buttonMarginTop}px auto ${buttonMarginBottom}px auto;`;
+    const buttonMarginLeft = buttonAlign === 'center' ? 'auto' : (buttonAlign === 'right' ? 'auto' : '0');
+    const buttonMarginRight = buttonAlign === 'center' ? 'auto' : (buttonAlign === 'left' ? 'auto' : '0');
+    const buttonMarginStyle = `margin:${buttonMarginTop}px ${buttonMarginRight} ${buttonMarginBottom}px ${buttonMarginLeft};`;
+    const buttonAlignAttr = buttonAlign;
     const buttonFontWeightStyle = buttonFontWeight !== 'normal' ? `font-weight:${buttonFontWeight};` : '';
     const buttonNoWrap = document.getElementById('buttonNoWrap').value || defaults.buttonNoWrap;
     const buttonNoWrapStyle = buttonNoWrap === 'yes' ? 'white-space:nowrap;' : '';
@@ -1736,7 +1738,7 @@ function generateHTML() {
 
     // Signaturit replaces magic words with its own buttons,
     // so we use <span> with the magic word as text (not <a href>)
-    const buildMagicWordButtonHTML = (magicWord) => `<table class="miboton" align="center" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
+    const buildMagicWordButtonHTML = (magicWord) => `<table class="miboton" align="${buttonAlignAttr}" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t<tr>
 \t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px;${buttonNoWrapStyle}'>
 \t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;${buttonNoWrapStyle}'>
@@ -3277,7 +3279,7 @@ const EXPORT_FIELD_IDS = [
     'buttonBorderColor', 'buttonBorderColorOpacity',
     'buttonBorderWidth', 'buttonBorderRadius',
     'buttonPaddingTop', 'buttonPaddingRight', 'buttonPaddingBottom', 'buttonPaddingLeft',
-    'buttonMarginTop', 'buttonMarginRight', 'buttonMarginBottom', 'buttonMarginLeft',
+    'buttonMarginTop', 'buttonMarginBottom', 'buttonAlign',
     'buttonWidth', 'buttonFontSize', 'buttonLineHeight', 'buttonFontWeight', 'buttonNoWrap',
     // Text format
     'textFontSize', 'textLineHeight', 'textLetterSpacing', 'textAlign', 'textFontWeight',
