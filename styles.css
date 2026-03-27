@@ -588,7 +588,7 @@ h2 {
 .collapsible-header {
     background: white;
     color: #374151;
-    padding: 12px 14px;
+    padding: 9px 12px;
     cursor: pointer;
     border-radius: 8px;
     border: 1px solid #e1e4e8;
@@ -644,7 +644,7 @@ h2 {
 }
 
 .collapsible-inner {
-    padding: 16px;
+    padding: 12px;
     border: 1px solid #e1e4e8;
     border-top: none;
     border-radius: 0 0 8px 8px;
@@ -654,10 +654,10 @@ h2 {
 /* ── Formularios ── */
 select {
     width: 100%;
-    padding: 9px 12px;
+    padding: 7px 10px;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 13px;
+    border-radius: 5px;
+    font-size: 12px;
     background: white;
     cursor: pointer;
     transition: border-color 0.15s;
@@ -671,15 +671,15 @@ select:focus {
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 10px;
 }
 
 label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     color: #374151;
     font-weight: 500;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 input[type="text"],
@@ -689,10 +689,10 @@ input[type="password"],
 textarea,
 input[type="color"] {
     width: 100%;
-    padding: 9px 12px;
+    padding: 7px 10px;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 13px;
+    border-radius: 5px;
+    font-size: 12px;
     transition: border-color 0.15s;
     color: #374151;
 }
@@ -817,12 +817,12 @@ button {
 .info-box {
     background: #eff6ff;
     border-left: 3px solid #2563eb;
-    padding: 12px 14px;
-    margin-bottom: 16px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
     border-radius: 0 6px 6px 0;
-    font-size: 12px;
-    color: #374151;
-    line-height: 1.5;
+    font-size: 11px;
+    color: #6b7280;
+    line-height: 1.4;
 }
 
 /* ── Variables ── */
