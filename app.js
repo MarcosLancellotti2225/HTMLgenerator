@@ -2982,6 +2982,8 @@ function toggleMobilePreview() {
         frame.style.width = '375px';
         frame.style.margin = '0 auto';
         frame.style.transition = 'max-width 0.3s ease';
+        frame.style.padding = '0';
+        frame.style.overflow = 'hidden';
         btn.style.background = '#0d6efd';
         btn.style.color = '#fff';
         btn.textContent = 'Desktop';
@@ -2989,6 +2991,8 @@ function toggleMobilePreview() {
         frame.style.maxWidth = '';
         frame.style.width = '100%';
         frame.style.margin = '';
+        frame.style.padding = '20px';
+        frame.style.overflow = 'auto';
         previewContainer.style.justifyContent = '';
         btn.style.background = '';
         btn.style.color = '';
@@ -3033,7 +3037,29 @@ function updatePreview() {
             html = html.replace(/\{\{logo\}\}/g, 'Logo');
         }
 
-        frame.innerHTML = html;
+        if (isMobilePreview) {
+            // Use iframe so media queries fire based on iframe width, not browser viewport
+            frame.innerHTML = '';
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.border = 'none';
+            iframe.style.display = 'block';
+            frame.appendChild(iframe);
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(html);
+            iframeDoc.close();
+            // Auto-adjust iframe height to content
+            const adjustHeight = () => {
+                const h = iframeDoc.documentElement.scrollHeight || iframeDoc.body.scrollHeight;
+                iframe.style.height = h + 'px';
+            };
+            iframe.onload = adjustHeight;
+            setTimeout(adjustHeight, 100);
+            setTimeout(adjustHeight, 500);
+        } else {
+            frame.innerHTML = html;
+        }
     }
 }
 
