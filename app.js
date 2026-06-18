@@ -1080,6 +1080,8 @@ function loadBrandingAppParams(branding) {
         if (branding.application_texts.open_sign_button) {
             const el = document.getElementById('brandingOpenSignButton');
             if (el) el.value = branding.application_texts.open_sign_button;
+            const ebText = document.getElementById('emailButtonText');
+            if (ebText) ebText.value = branding.application_texts.open_sign_button;
         }
         if (branding.application_texts.open_email_button) {
             const el = document.getElementById('brandingOpenEmailButton');
@@ -1167,7 +1169,9 @@ function collectBrandingAppParams() {
     // application_texts como objeto anidado para JSON
     const appTexts = {};
     if (termsText && termsText.value.trim()) appTexts.terms_and_conditions = termsText.value.trim();
-    if (openSignButton && openSignButton.value.trim()) appTexts.open_sign_button = openSignButton.value.trim();
+    const emailBtnText = document.getElementById('emailButtonText');
+    const openSignVal = (openSignButton && openSignButton.value.trim()) || (emailBtnText && emailBtnText.value.trim());
+    if (openSignVal) appTexts.open_sign_button = openSignVal;
     if (openEmailButton && openEmailButton.value.trim()) appTexts.open_email_button = openEmailButton.value.trim();
     if (sendButton && sendButton.value.trim()) appTexts.send_button = sendButton.value.trim();
 
@@ -1758,32 +1762,52 @@ function generateHTML() {
     const fontWeightStyle = textFontWeight !== 'normal' ? `font-weight:${textFontWeight};` : '';
     const baseTextStyle = `margin:0 0 12px 0;font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}text-align:${textAlign};font-family:'Helvetica Neue', Helvetica, Arial;`;
 
-    const contentParagraphs = emailContent
-        .split('\n')
-        .filter(line => line.trim() !== '')
-        .map(line => {
-            if (line.includes('{{sign_button}}')) {
-                return buildMagicWordButtonHTML('{{sign_button}}');
+    const listStyle = `font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}font-family:'Helvetica Neue', Helvetica, Arial;color:inherit;margin:0 0 4px 0;`;
+    const formatInline = (text) => {
+        let t = text;
+        t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        t = t.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+        t = t.replace(/__(.+?)__/g, '<u>$1</u>');
+        return t;
+    };
+
+    const lines = emailContent.split('\n').filter(line => line.trim() !== '');
+    const htmlParts = [];
+    let i = 0;
+    while (i < lines.length) {
+        const line = lines[i];
+        if (line.includes('{{sign_button}}')) {
+            htmlParts.push(buildMagicWordButtonHTML('{{sign_button}}'));
+        } else if (line.includes('{{email_button}}')) {
+            htmlParts.push(buildMagicWordButtonHTML('{{email_button}}'));
+        } else if (line.includes('{{validate_button}}')) {
+            htmlParts.push(buildMagicWordButtonHTML('{{validate_button}}'));
+        } else if (line.includes('{{dashboard_button}}')) {
+            htmlParts.push(buildMagicWordButtonHTML('{{dashboard_button}}'));
+        } else if (line.trim() === '---') {
+            htmlParts.push(`<hr style="border:0;border-top:1px solid #e0e0e0;margin:16px 0;">`);
+        } else if (/^[-•]\s/.test(line)) {
+            const items = [];
+            while (i < lines.length && /^[-•]\s/.test(lines[i])) {
+                items.push(`<li style="${listStyle}">${formatInline(lines[i].replace(/^[-•]\s*/, ''))}</li>`);
+                i++;
             }
-            if (line.includes('{{email_button}}')) {
-                return buildMagicWordButtonHTML('{{email_button}}');
+            htmlParts.push(`<ul style="margin:0 0 12px 0;padding-left:20px;${baseTextStyle}">${items.join('')}</ul>`);
+            continue;
+        } else if (/^\d+\.\s/.test(line)) {
+            const items = [];
+            while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+                items.push(`<li style="${listStyle}">${formatInline(lines[i].replace(/^\d+\.\s*/, ''))}</li>`);
+                i++;
             }
-            if (line.includes('{{validate_button}}')) {
-                return buildMagicWordButtonHTML('{{validate_button}}');
-            }
-            if (line.includes('{{dashboard_button}}')) {
-                return buildMagicWordButtonHTML('{{dashboard_button}}');
-            }
-            let processedLine = line;
-            // Negrita: **texto**
-            processedLine = processedLine.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-            // Cursiva: *texto* (sin ser parte de **)
-            processedLine = processedLine.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
-            // Subrayado: __texto__
-            processedLine = processedLine.replace(/__(.+?)__/g, '<u>$1</u>');
-            return `\t\t\t\t\t\t\t\t\t\t<p style="${baseTextStyle}">\n\t\t\t\t\t\t\t\t\t\t${processedLine}</p>`;
-        })
-        .join('\n');
+            htmlParts.push(`<ol style="margin:0 0 12px 0;padding-left:20px;${baseTextStyle}">${items.join('')}</ol>`);
+            continue;
+        } else {
+            htmlParts.push(`\t\t\t\t\t\t\t\t\t\t<p style="${baseTextStyle}">\n\t\t\t\t\t\t\t\t\t\t${formatInline(line)}</p>`);
+        }
+        i++;
+    }
+    const contentParagraphs = htmlParts.join('\n');
 
     // Footer del email
     const footerEnabled = document.getElementById('footerEnabled').value;
@@ -1999,6 +2023,7 @@ function parseEmailContentOnly(htmlString) {
         let result = '';
         if (node.nodeType === Node.TEXT_NODE) return node.textContent;
         if (node.nodeName === 'BR') return '\n';
+        if (node.nodeName === 'HR') return '---\n';
         if (node.classList && node.classList.contains('miboton')) {
             var btnText = node.textContent.trim();
             if (btnText.includes('{{email_button}}')) return '{{email_button}}';
@@ -2007,9 +2032,29 @@ function parseEmailContentOnly(htmlString) {
             if (btnText.includes('{{dashboard_button}}')) return '{{dashboard_button}}';
             return '{{sign_button}}';
         }
+        const tag = node.nodeName;
+        if (tag === 'UL') {
+            let items = '';
+            for (const li of node.querySelectorAll(':scope > li')) {
+                let liContent = '';
+                for (const c of li.childNodes) liContent += processNode(c);
+                items += '- ' + liContent.trim() + '\n';
+            }
+            return items;
+        }
+        if (tag === 'OL') {
+            let items = '';
+            let idx = 1;
+            for (const li of node.querySelectorAll(':scope > li')) {
+                let liContent = '';
+                for (const c of li.childNodes) liContent += processNode(c);
+                items += idx + '. ' + liContent.trim() + '\n';
+                idx++;
+            }
+            return items;
+        }
         let childContent = '';
         for (const child of node.childNodes) childContent += processNode(child);
-        const tag = node.nodeName;
         if (tag === 'STRONG' || tag === 'B') result = '**' + childContent + '**';
         else if (tag === 'EM' || tag === 'I') result = '*' + childContent + '*';
         else if (tag === 'U') result = '__' + childContent + '__';
@@ -2316,24 +2361,43 @@ function parseHTMLTemplate(htmlString) {
                 if (node.nodeName === 'BR') {
                     return '\n';
                 }
-                // Skip button elements - extract variable
+                if (node.nodeName === 'HR') {
+                    return '---\n';
+                }
                 if (node.classList && node.classList.contains('miboton')) {
-                    // Check for old-style {{sign_button}} text or new-style <a href="{{url}}">
                     var btnText = node.textContent.trim();
                     if (btnText.includes('{{email_button}}')) return '{{email_button}}';
                     if (btnText.includes('{{validate_button}}')) return '{{validate_button}}';
                     if (btnText.includes('{{dashboard_button}}')) return '{{dashboard_button}}';
                     if (btnText.includes('{{sign_button}}')) return '{{sign_button}}';
-                    // Default: assume sign_button for .miboton with <a href="{{url}}">
                     return '{{sign_button}}';
                 }
-                // Process child nodes
+                const tag = node.nodeName;
+                if (tag === 'UL') {
+                    let items = '';
+                    for (const li of node.querySelectorAll(':scope > li')) {
+                        let liContent = '';
+                        for (const c of li.childNodes) liContent += processNode(c);
+                        items += '- ' + liContent.trim() + '\n';
+                    }
+                    return items;
+                }
+                if (tag === 'OL') {
+                    let items = '';
+                    let idx = 1;
+                    for (const li of node.querySelectorAll(':scope > li')) {
+                        let liContent = '';
+                        for (const c of li.childNodes) liContent += processNode(c);
+                        items += idx + '. ' + liContent.trim() + '\n';
+                        idx++;
+                    }
+                    return items;
+                }
                 let childContent = '';
                 for (const child of node.childNodes) {
                     childContent += processNode(child);
                 }
 
-                const tag = node.nodeName;
                 if (tag === 'STRONG' || tag === 'B') {
                     result = '**' + childContent + '**';
                 } else if (tag === 'EM' || tag === 'I') {
@@ -2799,6 +2863,37 @@ function wrapEmailSelection(before, after) {
     updatePreview();
 }
 
+function insertListPrefix(prefix) {
+    const textarea = document.getElementById('emailContent');
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = textarea.value.substring(start, end);
+    if (selected.includes('\n')) {
+        const lines = selected.split('\n').map(l => l.trim() ? prefix + l.replace(/^[-•]\s*|^\d+\.\s*/, '') : l);
+        textarea.value = textarea.value.substring(0, start) + lines.join('\n') + textarea.value.substring(end);
+    } else {
+        const lineStart = textarea.value.lastIndexOf('\n', start - 1) + 1;
+        const before = textarea.value.substring(0, lineStart);
+        const currentLine = textarea.value.substring(lineStart, end);
+        const after = textarea.value.substring(end);
+        const newLine = currentLine.replace(/^[-•]\s*|^\d+\.\s*/, '');
+        textarea.value = before + prefix + newLine + after;
+    }
+    textarea.focus();
+    updatePreview();
+}
+
+function insertLineBreak() {
+    const textarea = document.getElementById('emailContent');
+    if (!textarea) return;
+    const pos = textarea.selectionStart;
+    textarea.value = textarea.value.substring(0, pos) + '\n---\n' + textarea.value.substring(pos);
+    textarea.focus();
+    textarea.setSelectionRange(pos + 5, pos + 5);
+    updatePreview();
+}
+
 function wrapFooterSelection(before, after) {
     const textarea = document.getElementById('footerContent');
     if (!textarea) return;
@@ -3190,6 +3285,14 @@ function initEditorListeners() {
     document.querySelectorAll('#viewEditor input:not([type="range"]):not([type="checkbox"]):not([type="file"]), #viewEditor textarea, #viewEditor select').forEach(element => {
         element.addEventListener('input', updateActivePreview);
     });
+
+    // Sync emailButtonText <-> brandingOpenSignButton
+    const ebText = document.getElementById('emailButtonText');
+    const osbText = document.getElementById('brandingOpenSignButton');
+    if (ebText && osbText) {
+        ebText.addEventListener('input', () => { osbText.value = ebText.value; });
+        osbText.addEventListener('input', () => { ebText.value = osbText.value; });
+    }
 
     // Al cambiar tipo de template, cargar el contenido del nuevo tipo
     // NO regeneramos HTML del tipo anterior para evitar contaminar con magic words incorrectas.
