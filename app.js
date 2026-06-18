@@ -1080,6 +1080,8 @@ function loadBrandingAppParams(branding) {
         if (branding.application_texts.open_sign_button) {
             const el = document.getElementById('brandingOpenSignButton');
             if (el) el.value = branding.application_texts.open_sign_button;
+            const ebText = document.getElementById('emailButtonText');
+            if (ebText) ebText.value = branding.application_texts.open_sign_button;
         }
         if (branding.application_texts.open_email_button) {
             const el = document.getElementById('brandingOpenEmailButton');
@@ -1167,7 +1169,9 @@ function collectBrandingAppParams() {
     // application_texts como objeto anidado para JSON
     const appTexts = {};
     if (termsText && termsText.value.trim()) appTexts.terms_and_conditions = termsText.value.trim();
-    if (openSignButton && openSignButton.value.trim()) appTexts.open_sign_button = openSignButton.value.trim();
+    const emailBtnText = document.getElementById('emailButtonText');
+    const openSignVal = (openSignButton && openSignButton.value.trim()) || (emailBtnText && emailBtnText.value.trim());
+    if (openSignVal) appTexts.open_sign_button = openSignVal;
     if (openEmailButton && openEmailButton.value.trim()) appTexts.open_email_button = openEmailButton.value.trim();
     if (sendButton && sendButton.value.trim()) appTexts.send_button = sendButton.value.trim();
 
@@ -3281,6 +3285,14 @@ function initEditorListeners() {
     document.querySelectorAll('#viewEditor input:not([type="range"]):not([type="checkbox"]):not([type="file"]), #viewEditor textarea, #viewEditor select').forEach(element => {
         element.addEventListener('input', updateActivePreview);
     });
+
+    // Sync emailButtonText <-> brandingOpenSignButton
+    const ebText = document.getElementById('emailButtonText');
+    const osbText = document.getElementById('brandingOpenSignButton');
+    if (ebText && osbText) {
+        ebText.addEventListener('input', () => { osbText.value = ebText.value; });
+        osbText.addEventListener('input', () => { ebText.value = osbText.value; });
+    }
 
     // Al cambiar tipo de template, cargar el contenido del nuevo tipo
     // NO regeneramos HTML del tipo anterior para evitar contaminar con magic words incorrectas.
