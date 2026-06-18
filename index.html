@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v42</span>
+                        <span style="color:#999;font-size:12px;">v43</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -245,12 +245,14 @@
 
                             <div class="form-group">
                                 <label>Contenido Completo del Email</label>
-                                <div style="display: flex; gap: 4px; margin-bottom: 6px;">
+                                <div style="display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap;">
                                     <button type="button" onclick="wrapEmailSelection('**', '**')" title="Negrita" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;">B</button>
                                     <button type="button" onclick="wrapEmailSelection('*', '*')" title="Cursiva" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-style: italic; font-size: 13px;">I</button>
                                     <button type="button" onclick="wrapEmailSelection('__', '__')" title="Subrayado" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; text-decoration: underline; font-size: 13px;">U</button>
-                                    <span style="border-left: 1px solid #d1d5db; margin: 0 4px;"></span>
-                                    <small style="color: #999; align-self: center;">Selecciona texto y pulsa un boton para darle formato</small>
+                                    <span style="border-left: 1px solid #d1d5db; margin: 0 2px;"></span>
+                                    <button type="button" onclick="insertListPrefix('- ')" title="Viñeta" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-size: 13px;">&#8226;</button>
+                                    <button type="button" onclick="insertListPrefix('1. ')" title="Lista numerada" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-size: 13px;">1.</button>
+                                    <button type="button" onclick="insertLineBreak()" title="Linea separadora" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-size: 13px;">&#8213;</button>
                                 </div>
                                 <textarea id="emailContent" style="min-height: 300px;" placeholder="Escribe aquí el contenido de tu email...&#10;&#10;Ejemplo:&#10;Estimado/a {{signer_name}}, le hacemos llegar la documentación:&#10;&#10;{{filename}}&#10;&#10;Para firmar, haga clic en: {{sign_button}}&#10;&#10;{{email_body}}"></textarea>
                             </div>
@@ -985,6 +987,6 @@ window.addEventListener('message', function(event) {
         </div>
     </div>
 
-    <script src="app.js?v=42"></script>
+    <script src="app.js?v=43"></script>
 </body>
 </html>
