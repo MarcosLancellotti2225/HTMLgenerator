@@ -1838,11 +1838,13 @@ function generateHTML() {
     const logoObjectFitStyle = logoObjectFit !== 'none' ? `object-fit:${logoObjectFit};` : '';
     const logoStyles = `width:${logoWidth};height:${logoHeight};${logoObjectFitStyle}display:block;`;
 
-    const logoSection = logoUrl ? `\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td align="center" style="padding:30px 0 20px 0;">
-\t\t\t\t\t\t\t<img style="${logoStyles}" alt="Logo" src="${logoUrl}">
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>` : '';
+    const logoSection = logoUrl ? `        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;">
+          <tr>
+            <td align="center" style="padding:30px 20px;background-color:${containerColor};">
+              <img style="${logoStyles}" alt="Logo" src="${logoUrl}">
+            </td>
+          </tr>
+        </table>` : '';
 
     const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
     const buttonPaddingStyle = `padding:${buttonPaddingTop}px ${buttonPaddingRight}px ${buttonPaddingBottom}px ${buttonPaddingLeft}px;`;
@@ -1857,15 +1859,15 @@ function generateHTML() {
 
     // Signaturit replaces magic words with its own buttons,
     // so we use <span> with the magic word as text (not <a href>)
-    const buildMagicWordButtonHTML = (magicWord) => `<table class="miboton" align="${buttonAlignAttr}" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px;${buttonNoWrapStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;${buttonNoWrapStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}${buttonNoWrapStyle}text-transform:none !important;'>${magicWord}</span>
-\t\t\t\t\t\t\t\t\t\t\t\t\t</p>
-\t\t\t\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t\t\t\t</table>`;
+    const buildMagicWordButtonHTML = (magicWord) => `              <table role="presentation" class="miboton" align="${buttonAlignAttr}" style="${buttonMarginStyle}border-collapse:collapse;border:0;border-spacing:0;">
+                <tr>
+                  <td align="center" style="border-radius:${buttonBorderRadius}px;background-color:${buttonColor};${buttonBorderStyle}">
+                    <p style="margin:0;${buttonPaddingStyle}font-size:${buttonFontSize}px;${buttonFontWeightStyle}${buttonNoWrapStyle}">
+                      <span class="mititulo" style="color:${buttonTextColor};text-decoration:none;">${magicWord}</span>
+                    </p>
+                  </td>
+                </tr>
+              </table>`;
 
     const textFontSize = document.getElementById('textFontSize').value || defaults.textFontSize;
     const textLineHeight = document.getElementById('textLineHeight').value || defaults.textLineHeight;
@@ -1875,9 +1877,10 @@ function generateHTML() {
 
     const letterSpacingStyle = textLetterSpacing !== '0' ? `letter-spacing:${textLetterSpacing}px;` : '';
     const fontWeightStyle = textFontWeight !== 'normal' ? `font-weight:${textFontWeight};` : '';
-    const baseTextStyle = `margin:0 0 12px 0;font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}text-align:${textAlign};font-family:'Helvetica Neue', Helvetica, Arial;`;
+    const textAlignStyle = textAlign !== 'left' ? `text-align:${textAlign};` : '';
+    const baseTextStyle = `margin:0 0 20px 0;font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}${textAlignStyle}color:${textColor};`;
 
-    const listStyle = `font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}font-family:'Helvetica Neue', Helvetica, Arial;color:inherit;margin:0 0 4px 0;`;
+    const listStyle = `font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}color:${textColor};margin:0 0 4px 0;`;
     const formatInline = (text) => {
         let t = text;
         t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -1904,21 +1907,21 @@ function generateHTML() {
         } else if (/^[-•]\s/.test(line)) {
             const items = [];
             while (i < lines.length && /^[-•]\s/.test(lines[i])) {
-                items.push(`<li style="${listStyle}">${formatInline(lines[i].replace(/^[-•]\s*/, ''))}</li>`);
+                items.push(`\n                <li style="${listStyle}">${formatInline(lines[i].replace(/^[-•]\s*/, ''))}</li>`);
                 i++;
             }
-            htmlParts.push(`<ul style="margin:0 0 12px 0;padding-left:20px;${baseTextStyle}">${items.join('')}</ul>`);
+            htmlParts.push(`              <ul style="margin:0 0 20px 0;padding-left:20px;${baseTextStyle}">${items.join('')}\n              </ul>`);
             continue;
         } else if (/^\d+\.\s/.test(line)) {
             const items = [];
             while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
-                items.push(`<li style="${listStyle}">${formatInline(lines[i].replace(/^\d+\.\s*/, ''))}</li>`);
+                items.push(`\n                <li style="${listStyle}">${formatInline(lines[i].replace(/^\d+\.\s*/, ''))}</li>`);
                 i++;
             }
-            htmlParts.push(`<ol style="margin:0 0 12px 0;padding-left:20px;${baseTextStyle}">${items.join('')}</ol>`);
+            htmlParts.push(`              <ol style="margin:0 0 20px 0;padding-left:20px;${baseTextStyle}">${items.join('')}\n              </ol>`);
             continue;
         } else {
-            htmlParts.push(`\t\t\t\t\t\t\t\t\t\t<p style="${baseTextStyle}">\n\t\t\t\t\t\t\t\t\t\t${formatInline(line)}</p>`);
+            htmlParts.push(`              <p style="${baseTextStyle}">\n                ${formatInline(line)}\n              </p>`);
         }
         i++;
     }
@@ -1955,7 +1958,7 @@ function generateHTML() {
         if (fBorderBottom !== '0') footerBorderStyle += `border-bottom:${fBorderBottom}px solid ${footerBorderColor};`;
         if (fBorderLeft !== '0') footerBorderStyle += `border-left:${fBorderLeft}px solid ${footerBorderColor};`;
 
-        const footerTextStyle = `margin:0;font-size:${footerFontSize}px;line-height:${footerLineHeight}px;text-align:${footerTextAlign};font-family:'Helvetica Neue', Helvetica, Arial;color:${footerTextColor};`;
+        const footerTextStyle = `margin:0 0 15px 0;font-size:${footerFontSize}px;line-height:${footerLineHeight}px;color:${footerTextColor};`;
 
         const footerImageHTML = footerImageUrl
             ? `<img src="${footerImageUrl}" alt="Footer" style="width:${footerImageWidth};height:${footerImageHeight};display:block;margin:0 auto 8px auto;">\n`
@@ -1994,71 +1997,46 @@ function generateHTML() {
 
         if (footerImageUrl || footerParagraphs || socialHTML) {
             const footerInner = `${footerImageHTML}${footerParagraphs}${socialHTML}`;
-            if (footerWidth === '100') {
-                footerSection = `\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};${footerBorderStyle}">
+            const footerMaxW = footerWidth === '100' ? '600' : Math.round(600 * parseInt(footerWidth) / 100);
+            footerSection = `        <table role="presentation" style="width:100%;max-width:${footerMaxW}px;border-collapse:collapse;border:0;border-spacing:0;background-color:${footerBgColor};${footerBorderStyle}">
+          <tr>
+            <td style="padding:${footerPadding};">
 ${footerInner}
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>`;
-            } else {
-                footerSection = `\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td align="center" style="padding:0;">
-\t\t\t\t\t\t\t<table role="presentation" align="center" style="width:${footerWidth}%;border-collapse:collapse;border-spacing:0;">
-\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};${footerBorderStyle}">
-${footerInner}
-\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t</table>
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>`;
-            }
+            </td>
+          </tr>
+        </table>`;
         }
     }
 
     return `<!DOCTYPE html>
 <html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-\t<meta charset="UTF-8">
-\t<meta name="viewport" content="width=device-width,initial-scale=1">
-\t<meta name="x-apple-disable-message-reformatting">
-\t<title>${(document.getElementById('emailSubject').value.trim()) || 'Solicitud de Firma'}</title>
-\t<!--[if mso]>
-\t<noscript>
-\t\t<xml>
-\t\t\t<o:OfficeDocumentSettings>
-\t\t\t\t<o:PixelsPerInch>96</o:PixelsPerInch>
-\t\t\t</o:OfficeDocumentSettings>
-\t\t</xml>
-\t</noscript>
-\t<![endif]-->
-\t<style>
-\t\ttable, td, div, h1, p {font-family: 'Helvetica Neue', Helvetica, Arial;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>${(document.getElementById('emailSubject').value.trim()) || 'Solicitud de Firma'}</title>
+  <style>
+    table, td, div, h1, p {font-family: 'Helvetica Neue', Helvetica, Arial;}
+    body { margin:0; padding:0; background-color: ${bgColor}; }
 ${getMobileCSS()}
-\t</style>
+  </style>
 </head>
 <body style="margin:0;padding:0;background-color: ${bgColor};">
-\t<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;margin:30px 0px;">
-\t\t<tr>
-\t\t\t<td align="center" style="padding:0;">
-\t\t\t\t<table role="presentation" style="width:800px;border-collapse:collapse;border:1px solid ${borderColor};border-spacing:0;text-align:left;background:${containerColor}">
+  <table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;margin:30px 0px;">
+    <tr>
+      <td align="center" style="padding:0;">
 ${logoSection}
-\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td style="padding:10px 25px 0px 25px;">
-\t\t\t\t\t\t\t<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;">
-\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t<td style="padding:0 0 25px 0;color:${textColor};">
+        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background-color:${containerColor};">
+          <tr>
+            <td style="padding:40px 30px;">
 ${contentParagraphs}
-\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t</table>
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>
+            </td>
+          </tr>
+        </table>
 ${footerSection}
-\t\t\t\t</table>
-\t\t\t</td>
-\t\t</tr>
-\t</table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
@@ -2143,6 +2121,7 @@ function parseEmailContentOnly(htmlString) {
     const doc = parser.parseFromString(htmlString, 'text/html');
 
     const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
+                       doc.querySelector('td[style*="padding:40px 30px"]') ||
                        doc.querySelector('.note') ||
                        doc.querySelector('table[bgcolor="#ffffff"] td') ||
                        doc.querySelector('body');
