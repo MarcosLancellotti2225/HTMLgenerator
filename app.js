@@ -301,7 +301,7 @@ const TEMPLATE_LANGUAGE_NAMES = {
     es: 'Espanol',
     en: 'English',
     ca: 'Catala',
-    revel: 'Revel (custom)'
+    signaturit: 'Signaturit (default)'
 };
 
 // ═══════════════════════════════════
@@ -403,9 +403,7 @@ const SIGNBOOK_HTML_TEMPLATES = {
     }
 };
 
-const CUSTOM_HTML_TEMPLATES = {
-    revel: {
-        sign_request: `<!DOCTYPE html>
+const SIGNATURIT_DEFAULT_TEMPLATE = `<!DOCTYPE html>
 <html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="UTF-8">
@@ -507,7 +505,15 @@ const CUSTOM_HTML_TEMPLATES = {
     </tr>
   </table>
 </body>
-</html>`
+</html>`;
+
+const CUSTOM_HTML_TEMPLATES = {
+    signaturit: {
+        sign_request: SIGNATURIT_DEFAULT_TEMPLATE,
+        signatures_request: SIGNATURIT_DEFAULT_TEMPLATE,
+        pending_sign: SIGNATURIT_DEFAULT_TEMPLATE,
+        emails_request: SIGNATURIT_DEFAULT_TEMPLATE,
+        validation_request: SIGNATURIT_DEFAULT_TEMPLATE
     }
 };
 
@@ -2556,7 +2562,11 @@ function parseHTMLTemplate(htmlString) {
     // Footer parsing
     // The footer is the last <tr> in the main container table, after the content row.
     // It can be a direct <td> with background or a nested centered table.
+    // Footer detection: first try inside main 800px table, then external sibling tables
     const mainContainerTable = doc.querySelector('table[style*="width:800px"]');
+    let footerTd = null;
+    let footerWidthPercent = '100';
+
     if (mainContainerTable) {
         const allRows = mainContainerTable.querySelectorAll(':scope > tbody > tr, :scope > tr');
         const lastRow = allRows.length > 0 ? allRows[allRows.length - 1] : null;
@@ -2565,11 +2575,6 @@ function parseHTMLTemplate(htmlString) {
             const lastTd = lastRow.querySelector('td');
             const lastTdStyle = lastTd ? (lastTd.getAttribute('style') || '') : '';
 
-            // Check if this row is the footer (has background color, is not logo or content row)
-            let footerTd = null;
-            let footerWidthPercent = '100';
-
-            // Check for nested centered table (custom width footer)
             const nestedTable = lastTd ? lastTd.querySelector('table[align="center"]') : null;
             if (nestedTable) {
                 const nestedStyle = nestedTable.getAttribute('style') || '';
@@ -2581,118 +2586,135 @@ function parseHTMLTemplate(htmlString) {
             } else if (lastTdStyle.includes('background') && !lastTdStyle.includes('padding:30px 0 20px 0') && !lastTdStyle.includes('padding:0 0 25px 0')) {
                 footerTd = lastTd;
             }
+        }
+    }
 
-            if (footerTd) {
-                const ftdStyle = footerTd.getAttribute('style') || '';
-
-                document.getElementById('footerEnabled').value = 'yes';
-                const footerOpts = document.getElementById('footerOptions');
-                if (footerOpts) footerOpts.style.display = 'block';
-
-                document.getElementById('footerWidth').value = footerWidthPercent;
-                const footerWidthValue = document.getElementById('footerWidthValue');
-                if (footerWidthValue) footerWidthValue.textContent = footerWidthPercent + '%';
-
-                // Background color
-                const ftBgMatch = ftdStyle.match(/background:\s*([^;]+)/);
-                if (ftBgMatch) {
-                    const parsedFtBg = parseColor(ftBgMatch[1]);
-                    if (parsedFtBg) {
-                        document.getElementById('footerBgColor').value = parsedFtBg.hex;
-                        document.getElementById('footerBgColorValue').value = parsedFtBg.hex;
-                    }
-                }
-
-                // Padding
-                const ftPadMatch = ftdStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
-                if (ftPadMatch) {
-                    document.getElementById('footerPaddingTop').value = ftPadMatch[1];
-                    document.getElementById('footerPaddingRight').value = ftPadMatch[2];
-                    document.getElementById('footerPaddingBottom').value = ftPadMatch[3];
-                    document.getElementById('footerPaddingLeft').value = ftPadMatch[4];
-                }
-
-                // Borders per side
-                const ftBorderTopMatch = ftdStyle.match(/border-top:\s*(\d+)px solid ([^;]+)/);
-                const ftBorderRightMatch = ftdStyle.match(/border-right:\s*(\d+)px solid ([^;]+)/);
-                const ftBorderBottomMatch = ftdStyle.match(/border-bottom:\s*(\d+)px solid ([^;]+)/);
-                const ftBorderLeftMatch = ftdStyle.match(/border-left:\s*(\d+)px solid ([^;]+)/);
-
-                if (ftBorderTopMatch) document.getElementById('footerBorderTop').value = ftBorderTopMatch[1];
-                if (ftBorderRightMatch) document.getElementById('footerBorderRight').value = ftBorderRightMatch[1];
-                if (ftBorderBottomMatch) document.getElementById('footerBorderBottom').value = ftBorderBottomMatch[1];
-                if (ftBorderLeftMatch) document.getElementById('footerBorderLeft').value = ftBorderLeftMatch[1];
-
-                const borderColorSource = ftBorderTopMatch || ftBorderRightMatch || ftBorderBottomMatch || ftBorderLeftMatch;
-                if (borderColorSource) {
-                    const parsedFtBdr = parseColor(borderColorSource[2]);
-                    if (parsedFtBdr) {
-                        document.getElementById('footerBorderColor').value = parsedFtBdr.hex;
-                        document.getElementById('footerBorderColorValue').value = parsedFtBdr.hex;
-                    }
-                }
-
-                // Footer image
-                const footerImg = footerTd.querySelector('img');
-                if (footerImg) {
-                    const imgSrc = footerImg.getAttribute('src') || '';
-                    if (imgSrc && !imgSrc.includes('data:image')) {
-                        document.getElementById('footerImageUrl').value = imgSrc;
-                    }
-                    const imgStyle = footerImg.getAttribute('style') || '';
-                    const imgWMatch = imgStyle.match(/width:\s*([^;]+)/);
-                    if (imgWMatch) document.getElementById('footerImageWidth').value = imgWMatch[1].trim();
-                    const imgHMatch = imgStyle.match(/height:\s*([^;]+)/);
-                    if (imgHMatch) document.getElementById('footerImageHeight').value = imgHMatch[1].trim();
-                }
-
-                // Footer text content
-                const footerPs = footerTd.querySelectorAll('p');
-                let footerText = '';
-                let firstFooterP = true;
-                const extractInlineFormatting = (el) => {
-                    let r = '';
-                    for (const ch of el.childNodes) {
-                        if (ch.nodeType === Node.TEXT_NODE) { r += ch.textContent; }
-                        else if (ch.nodeName === 'STRONG' || ch.nodeName === 'B') { r += '**' + extractInlineFormatting(ch) + '**'; }
-                        else if (ch.nodeName === 'EM' || ch.nodeName === 'I') { r += '*' + extractInlineFormatting(ch) + '*'; }
-                        else if (ch.nodeName === 'U') { r += '__' + extractInlineFormatting(ch) + '__'; }
-                        else { r += extractInlineFormatting(ch); }
-                    }
-                    return r;
-                };
-                footerPs.forEach(p => {
-                    if (!firstFooterP) footerText += '\n';
-                    firstFooterP = false;
-                    footerText += extractInlineFormatting(p).trim();
-
-                    // Extract text styling from first <p>
-                    const pStyle = p.getAttribute('style') || '';
-                    const ftColorMatch = pStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
-                    if (ftColorMatch) {
-                        const parsedFtTxt = parseColor(ftColorMatch[1]);
-                        if (parsedFtTxt) {
-                            document.getElementById('footerTextColor').value = parsedFtTxt.hex;
-                            document.getElementById('footerTextColorValue').value = parsedFtTxt.hex;
-                        }
-                    }
-                    const ftFsMatch = pStyle.match(/font-size:\s*(\d+)px/);
-                    if (ftFsMatch) document.getElementById('footerFontSize').value = ftFsMatch[1];
-                    const ftLhMatch = pStyle.match(/line-height:\s*(\d+)px/);
-                    if (ftLhMatch) document.getElementById('footerLineHeight').value = ftLhMatch[1];
-                    const ftAlignMatch = pStyle.match(/text-align:\s*(\w+)/);
-                    if (ftAlignMatch) document.getElementById('footerTextAlign').value = ftAlignMatch[1];
-                });
-                document.getElementById('footerContent').value = footerText;
-
-                extractedSomething = true;
-            } else {
-                // No footer found, reset
-                document.getElementById('footerEnabled').value = 'no';
-                const footerOpts = document.getElementById('footerOptions');
-                if (footerOpts) footerOpts.style.display = 'none';
+    // External footer: look for last max-width:600px table with dark background
+    let externalFooterTableStyle = '';
+    if (!footerTd) {
+        const allMaxWidthTables = doc.querySelectorAll('table[style*="max-width:600px"]');
+        if (allMaxWidthTables.length > 1) {
+            const lastTable = allMaxWidthTables[allMaxWidthTables.length - 1];
+            const ltStyle = lastTable.getAttribute('style') || '';
+            if (ltStyle.includes('background')) {
+                footerTd = lastTable.querySelector('td');
+                externalFooterTableStyle = ltStyle;
             }
         }
+    }
+
+    if (footerTd) {
+        const ftdStyle = footerTd.getAttribute('style') || '';
+        const combinedFooterStyle = ftdStyle + ';' + externalFooterTableStyle;
+
+        document.getElementById('footerEnabled').value = 'yes';
+        const footerOpts = document.getElementById('footerOptions');
+        if (footerOpts) footerOpts.style.display = 'block';
+
+        document.getElementById('footerWidth').value = footerWidthPercent;
+        const footerWidthValue = document.getElementById('footerWidthValue');
+        if (footerWidthValue) footerWidthValue.textContent = footerWidthPercent + '%';
+
+        const ftBgMatch = combinedFooterStyle.match(/background(?:-color)?:\s*([^;]+)/);
+        if (ftBgMatch) {
+            const parsedFtBg = parseColor(ftBgMatch[1]);
+            if (parsedFtBg) {
+                document.getElementById('footerBgColor').value = parsedFtBg.hex;
+                document.getElementById('footerBgColorValue').value = parsedFtBg.hex;
+            }
+        }
+
+        const ftPadMatch = ftdStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+        if (ftPadMatch) {
+            document.getElementById('footerPaddingTop').value = ftPadMatch[1];
+            document.getElementById('footerPaddingRight').value = ftPadMatch[2];
+            document.getElementById('footerPaddingBottom').value = ftPadMatch[3];
+            document.getElementById('footerPaddingLeft').value = ftPadMatch[4];
+        } else {
+            const ftPadMatch2 = ftdStyle.match(/padding:\s*(\d+)px\s+(\d+)px/);
+            if (ftPadMatch2) {
+                document.getElementById('footerPaddingTop').value = ftPadMatch2[1];
+                document.getElementById('footerPaddingRight').value = ftPadMatch2[2];
+                document.getElementById('footerPaddingBottom').value = ftPadMatch2[1];
+                document.getElementById('footerPaddingLeft').value = ftPadMatch2[2];
+            }
+        }
+
+        const ftBorderTopMatch = ftdStyle.match(/border-top:\s*(\d+)px solid ([^;]+)/);
+        const ftBorderRightMatch = ftdStyle.match(/border-right:\s*(\d+)px solid ([^;]+)/);
+        const ftBorderBottomMatch = ftdStyle.match(/border-bottom:\s*(\d+)px solid ([^;]+)/);
+        const ftBorderLeftMatch = ftdStyle.match(/border-left:\s*(\d+)px solid ([^;]+)/);
+
+        if (ftBorderTopMatch) document.getElementById('footerBorderTop').value = ftBorderTopMatch[1];
+        if (ftBorderRightMatch) document.getElementById('footerBorderRight').value = ftBorderRightMatch[1];
+        if (ftBorderBottomMatch) document.getElementById('footerBorderBottom').value = ftBorderBottomMatch[1];
+        if (ftBorderLeftMatch) document.getElementById('footerBorderLeft').value = ftBorderLeftMatch[1];
+
+        const borderColorSource = ftBorderTopMatch || ftBorderRightMatch || ftBorderBottomMatch || ftBorderLeftMatch;
+        if (borderColorSource) {
+            const parsedFtBdr = parseColor(borderColorSource[2]);
+            if (parsedFtBdr) {
+                document.getElementById('footerBorderColor').value = parsedFtBdr.hex;
+                document.getElementById('footerBorderColorValue').value = parsedFtBdr.hex;
+            }
+        }
+
+        const footerImg = footerTd.querySelector('img');
+        if (footerImg) {
+            const imgSrc = footerImg.getAttribute('src') || '';
+            if (imgSrc && !imgSrc.includes('data:image')) {
+                document.getElementById('footerImageUrl').value = imgSrc;
+            }
+            const imgStyle = footerImg.getAttribute('style') || '';
+            const imgWMatch = imgStyle.match(/width:\s*([^;]+)/);
+            if (imgWMatch) document.getElementById('footerImageWidth').value = imgWMatch[1].trim();
+            const imgHMatch = imgStyle.match(/height:\s*([^;]+)/);
+            if (imgHMatch) document.getElementById('footerImageHeight').value = imgHMatch[1].trim();
+        }
+
+        const footerPs = footerTd.querySelectorAll(':scope > p');
+        let footerText = '';
+        let firstFooterP = true;
+        const extractInlineFormatting = (el) => {
+            let r = '';
+            for (const ch of el.childNodes) {
+                if (ch.nodeType === Node.TEXT_NODE) { r += ch.textContent; }
+                else if (ch.nodeName === 'STRONG' || ch.nodeName === 'B') { r += '**' + extractInlineFormatting(ch) + '**'; }
+                else if (ch.nodeName === 'EM' || ch.nodeName === 'I') { r += '*' + extractInlineFormatting(ch) + '*'; }
+                else if (ch.nodeName === 'U') { r += '__' + extractInlineFormatting(ch) + '__'; }
+                else if (ch.nodeName === 'BR') { r += '\n'; }
+                else { r += extractInlineFormatting(ch); }
+            }
+            return r;
+        };
+        footerPs.forEach(p => {
+            if (!firstFooterP) footerText += '\n';
+            firstFooterP = false;
+            footerText += extractInlineFormatting(p).trim();
+
+            const pStyle = p.getAttribute('style') || '';
+            const ftColorMatch = pStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
+            if (ftColorMatch) {
+                const parsedFtTxt = parseColor(ftColorMatch[1]);
+                if (parsedFtTxt) {
+                    document.getElementById('footerTextColor').value = parsedFtTxt.hex;
+                    document.getElementById('footerTextColorValue').value = parsedFtTxt.hex;
+                }
+            }
+            const ftFsMatch = pStyle.match(/font-size:\s*(\d+)px/);
+            if (ftFsMatch) document.getElementById('footerFontSize').value = ftFsMatch[1];
+            const ftLhMatch = pStyle.match(/line-height:\s*(\d+)px/);
+            if (ftLhMatch) document.getElementById('footerLineHeight').value = ftLhMatch[1];
+            const ftAlignMatch = pStyle.match(/text-align:\s*(\w+)/);
+            if (ftAlignMatch) document.getElementById('footerTextAlign').value = ftAlignMatch[1];
+        });
+        document.getElementById('footerContent').value = footerText;
+
+        extractedSomething = true;
+    } else {
+        document.getElementById('footerEnabled').value = 'no';
+        const footerOpts = document.getElementById('footerOptions');
+        if (footerOpts) footerOpts.style.display = 'none';
     }
 
     if (!extractedSomething) {
