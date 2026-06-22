@@ -300,7 +300,8 @@ const EMAIL_TEMPLATES = {
 const TEMPLATE_LANGUAGE_NAMES = {
     es: 'Espanol',
     en: 'English',
-    ca: 'Catala'
+    ca: 'Catala',
+    revel: 'Revel (custom)'
 };
 
 // ═══════════════════════════════════
@@ -399,6 +400,114 @@ const SIGNBOOK_HTML_TEMPLATES = {
             SIGNBOOK_P('{{filename}}', true) +
             SIGNBOOK_P('Si lo desea, puede volver a enviar una nueva solicitud de firma desde su cuenta.')
         )
+    }
+};
+
+const CUSTOM_HTML_TEMPLATES = {
+    revel: {
+        sign_request: `<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Solicitud de Firma</title>
+  <style>
+    table, td, div, h1, p {font-family: 'Helvetica Neue', Helvetica, Arial;}
+    body { margin:0; padding:0; background-color: #f5f5f5; }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color: #f5f5f5;">
+  <table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;margin:30px 0px;">
+    <tr>
+      <td align="center" style="padding:0;">
+        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;">
+          <tr>
+            <td align="center" style="padding:30px 20px;background-color:#ffffff;">
+              {{logo}}
+            </td>
+          </tr>
+        </table>
+        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background-color:#ffffff;">
+          <tr>
+            <td style="padding:40px 30px;">
+              <p style="margin:0 0 20px 0;font-size:14px;line-height:20px;color:#333333;">
+                Hola {{signer_name}},
+              </p>
+              <p style="margin:0 0 20px 0;font-size:14px;line-height:20px;color:#333333;">
+                {{sender_email}} te ha enviado un documento para firmar a través de Signaturit.
+              </p>
+              <p style="margin:0 0 20px 0;font-size:14px;line-height:20px;color:#333333;">
+                <strong>Documento:</strong>
+              </p>
+              <ul style="margin:0 0 20px 0;padding-left:20px;font-size:14px;line-height:20px;color:#333333;">
+                <li>{{filename}}</li>
+              </ul>
+              <p style="margin:0 0 30px 0;font-size:14px;line-height:20px;color:#333333;">
+                Para proceder con la lectura y firma, haz clic en el siguiente botón:
+              </p>
+              <table role="presentation" class="miboton" align="center" style="margin:0 0 40px 0;border-collapse:collapse;border:0;border-spacing:0;">
+                <tr>
+                  <td align="center" style="border-radius:6px;background-color:#6BA32D;">
+                    <p style="margin:0;padding:12px 30px;font-size:14px;font-weight:bold;">
+                      <span class="mititulo" style="color:#ffffff;text-decoration:none;">{{sign_button}}</span>
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:0 0 15px 0;font-size:12px;line-height:18px;color:#666666;font-style:italic;">
+                <strong>Aviso legal:</strong> este mensaje está destinado únicamente al titular de la cuenta de correo electrónico.
+              </p>
+              <ul style="margin:0 0 20px 0;padding-left:20px;font-size:12px;line-height:18px;color:#666666;font-style:italic;">
+                <li style="margin-bottom:8px;">Si no eres el titular de la cuenta de correo electrónico, no abras ni firmes el documento.</li>
+                <li>No reenvíes ni compartas este mensaje, ya que podría invalidar el proceso.</li>
+              </ul>
+              <p style="margin:0;font-size:11px;line-height:16px;color:#666666;font-style:italic;">
+                La consulta y/o firma de documentos por parte de una persona distinta del destinatario constituye un delito penal de suplantación de identidad y falsificación de documentos.
+              </p>
+            </td>
+          </tr>
+        </table>
+        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background-color:#001a4d;">
+          <tr>
+            <td style="padding:40px 30px;">
+              <p style="margin:0 0 15px 0;font-size:12px;line-height:18px;color:#ffffff;">
+                <strong>Signaturit Group</strong> - A Namirial Company<br><br>
+                Ivnosys Soluciones, S.L.U<br>
+                Acceso Ademuz, 12 /Office 1 \\u2013 1st floor 46980 Paterna (Valencia)
+              </p>
+              <table role="presentation" style="margin:20px 0 0 0;border-collapse:collapse;border:0;border-spacing:0;">
+                <tr>
+                  <td style="padding-right:15px;">
+                    <a href="https://www.linkedin.com/company/signaturit/" title="LinkedIn" style="display:inline-block;width:32px;height:32px;background-color:#ffffff;border-radius:4px;text-align:center;line-height:32px;text-decoration:none;">
+                      <img style="width:16px;height:16px;display:inline-block;vertical-align:middle;" src="https://logo.signaturit.com/linkedin_white.svg" alt="LinkedIn">
+                    </a>
+                  </td>
+                  <td style="padding-right:15px;">
+                    <a href="https://x.com/signaturit" title="Twitter / X" style="display:inline-block;width:32px;height:32px;background-color:#ffffff;border-radius:4px;text-align:center;line-height:32px;text-decoration:none;">
+                      <img style="width:16px;height:16px;display:inline-block;vertical-align:middle;" src="https://logo.signaturit.com/x_white.svg" alt="Twitter">
+                    </a>
+                  </td>
+                  <td style="padding-right:15px;">
+                    <a href="https://www.instagram.com/signaturit_team/" title="Instagram" style="display:inline-block;width:32px;height:32px;background-color:#ffffff;border-radius:4px;text-align:center;line-height:32px;text-decoration:none;">
+                      <img style="width:16px;height:16px;display:inline-block;vertical-align:middle;" src="https://logo.signaturit.com/instagram_white.svg" alt="Instagram">
+                    </a>
+                  </td>
+                  <td>
+                    <a href="https://www.facebook.com/signaturit" title="Facebook" style="display:inline-block;width:32px;height:32px;background-color:#ffffff;border-radius:4px;text-align:center;line-height:32px;text-decoration:none;">
+                      <img style="width:16px;height:16px;display:inline-block;vertical-align:middle;" src="https://logo.signaturit.com/facebook_white.svg" alt="Facebook">
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
     }
 };
 
@@ -2197,10 +2306,12 @@ function parseHTMLTemplate(htmlString) {
         }
     }
 
-    // Text color from content td
-    const contentTd = doc.querySelector('td[style*="padding:0 0 25px 0"]');
-    if (contentTd) {
-        const ctStyle = contentTd.getAttribute('style') || '';
+    // Text color from content td or first <p>
+    const contentTd = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
+                     doc.querySelector('td[style*="padding:40px 30px"]');
+    const textColorSource = contentTd || firstP;
+    if (textColorSource) {
+        const ctStyle = textColorSource.getAttribute('style') || '';
         const colorMatch = ctStyle.match(/color:\s*([^;]+)/);
         if (colorMatch) {
             const parsedTxt = parseColor(colorMatch[1]);
@@ -2215,7 +2326,8 @@ function parseHTMLTemplate(htmlString) {
     }
 
     // Text format (font-size, line-height, text-align, font-weight, letter-spacing) from first <p> in content
-    const firstP = doc.querySelector('td[style*="padding:0 0 25px 0"] p');
+    const firstP = doc.querySelector('td[style*="padding:0 0 25px 0"] p') ||
+                  doc.querySelector('td[style*="padding:40px 30px"] p');
     if (firstP) {
         const pStyle = firstP.getAttribute('style') || '';
         const fsMatch = pStyle.match(/font-size:\s*(\d+)px/);
@@ -2236,6 +2348,8 @@ function parseHTMLTemplate(htmlString) {
 
     if (buttonTable) {
         const buttonStyle = buttonTable.getAttribute('style') || '';
+        const buttonTdForColor = buttonTable.querySelector('td');
+        const buttonTdStyle = buttonTdForColor ? (buttonTdForColor.getAttribute('style') || '') : '';
 
         const widthMatch = buttonStyle.match(/width:\s*(\d+)px/);
         if (widthMatch) {
@@ -2243,7 +2357,8 @@ function parseHTMLTemplate(htmlString) {
             extractedSomething = true;
         }
 
-        const bgMatch = buttonStyle.match(/background(?:-color)?:\s*([^;]+)/);
+        const bgMatch = buttonStyle.match(/background(?:-color)?:\s*([^;]+)/) ||
+                        buttonTdStyle.match(/background(?:-color)?:\s*([^;]+)/);
         if (bgMatch) {
             const parsedBtn = parseColor(bgMatch[1]);
             if (parsedBtn) {
@@ -2256,7 +2371,8 @@ function parseHTMLTemplate(htmlString) {
             }
         }
 
-        const radiusMatch = buttonStyle.match(/border-radius:\s*(\d+)px/);
+        const radiusMatch = buttonStyle.match(/border-radius:\s*(\d+)px/) ||
+                           buttonTdStyle.match(/border-radius:\s*(\d+)px/);
         if (radiusMatch) {
             document.getElementById('buttonBorderRadius').value = radiusMatch[1];
         }
@@ -2346,6 +2462,7 @@ function parseHTMLTemplate(htmlString) {
     const contentArea = doc.querySelector('td[style*="padding:0 0 25px"]') ||
                        doc.querySelector('td[style*="padding: 0 0 25px"]') ||
                        doc.querySelector('td[style*="padding:0px 0px 25px"]') ||
+                       doc.querySelector('td[style*="padding:40px 30px"]') ||
                        doc.querySelector('.note') ||
                        doc.querySelector('table[bgcolor="#ffffff"] td') ||
                        doc.querySelector('body');
@@ -2621,6 +2738,22 @@ function loadPresetTemplate() {
     if (!lang) {
         showToast('Selecciona un idioma primero');
         return;
+    }
+
+    // Intentar cargar HTML custom (Revel, etc.)
+    const customTemplates = CUSTOM_HTML_TEMPLATES[lang];
+    if (customTemplates && customTemplates[templateType]) {
+        parseHTMLTemplate(customTemplates[templateType]);
+        showToast('Template HTML "' + templateType + '" (' + TEMPLATE_LANGUAGE_NAMES[lang] + ') cargado');
+        return;
+    }
+    if (customTemplates && !customTemplates[templateType]) {
+        const availableType = Object.keys(customTemplates)[0];
+        if (availableType) {
+            parseHTMLTemplate(customTemplates[availableType]);
+            showToast('Template "' + availableType + '" (' + TEMPLATE_LANGUAGE_NAMES[lang] + ') cargado (unico disponible)');
+            return;
+        }
     }
 
     // Intentar cargar HTML completo precargado (Signbook)
