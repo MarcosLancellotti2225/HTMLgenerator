@@ -1973,8 +1973,27 @@ function generateHTML() {
             })
             .join('\n');
 
-        if (footerImageUrl || footerParagraphs) {
-            const footerInner = `${footerImageHTML}${footerParagraphs}`;
+        const footerLinkedin = document.getElementById('footerLinkedin').value.trim();
+        const footerTwitter = document.getElementById('footerTwitter').value.trim();
+        const footerInstagram = document.getElementById('footerInstagram').value.trim();
+        const footerFacebook = document.getElementById('footerFacebook').value.trim();
+
+        let socialHTML = '';
+        const socialItems = [];
+        const socialIcon = (url, title, imgSrc, alt) =>
+            `<td style="padding-right:15px;"><a href="${url}" title="${title}" style="display:inline-block;width:32px;height:32px;background-color:#ffffff;border-radius:4px;text-align:center;line-height:32px;text-decoration:none;"><img style="width:16px;height:16px;display:inline-block;vertical-align:middle;" src="${imgSrc}" alt="${alt}"></a></td>`;
+
+        if (footerLinkedin) socialItems.push(socialIcon(footerLinkedin, 'LinkedIn', 'https://logo.signaturit.com/linkedin_white.svg', 'LinkedIn'));
+        if (footerTwitter) socialItems.push(socialIcon(footerTwitter, 'Twitter / X', 'https://logo.signaturit.com/x_white.svg', 'Twitter'));
+        if (footerInstagram) socialItems.push(socialIcon(footerInstagram, 'Instagram', 'https://logo.signaturit.com/instagram_white.svg', 'Instagram'));
+        if (footerFacebook) socialItems.push(socialIcon(footerFacebook, 'Facebook', 'https://logo.signaturit.com/facebook_white.svg', 'Facebook'));
+
+        if (socialItems.length > 0) {
+            socialHTML = `<table role="presentation" style="margin:20px 0 0 0;border-collapse:collapse;border:0;border-spacing:0;"><tr>${socialItems.join('')}</tr></table>`;
+        }
+
+        if (footerImageUrl || footerParagraphs || socialHTML) {
+            const footerInner = `${footerImageHTML}${footerParagraphs}${socialHTML}`;
             if (footerWidth === '100') {
                 footerSection = `\t\t\t\t\t<tr>
 \t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};${footerBorderStyle}">
@@ -2709,6 +2728,16 @@ function parseHTMLTemplate(htmlString) {
             if (ftAlignMatch) document.getElementById('footerTextAlign').value = ftAlignMatch[1];
         });
         document.getElementById('footerContent').value = footerText;
+
+        // Social links from footer
+        const footerLinks = footerTd.querySelectorAll('a[href]');
+        footerLinks.forEach(a => {
+            const href = a.getAttribute('href') || '';
+            if (href.includes('linkedin.com')) document.getElementById('footerLinkedin').value = href;
+            else if (href.includes('x.com') || href.includes('twitter.com')) document.getElementById('footerTwitter').value = href;
+            else if (href.includes('instagram.com')) document.getElementById('footerInstagram').value = href;
+            else if (href.includes('facebook.com')) document.getElementById('footerFacebook').value = href;
+        });
 
         extractedSomething = true;
     } else {
@@ -3574,6 +3603,7 @@ const EXPORT_FIELD_IDS = [
     'footerBgColor', 'footerTextColor', 'footerFontSize', 'footerLineHeight', 'footerTextAlign',
     'footerBorderColor', 'footerBorderTop', 'footerBorderRight', 'footerBorderBottom', 'footerBorderLeft',
     'footerPaddingTop', 'footerPaddingRight', 'footerPaddingBottom', 'footerPaddingLeft',
+    'footerLinkedin', 'footerTwitter', 'footerInstagram', 'footerFacebook',
     // App branding colors
     'brandingHeaderColor', 'brandingFooterColor', 'brandingLayoutColor', 'brandingTextColor',
     // App branding flags

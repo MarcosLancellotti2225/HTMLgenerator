@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v46</span>
+                        <span style="color:#999;font-size:12px;">v47</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -412,6 +412,29 @@
                                             <input type="number" id="footerPaddingLeft" value="25" min="0" max="60" style="width: 100%;">
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Redes Sociales (iconos en footer)</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                        <div>
+                                            <small style="color: #6c757d;">LinkedIn URL</small>
+                                            <input type="url" id="footerLinkedin" placeholder="https://linkedin.com/company/...">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Twitter/X URL</small>
+                                            <input type="url" id="footerTwitter" placeholder="https://x.com/...">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Instagram URL</small>
+                                            <input type="url" id="footerInstagram" placeholder="https://instagram.com/...">
+                                        </div>
+                                        <div>
+                                            <small style="color: #6c757d;">Facebook URL</small>
+                                            <input type="url" id="footerFacebook" placeholder="https://facebook.com/...">
+                                        </div>
+                                    </div>
+                                    <small style="color: #6c757d; display: block; margin-top: 4px;">Dejar vacio para no mostrar.</small>
                                 </div>
                             </div>
                         </div>
@@ -988,6 +1011,6 @@ window.addEventListener('message', function(event) {
         </div>
     </div>
 
-    <script src="app.js?v=46"></script>
+    <script src="app.js?v=47"></script>
 </body>
 </html>
