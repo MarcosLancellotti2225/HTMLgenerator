@@ -301,7 +301,7 @@ const TEMPLATE_LANGUAGE_NAMES = {
     es: 'Espanol',
     en: 'English',
     ca: 'Catala',
-    revel: 'Revel (custom)'
+    signaturit: 'Signaturit (default)'
 };
 
 // ═══════════════════════════════════
@@ -403,9 +403,7 @@ const SIGNBOOK_HTML_TEMPLATES = {
     }
 };
 
-const CUSTOM_HTML_TEMPLATES = {
-    revel: {
-        sign_request: `<!DOCTYPE html>
+const SIGNATURIT_DEFAULT_TEMPLATE = `<!DOCTYPE html>
 <html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
   <meta charset="UTF-8">
@@ -507,7 +505,15 @@ const CUSTOM_HTML_TEMPLATES = {
     </tr>
   </table>
 </body>
-</html>`
+</html>`;
+
+const CUSTOM_HTML_TEMPLATES = {
+    signaturit: {
+        sign_request: SIGNATURIT_DEFAULT_TEMPLATE,
+        signatures_request: SIGNATURIT_DEFAULT_TEMPLATE,
+        pending_sign: SIGNATURIT_DEFAULT_TEMPLATE,
+        emails_request: SIGNATURIT_DEFAULT_TEMPLATE,
+        validation_request: SIGNATURIT_DEFAULT_TEMPLATE
     }
 };
 
@@ -1832,11 +1838,13 @@ function generateHTML() {
     const logoObjectFitStyle = logoObjectFit !== 'none' ? `object-fit:${logoObjectFit};` : '';
     const logoStyles = `width:${logoWidth};height:${logoHeight};${logoObjectFitStyle}display:block;`;
 
-    const logoSection = logoUrl ? `\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td align="center" style="padding:30px 0 20px 0;">
-\t\t\t\t\t\t\t<img style="${logoStyles}" alt="Logo" src="${logoUrl}">
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>` : '';
+    const logoSection = logoUrl ? `        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;">
+          <tr>
+            <td align="center" style="padding:30px 20px;background-color:${containerColor};">
+              <img style="${logoStyles}" alt="Logo" src="${logoUrl}">
+            </td>
+          </tr>
+        </table>` : '';
 
     const buttonBorderStyle = buttonBorderWidth > 0 ? `border:${buttonBorderWidth}px solid ${buttonBorderColor};` : '';
     const buttonPaddingStyle = `padding:${buttonPaddingTop}px ${buttonPaddingRight}px ${buttonPaddingBottom}px ${buttonPaddingLeft}px;`;
@@ -1851,15 +1859,15 @@ function generateHTML() {
 
     // Signaturit replaces magic words with its own buttons,
     // so we use <span> with the magic word as text (not <a href>)
-    const buildMagicWordButtonHTML = (magicWord) => `<table class="miboton" align="${buttonAlignAttr}" style='width:${buttonWidth}px;background:${buttonColor};border-radius:${buttonBorderRadius}px;${buttonBorderStyle}${buttonMarginStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t\t\t\t<td style='${buttonPaddingStyle}line-height:${buttonLineHeight}px;${buttonNoWrapStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t<p style='text-align:center;margin:0;${buttonNoWrapStyle}'>
-\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="mititulo" style='font-size:${buttonFontSize}px;line-height:${buttonLineHeight}px;font-family:"Arial";color:${buttonTextColor};${buttonFontWeightStyle}${buttonNoWrapStyle}text-transform:none !important;'>${magicWord}</span>
-\t\t\t\t\t\t\t\t\t\t\t\t\t</p>
-\t\t\t\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t\t\t\t</table>`;
+    const buildMagicWordButtonHTML = (magicWord) => `              <table role="presentation" class="miboton" align="${buttonAlignAttr}" style="${buttonMarginStyle}border-collapse:collapse;border:0;border-spacing:0;">
+                <tr>
+                  <td align="center" style="border-radius:${buttonBorderRadius}px;background-color:${buttonColor};${buttonBorderStyle}">
+                    <p style="margin:0;${buttonPaddingStyle}font-size:${buttonFontSize}px;${buttonFontWeightStyle}${buttonNoWrapStyle}">
+                      <span class="mititulo" style="color:${buttonTextColor};text-decoration:none;">${magicWord}</span>
+                    </p>
+                  </td>
+                </tr>
+              </table>`;
 
     const textFontSize = document.getElementById('textFontSize').value || defaults.textFontSize;
     const textLineHeight = document.getElementById('textLineHeight').value || defaults.textLineHeight;
@@ -1869,9 +1877,10 @@ function generateHTML() {
 
     const letterSpacingStyle = textLetterSpacing !== '0' ? `letter-spacing:${textLetterSpacing}px;` : '';
     const fontWeightStyle = textFontWeight !== 'normal' ? `font-weight:${textFontWeight};` : '';
-    const baseTextStyle = `margin:0 0 12px 0;font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}text-align:${textAlign};font-family:'Helvetica Neue', Helvetica, Arial;`;
+    const textAlignStyle = textAlign !== 'left' ? `text-align:${textAlign};` : '';
+    const baseTextStyle = `margin:0 0 20px 0;font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}${textAlignStyle}color:${textColor};`;
 
-    const listStyle = `font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}font-family:'Helvetica Neue', Helvetica, Arial;color:inherit;margin:0 0 4px 0;`;
+    const listStyle = `font-size:${textFontSize}px;line-height:${textLineHeight}px;${letterSpacingStyle}${fontWeightStyle}color:${textColor};margin:0 0 4px 0;`;
     const formatInline = (text) => {
         let t = text;
         t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
@@ -1898,21 +1907,21 @@ function generateHTML() {
         } else if (/^[-•]\s/.test(line)) {
             const items = [];
             while (i < lines.length && /^[-•]\s/.test(lines[i])) {
-                items.push(`<li style="${listStyle}">${formatInline(lines[i].replace(/^[-•]\s*/, ''))}</li>`);
+                items.push(`\n                <li style="${listStyle}">${formatInline(lines[i].replace(/^[-•]\s*/, ''))}</li>`);
                 i++;
             }
-            htmlParts.push(`<ul style="margin:0 0 12px 0;padding-left:20px;${baseTextStyle}">${items.join('')}</ul>`);
+            htmlParts.push(`              <ul style="margin:0 0 20px 0;padding-left:20px;${baseTextStyle}">${items.join('')}\n              </ul>`);
             continue;
         } else if (/^\d+\.\s/.test(line)) {
             const items = [];
             while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
-                items.push(`<li style="${listStyle}">${formatInline(lines[i].replace(/^\d+\.\s*/, ''))}</li>`);
+                items.push(`\n                <li style="${listStyle}">${formatInline(lines[i].replace(/^\d+\.\s*/, ''))}</li>`);
                 i++;
             }
-            htmlParts.push(`<ol style="margin:0 0 12px 0;padding-left:20px;${baseTextStyle}">${items.join('')}</ol>`);
+            htmlParts.push(`              <ol style="margin:0 0 20px 0;padding-left:20px;${baseTextStyle}">${items.join('')}\n              </ol>`);
             continue;
         } else {
-            htmlParts.push(`\t\t\t\t\t\t\t\t\t\t<p style="${baseTextStyle}">\n\t\t\t\t\t\t\t\t\t\t${formatInline(line)}</p>`);
+            htmlParts.push(`              <p style="${baseTextStyle}">\n                ${formatInline(line)}\n              </p>`);
         }
         i++;
     }
@@ -1949,7 +1958,7 @@ function generateHTML() {
         if (fBorderBottom !== '0') footerBorderStyle += `border-bottom:${fBorderBottom}px solid ${footerBorderColor};`;
         if (fBorderLeft !== '0') footerBorderStyle += `border-left:${fBorderLeft}px solid ${footerBorderColor};`;
 
-        const footerTextStyle = `margin:0;font-size:${footerFontSize}px;line-height:${footerLineHeight}px;text-align:${footerTextAlign};font-family:'Helvetica Neue', Helvetica, Arial;color:${footerTextColor};`;
+        const footerTextStyle = `margin:0 0 15px 0;font-size:${footerFontSize}px;line-height:${footerLineHeight}px;color:${footerTextColor};`;
 
         const footerImageHTML = footerImageUrl
             ? `<img src="${footerImageUrl}" alt="Footer" style="width:${footerImageWidth};height:${footerImageHeight};display:block;margin:0 auto 8px auto;">\n`
@@ -1967,73 +1976,67 @@ function generateHTML() {
             })
             .join('\n');
 
-        if (footerImageUrl || footerParagraphs) {
-            const footerInner = `${footerImageHTML}${footerParagraphs}`;
-            if (footerWidth === '100') {
-                footerSection = `\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};${footerBorderStyle}">
+        const footerLinkedin = document.getElementById('footerLinkedin').value.trim();
+        const footerTwitter = document.getElementById('footerTwitter').value.trim();
+        const footerInstagram = document.getElementById('footerInstagram').value.trim();
+        const footerFacebook = document.getElementById('footerFacebook').value.trim();
+
+        let socialHTML = '';
+        const socialItems = [];
+        const socialIcon = (url, title, imgSrc, alt) =>
+            `<td style="padding-right:15px;"><a href="${url}" title="${title}" style="display:inline-block;width:32px;height:32px;background-color:#ffffff;border-radius:4px;text-align:center;line-height:32px;text-decoration:none;"><img style="width:16px;height:16px;display:inline-block;vertical-align:middle;" src="${imgSrc}" alt="${alt}"></a></td>`;
+
+        if (footerLinkedin) socialItems.push(socialIcon(footerLinkedin, 'LinkedIn', 'https://logo.signaturit.com/linkedin_white.svg', 'LinkedIn'));
+        if (footerTwitter) socialItems.push(socialIcon(footerTwitter, 'Twitter / X', 'https://logo.signaturit.com/x_white.svg', 'Twitter'));
+        if (footerInstagram) socialItems.push(socialIcon(footerInstagram, 'Instagram', 'https://logo.signaturit.com/instagram_white.svg', 'Instagram'));
+        if (footerFacebook) socialItems.push(socialIcon(footerFacebook, 'Facebook', 'https://logo.signaturit.com/facebook_white.svg', 'Facebook'));
+
+        if (socialItems.length > 0) {
+            socialHTML = `<table role="presentation" style="margin:20px 0 0 0;border-collapse:collapse;border:0;border-spacing:0;"><tr>${socialItems.join('')}</tr></table>`;
+        }
+
+        if (footerImageUrl || footerParagraphs || socialHTML) {
+            const footerInner = `${footerImageHTML}${footerParagraphs}${socialHTML}`;
+            const footerMaxW = footerWidth === '100' ? '600' : Math.round(600 * parseInt(footerWidth) / 100);
+            footerSection = `        <table role="presentation" style="width:100%;max-width:${footerMaxW}px;border-collapse:collapse;border:0;border-spacing:0;background-color:${footerBgColor};${footerBorderStyle}">
+          <tr>
+            <td style="padding:${footerPadding};">
 ${footerInner}
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>`;
-            } else {
-                footerSection = `\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td align="center" style="padding:0;">
-\t\t\t\t\t\t\t<table role="presentation" align="center" style="width:${footerWidth}%;border-collapse:collapse;border-spacing:0;">
-\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t<td style="padding:${footerPadding};background:${footerBgColor};${footerBorderStyle}">
-${footerInner}
-\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t</table>
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>`;
-            }
+            </td>
+          </tr>
+        </table>`;
         }
     }
 
     return `<!DOCTYPE html>
 <html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
-\t<meta charset="UTF-8">
-\t<meta name="viewport" content="width=device-width,initial-scale=1">
-\t<meta name="x-apple-disable-message-reformatting">
-\t<title>${(document.getElementById('emailSubject').value.trim()) || 'Solicitud de Firma'}</title>
-\t<!--[if mso]>
-\t<noscript>
-\t\t<xml>
-\t\t\t<o:OfficeDocumentSettings>
-\t\t\t\t<o:PixelsPerInch>96</o:PixelsPerInch>
-\t\t\t</o:OfficeDocumentSettings>
-\t\t</xml>
-\t</noscript>
-\t<![endif]-->
-\t<style>
-\t\ttable, td, div, h1, p {font-family: 'Helvetica Neue', Helvetica, Arial;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>${(document.getElementById('emailSubject').value.trim()) || 'Solicitud de Firma'}</title>
+  <style>
+    table, td, div, h1, p {font-family: 'Helvetica Neue', Helvetica, Arial;}
+    body { margin:0; padding:0; background-color: ${bgColor}; }
 ${getMobileCSS()}
-\t</style>
+  </style>
 </head>
 <body style="margin:0;padding:0;background-color: ${bgColor};">
-\t<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;margin:30px 0px;">
-\t\t<tr>
-\t\t\t<td align="center" style="padding:0;">
-\t\t\t\t<table role="presentation" style="width:800px;border-collapse:collapse;border:1px solid ${borderColor};border-spacing:0;text-align:left;background:${containerColor}">
+  <table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;margin:30px 0px;">
+    <tr>
+      <td align="center" style="padding:0;">
 ${logoSection}
-\t\t\t\t\t<tr>
-\t\t\t\t\t\t<td style="padding:10px 25px 0px 25px;">
-\t\t\t\t\t\t\t<table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;">
-\t\t\t\t\t\t\t\t<tr>
-\t\t\t\t\t\t\t\t\t<td style="padding:0 0 25px 0;color:${textColor};">
+        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background-color:${containerColor};">
+          <tr>
+            <td style="padding:40px 30px;">
 ${contentParagraphs}
-\t\t\t\t\t\t\t\t\t</td>
-\t\t\t\t\t\t\t\t</tr>
-\t\t\t\t\t\t\t</table>
-\t\t\t\t\t\t</td>
-\t\t\t\t\t</tr>
+            </td>
+          </tr>
+        </table>
 ${footerSection}
-\t\t\t\t</table>
-\t\t\t</td>
-\t\t</tr>
-\t</table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
@@ -2118,6 +2121,7 @@ function parseEmailContentOnly(htmlString) {
     const doc = parser.parseFromString(htmlString, 'text/html');
 
     const contentArea = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
+                       doc.querySelector('td[style*="padding:40px 30px"]') ||
                        doc.querySelector('.note') ||
                        doc.querySelector('table[bgcolor="#ffffff"] td') ||
                        doc.querySelector('body');
@@ -2556,7 +2560,11 @@ function parseHTMLTemplate(htmlString) {
     // Footer parsing
     // The footer is the last <tr> in the main container table, after the content row.
     // It can be a direct <td> with background or a nested centered table.
+    // Footer detection: first try inside main 800px table, then external sibling tables
     const mainContainerTable = doc.querySelector('table[style*="width:800px"]');
+    let footerTd = null;
+    let footerWidthPercent = '100';
+
     if (mainContainerTable) {
         const allRows = mainContainerTable.querySelectorAll(':scope > tbody > tr, :scope > tr');
         const lastRow = allRows.length > 0 ? allRows[allRows.length - 1] : null;
@@ -2565,11 +2573,6 @@ function parseHTMLTemplate(htmlString) {
             const lastTd = lastRow.querySelector('td');
             const lastTdStyle = lastTd ? (lastTd.getAttribute('style') || '') : '';
 
-            // Check if this row is the footer (has background color, is not logo or content row)
-            let footerTd = null;
-            let footerWidthPercent = '100';
-
-            // Check for nested centered table (custom width footer)
             const nestedTable = lastTd ? lastTd.querySelector('table[align="center"]') : null;
             if (nestedTable) {
                 const nestedStyle = nestedTable.getAttribute('style') || '';
@@ -2581,118 +2584,145 @@ function parseHTMLTemplate(htmlString) {
             } else if (lastTdStyle.includes('background') && !lastTdStyle.includes('padding:30px 0 20px 0') && !lastTdStyle.includes('padding:0 0 25px 0')) {
                 footerTd = lastTd;
             }
+        }
+    }
 
-            if (footerTd) {
-                const ftdStyle = footerTd.getAttribute('style') || '';
-
-                document.getElementById('footerEnabled').value = 'yes';
-                const footerOpts = document.getElementById('footerOptions');
-                if (footerOpts) footerOpts.style.display = 'block';
-
-                document.getElementById('footerWidth').value = footerWidthPercent;
-                const footerWidthValue = document.getElementById('footerWidthValue');
-                if (footerWidthValue) footerWidthValue.textContent = footerWidthPercent + '%';
-
-                // Background color
-                const ftBgMatch = ftdStyle.match(/background:\s*([^;]+)/);
-                if (ftBgMatch) {
-                    const parsedFtBg = parseColor(ftBgMatch[1]);
-                    if (parsedFtBg) {
-                        document.getElementById('footerBgColor').value = parsedFtBg.hex;
-                        document.getElementById('footerBgColorValue').value = parsedFtBg.hex;
-                    }
-                }
-
-                // Padding
-                const ftPadMatch = ftdStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
-                if (ftPadMatch) {
-                    document.getElementById('footerPaddingTop').value = ftPadMatch[1];
-                    document.getElementById('footerPaddingRight').value = ftPadMatch[2];
-                    document.getElementById('footerPaddingBottom').value = ftPadMatch[3];
-                    document.getElementById('footerPaddingLeft').value = ftPadMatch[4];
-                }
-
-                // Borders per side
-                const ftBorderTopMatch = ftdStyle.match(/border-top:\s*(\d+)px solid ([^;]+)/);
-                const ftBorderRightMatch = ftdStyle.match(/border-right:\s*(\d+)px solid ([^;]+)/);
-                const ftBorderBottomMatch = ftdStyle.match(/border-bottom:\s*(\d+)px solid ([^;]+)/);
-                const ftBorderLeftMatch = ftdStyle.match(/border-left:\s*(\d+)px solid ([^;]+)/);
-
-                if (ftBorderTopMatch) document.getElementById('footerBorderTop').value = ftBorderTopMatch[1];
-                if (ftBorderRightMatch) document.getElementById('footerBorderRight').value = ftBorderRightMatch[1];
-                if (ftBorderBottomMatch) document.getElementById('footerBorderBottom').value = ftBorderBottomMatch[1];
-                if (ftBorderLeftMatch) document.getElementById('footerBorderLeft').value = ftBorderLeftMatch[1];
-
-                const borderColorSource = ftBorderTopMatch || ftBorderRightMatch || ftBorderBottomMatch || ftBorderLeftMatch;
-                if (borderColorSource) {
-                    const parsedFtBdr = parseColor(borderColorSource[2]);
-                    if (parsedFtBdr) {
-                        document.getElementById('footerBorderColor').value = parsedFtBdr.hex;
-                        document.getElementById('footerBorderColorValue').value = parsedFtBdr.hex;
-                    }
-                }
-
-                // Footer image
-                const footerImg = footerTd.querySelector('img');
-                if (footerImg) {
-                    const imgSrc = footerImg.getAttribute('src') || '';
-                    if (imgSrc && !imgSrc.includes('data:image')) {
-                        document.getElementById('footerImageUrl').value = imgSrc;
-                    }
-                    const imgStyle = footerImg.getAttribute('style') || '';
-                    const imgWMatch = imgStyle.match(/width:\s*([^;]+)/);
-                    if (imgWMatch) document.getElementById('footerImageWidth').value = imgWMatch[1].trim();
-                    const imgHMatch = imgStyle.match(/height:\s*([^;]+)/);
-                    if (imgHMatch) document.getElementById('footerImageHeight').value = imgHMatch[1].trim();
-                }
-
-                // Footer text content
-                const footerPs = footerTd.querySelectorAll('p');
-                let footerText = '';
-                let firstFooterP = true;
-                const extractInlineFormatting = (el) => {
-                    let r = '';
-                    for (const ch of el.childNodes) {
-                        if (ch.nodeType === Node.TEXT_NODE) { r += ch.textContent; }
-                        else if (ch.nodeName === 'STRONG' || ch.nodeName === 'B') { r += '**' + extractInlineFormatting(ch) + '**'; }
-                        else if (ch.nodeName === 'EM' || ch.nodeName === 'I') { r += '*' + extractInlineFormatting(ch) + '*'; }
-                        else if (ch.nodeName === 'U') { r += '__' + extractInlineFormatting(ch) + '__'; }
-                        else { r += extractInlineFormatting(ch); }
-                    }
-                    return r;
-                };
-                footerPs.forEach(p => {
-                    if (!firstFooterP) footerText += '\n';
-                    firstFooterP = false;
-                    footerText += extractInlineFormatting(p).trim();
-
-                    // Extract text styling from first <p>
-                    const pStyle = p.getAttribute('style') || '';
-                    const ftColorMatch = pStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
-                    if (ftColorMatch) {
-                        const parsedFtTxt = parseColor(ftColorMatch[1]);
-                        if (parsedFtTxt) {
-                            document.getElementById('footerTextColor').value = parsedFtTxt.hex;
-                            document.getElementById('footerTextColorValue').value = parsedFtTxt.hex;
-                        }
-                    }
-                    const ftFsMatch = pStyle.match(/font-size:\s*(\d+)px/);
-                    if (ftFsMatch) document.getElementById('footerFontSize').value = ftFsMatch[1];
-                    const ftLhMatch = pStyle.match(/line-height:\s*(\d+)px/);
-                    if (ftLhMatch) document.getElementById('footerLineHeight').value = ftLhMatch[1];
-                    const ftAlignMatch = pStyle.match(/text-align:\s*(\w+)/);
-                    if (ftAlignMatch) document.getElementById('footerTextAlign').value = ftAlignMatch[1];
-                });
-                document.getElementById('footerContent').value = footerText;
-
-                extractedSomething = true;
-            } else {
-                // No footer found, reset
-                document.getElementById('footerEnabled').value = 'no';
-                const footerOpts = document.getElementById('footerOptions');
-                if (footerOpts) footerOpts.style.display = 'none';
+    // External footer: look for last max-width:600px table with dark background
+    let externalFooterTableStyle = '';
+    if (!footerTd) {
+        const allMaxWidthTables = doc.querySelectorAll('table[style*="max-width:600px"]');
+        if (allMaxWidthTables.length > 1) {
+            const lastTable = allMaxWidthTables[allMaxWidthTables.length - 1];
+            const ltStyle = lastTable.getAttribute('style') || '';
+            if (ltStyle.includes('background')) {
+                footerTd = lastTable.querySelector('td');
+                externalFooterTableStyle = ltStyle;
             }
         }
+    }
+
+    if (footerTd) {
+        const ftdStyle = footerTd.getAttribute('style') || '';
+        const combinedFooterStyle = ftdStyle + ';' + externalFooterTableStyle;
+
+        document.getElementById('footerEnabled').value = 'yes';
+        const footerOpts = document.getElementById('footerOptions');
+        if (footerOpts) footerOpts.style.display = 'block';
+
+        document.getElementById('footerWidth').value = footerWidthPercent;
+        const footerWidthValue = document.getElementById('footerWidthValue');
+        if (footerWidthValue) footerWidthValue.textContent = footerWidthPercent + '%';
+
+        const ftBgMatch = combinedFooterStyle.match(/background(?:-color)?:\s*([^;]+)/);
+        if (ftBgMatch) {
+            const parsedFtBg = parseColor(ftBgMatch[1]);
+            if (parsedFtBg) {
+                document.getElementById('footerBgColor').value = parsedFtBg.hex;
+                document.getElementById('footerBgColorValue').value = parsedFtBg.hex;
+            }
+        }
+
+        const ftPadMatch = ftdStyle.match(/padding:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+        if (ftPadMatch) {
+            document.getElementById('footerPaddingTop').value = ftPadMatch[1];
+            document.getElementById('footerPaddingRight').value = ftPadMatch[2];
+            document.getElementById('footerPaddingBottom').value = ftPadMatch[3];
+            document.getElementById('footerPaddingLeft').value = ftPadMatch[4];
+        } else {
+            const ftPadMatch2 = ftdStyle.match(/padding:\s*(\d+)px\s+(\d+)px/);
+            if (ftPadMatch2) {
+                document.getElementById('footerPaddingTop').value = ftPadMatch2[1];
+                document.getElementById('footerPaddingRight').value = ftPadMatch2[2];
+                document.getElementById('footerPaddingBottom').value = ftPadMatch2[1];
+                document.getElementById('footerPaddingLeft').value = ftPadMatch2[2];
+            }
+        }
+
+        const ftBorderTopMatch = ftdStyle.match(/border-top:\s*(\d+)px solid ([^;]+)/);
+        const ftBorderRightMatch = ftdStyle.match(/border-right:\s*(\d+)px solid ([^;]+)/);
+        const ftBorderBottomMatch = ftdStyle.match(/border-bottom:\s*(\d+)px solid ([^;]+)/);
+        const ftBorderLeftMatch = ftdStyle.match(/border-left:\s*(\d+)px solid ([^;]+)/);
+
+        if (ftBorderTopMatch) document.getElementById('footerBorderTop').value = ftBorderTopMatch[1];
+        if (ftBorderRightMatch) document.getElementById('footerBorderRight').value = ftBorderRightMatch[1];
+        if (ftBorderBottomMatch) document.getElementById('footerBorderBottom').value = ftBorderBottomMatch[1];
+        if (ftBorderLeftMatch) document.getElementById('footerBorderLeft').value = ftBorderLeftMatch[1];
+
+        const borderColorSource = ftBorderTopMatch || ftBorderRightMatch || ftBorderBottomMatch || ftBorderLeftMatch;
+        if (borderColorSource) {
+            const parsedFtBdr = parseColor(borderColorSource[2]);
+            if (parsedFtBdr) {
+                document.getElementById('footerBorderColor').value = parsedFtBdr.hex;
+                document.getElementById('footerBorderColorValue').value = parsedFtBdr.hex;
+            }
+        }
+
+        const footerImg = footerTd.querySelector('img');
+        if (footerImg) {
+            const imgSrc = footerImg.getAttribute('src') || '';
+            if (imgSrc && !imgSrc.includes('data:image')) {
+                document.getElementById('footerImageUrl').value = imgSrc;
+            }
+            const imgStyle = footerImg.getAttribute('style') || '';
+            const imgWMatch = imgStyle.match(/width:\s*([^;]+)/);
+            if (imgWMatch) document.getElementById('footerImageWidth').value = imgWMatch[1].trim();
+            const imgHMatch = imgStyle.match(/height:\s*([^;]+)/);
+            if (imgHMatch) document.getElementById('footerImageHeight').value = imgHMatch[1].trim();
+        }
+
+        const footerPs = footerTd.querySelectorAll(':scope > p');
+        let footerText = '';
+        let firstFooterP = true;
+        const extractInlineFormatting = (el) => {
+            let r = '';
+            for (const ch of el.childNodes) {
+                if (ch.nodeType === Node.TEXT_NODE) { r += ch.textContent; }
+                else if (ch.nodeName === 'STRONG' || ch.nodeName === 'B') { r += '**' + extractInlineFormatting(ch) + '**'; }
+                else if (ch.nodeName === 'EM' || ch.nodeName === 'I') { r += '*' + extractInlineFormatting(ch) + '*'; }
+                else if (ch.nodeName === 'U') { r += '__' + extractInlineFormatting(ch) + '__'; }
+                else if (ch.nodeName === 'BR') { r += '\n'; }
+                else { r += extractInlineFormatting(ch); }
+            }
+            return r;
+        };
+        footerPs.forEach(p => {
+            if (!firstFooterP) footerText += '\n';
+            firstFooterP = false;
+            footerText += extractInlineFormatting(p).trim();
+
+            const pStyle = p.getAttribute('style') || '';
+            const ftColorMatch = pStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
+            if (ftColorMatch) {
+                const parsedFtTxt = parseColor(ftColorMatch[1]);
+                if (parsedFtTxt) {
+                    document.getElementById('footerTextColor').value = parsedFtTxt.hex;
+                    document.getElementById('footerTextColorValue').value = parsedFtTxt.hex;
+                }
+            }
+            const ftFsMatch = pStyle.match(/font-size:\s*(\d+)px/);
+            if (ftFsMatch) document.getElementById('footerFontSize').value = ftFsMatch[1];
+            const ftLhMatch = pStyle.match(/line-height:\s*(\d+)px/);
+            if (ftLhMatch) document.getElementById('footerLineHeight').value = ftLhMatch[1];
+            const ftAlignMatch = pStyle.match(/text-align:\s*(\w+)/);
+            if (ftAlignMatch) document.getElementById('footerTextAlign').value = ftAlignMatch[1];
+        });
+        document.getElementById('footerContent').value = footerText;
+
+        // Social links from footer
+        const footerLinks = footerTd.querySelectorAll('a[href]');
+        footerLinks.forEach(a => {
+            const href = a.getAttribute('href') || '';
+            if (href.includes('linkedin.com')) document.getElementById('footerLinkedin').value = href;
+            else if (href.includes('x.com') || href.includes('twitter.com')) document.getElementById('footerTwitter').value = href;
+            else if (href.includes('instagram.com')) document.getElementById('footerInstagram').value = href;
+            else if (href.includes('facebook.com')) document.getElementById('footerFacebook').value = href;
+        });
+
+        extractedSomething = true;
+    } else {
+        document.getElementById('footerEnabled').value = 'no';
+        const footerOpts = document.getElementById('footerOptions');
+        if (footerOpts) footerOpts.style.display = 'none';
     }
 
     if (!extractedSomething) {
@@ -3552,6 +3582,7 @@ const EXPORT_FIELD_IDS = [
     'footerBgColor', 'footerTextColor', 'footerFontSize', 'footerLineHeight', 'footerTextAlign',
     'footerBorderColor', 'footerBorderTop', 'footerBorderRight', 'footerBorderBottom', 'footerBorderLeft',
     'footerPaddingTop', 'footerPaddingRight', 'footerPaddingBottom', 'footerPaddingLeft',
+    'footerLinkedin', 'footerTwitter', 'footerInstagram', 'footerFacebook',
     // App branding colors
     'brandingHeaderColor', 'brandingFooterColor', 'brandingLayoutColor', 'brandingTextColor',
     // App branding flags
