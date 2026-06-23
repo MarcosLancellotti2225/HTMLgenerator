@@ -541,14 +541,15 @@ function getSignaturitUrl(path) {
 }
 
 function getToken() {
-    return document.getElementById('apiToken').value.trim();
+    return document.getElementById('apiToken').value.trim().replace(/[^\x20-\x7E]/g, '');
 }
 
 // Wrapper: todas las llamadas pasan por POST al proxy
 async function apiCall(method, path, body) {
+    const sanitize = (s) => s.replace(/[^\x20-\x7E]/g, '');
     const headers = {
-        'x-signaturit-token': getToken(),
-        'x-api-url': getSignaturitUrl(path),
+        'x-signaturit-token': sanitize(getToken()),
+        'x-api-url': sanitize(getSignaturitUrl(path)),
     };
 
     if (method !== 'POST') {
