@@ -2375,10 +2375,25 @@ function parseHTMLTemplate(htmlString) {
     // Text color from content td or first <p>
     const contentTd = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
                      doc.querySelector('td[style*="padding:40px 30px"]');
-    const textColorSource = contentTd || firstP;
-    if (textColorSource) {
-        const ctStyle = textColorSource.getAttribute('style') || '';
-        const colorMatch = ctStyle.match(/color:\s*([^;]+)/);
+    let textColorFound = false;
+    if (contentTd) {
+        const ctStyle = contentTd.getAttribute('style') || '';
+        const colorMatch = ctStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
+        if (colorMatch) {
+            const parsedTxt = parseColor(colorMatch[1]);
+            if (parsedTxt) {
+                document.getElementById('textColor').value = parsedTxt.hex;
+                document.getElementById('textColorValue').value = parsedTxt.hex;
+                document.getElementById('textColorOpacity').value = parsedTxt.opacity;
+                const opLabel = document.getElementById('textColorOpacityValue');
+                if (opLabel) opLabel.textContent = parsedTxt.opacity;
+                textColorFound = true;
+            }
+        }
+    }
+    if (!textColorFound && firstP) {
+        const pStyle = firstP.getAttribute('style') || '';
+        const colorMatch = pStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
         if (colorMatch) {
             const parsedTxt = parseColor(colorMatch[1]);
             if (parsedTxt) {
