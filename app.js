@@ -1889,39 +1889,66 @@ function generateHTML() {
         return t;
     };
 
+    const parseLineStyle = (line) => {
+        const m = line.match(/^\{([^}]*)\}\s*/);
+        if (!m) return { text: line, style: baseTextStyle, liStyle: listStyle };
+        const text = line.substring(m[0].length);
+        let fontSize = textFontSize;
+        let lineHeight = textLineHeight;
+        let color = textColor;
+        let italic = false;
+        m[1].split(',').forEach(part => {
+            const p = part.trim();
+            if (p.startsWith('s:')) fontSize = p.substring(2);
+            else if (p.startsWith('c:')) color = p.substring(2);
+            else if (p === 'i') italic = true;
+        });
+        lineHeight = Math.round(parseInt(fontSize) * 1.45);
+        const italicStyle = italic ? 'font-style:italic;' : '';
+        const style = `margin:0 0 20px 0;font-size:${fontSize}px;line-height:${lineHeight}px;${letterSpacingStyle}${fontWeightStyle}${textAlignStyle}color:${color};${italicStyle}`;
+        const liSt = `font-size:${fontSize}px;line-height:${lineHeight}px;${letterSpacingStyle}${fontWeightStyle}color:${color};${italicStyle}margin:0 0 4px 0;`;
+        return { text, style, liStyle: liSt };
+    };
+
     const lines = emailContent.split('\n').filter(line => line.trim() !== '');
     const htmlParts = [];
     let i = 0;
     while (i < lines.length) {
         const line = lines[i];
-        if (line.includes('{{sign_button}}')) {
+        const rawText = line.replace(/^\{[^}]*\}\s*/, '');
+        if (rawText.includes('{{sign_button}}')) {
             htmlParts.push(buildMagicWordButtonHTML('{{sign_button}}'));
-        } else if (line.includes('{{email_button}}')) {
+        } else if (rawText.includes('{{email_button}}')) {
             htmlParts.push(buildMagicWordButtonHTML('{{email_button}}'));
-        } else if (line.includes('{{validate_button}}')) {
+        } else if (rawText.includes('{{validate_button}}')) {
             htmlParts.push(buildMagicWordButtonHTML('{{validate_button}}'));
-        } else if (line.includes('{{dashboard_button}}')) {
+        } else if (rawText.includes('{{dashboard_button}}')) {
             htmlParts.push(buildMagicWordButtonHTML('{{dashboard_button}}'));
-        } else if (line.trim() === '---') {
+        } else if (rawText.trim() === '---') {
             htmlParts.push(`<hr style="border:0;border-top:1px solid #e0e0e0;margin:16px 0;">`);
-        } else if (/^[-•]\s/.test(line)) {
+        } else if (/^(\{[^}]*\}\s*)?[-•]\s/.test(line)) {
+            const firstParsed = parseLineStyle(lines[i]);
             const items = [];
-            while (i < lines.length && /^[-•]\s/.test(lines[i])) {
-                items.push(`\n                <li style="${listStyle}">${formatInline(lines[i].replace(/^[-•]\s*/, ''))}</li>`);
+            while (i < lines.length && /^(\{[^}]*\}\s*)?[-•]\s/.test(lines[i])) {
+                const p = parseLineStyle(lines[i]);
+                items.push(`\n                <li style="${p.liStyle}">${formatInline(p.text.replace(/^[-•]\s*/, ''))}</li>`);
                 i++;
             }
-            htmlParts.push(`              <ul style="margin:0 0 20px 0;padding-left:20px;${baseTextStyle}">${items.join('')}\n              </ul>`);
+            htmlParts.push(`              <ul style="margin:0 0 20px 0;padding-left:20px;${firstParsed.style}">${items.join('')}\n              </ul>`);
             continue;
-        } else if (/^\d+\.\s/.test(line)) {
+        } else if (/^(\{[^}]*\}\s*)?\d+\.\s/.test(line)) {
+            const firstParsed = parseLineStyle(lines[i]);
             const items = [];
-            while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
-                items.push(`\n                <li style="${listStyle}">${formatInline(lines[i].replace(/^\d+\.\s*/, ''))}</li>`);
+            while (i < lines.length && /^(\{[^}]*\}\s*)?\d+\.\s/.test(lines[i])) {
+                const p = parseLineStyle(lines[i]);
+                items.push(`\n                <li style="${p.liStyle}">${formatInline(p.text.replace(/^\d+\.\s*/, ''))}</li>`);
                 i++;
             }
-            htmlParts.push(`              <ol style="margin:0 0 20px 0;padding-left:20px;${baseTextStyle}">${items.join('')}\n              </ol>`);
+            htmlParts.push(`              <ol style="margin:0 0 20px 0;padding-left:20px;${firstParsed.style}">${items.join('')}\n              </ol>`);
             continue;
         } else {
-            htmlParts.push(`              <p style="${baseTextStyle}">\n                ${formatInline(line)}\n              </p>`);
+            const parsed = parseLineStyle(line);
+            htmlParts.push(`              <p style="${parsed.style}">\n                ${formatInline(parsed.text)}\n              </p>`);
         }
         i++;
     }
@@ -2115,6 +2142,35 @@ function loadPastedHTML() {
     }
 }
 
+function buildStylePrefix(pNode) {
+    const style = pNode.getAttribute('style') || '';
+    const parts = [];
+    const defaultSize = document.getElementById('textFontSize').value || '14';
+    const defaultColor = document.getElementById('textColor').value || '#333333';
+
+    const fsMatch = style.match(/font-size:\s*(\d+)px/);
+    if (fsMatch && fsMatch[1] !== defaultSize) parts.push('s:' + fsMatch[1]);
+
+    const colorMatch = style.match(/(?<![a-z-])color:\s*([^;]+)/);
+    if (colorMatch) {
+        const c = colorMatch[1].trim();
+        const hex = parseColorToHex(c);
+        if (hex && hex.toLowerCase() !== defaultColor.toLowerCase()) parts.push('c:' + hex);
+    }
+
+    if (style.includes('font-style') && style.includes('italic')) parts.push('i');
+
+    return parts.length > 0 ? '{' + parts.join(',') + '} ' : '';
+}
+
+function parseColorToHex(str) {
+    if (!str) return null;
+    if (str.startsWith('#')) return str.length === 4 ? '#' + str[1]+str[1]+str[2]+str[2]+str[3]+str[3] : str;
+    const m = str.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if (m) return '#' + [m[1],m[2],m[3]].map(x => parseInt(x).toString(16).padStart(2,'0')).join('');
+    return str;
+}
+
 // Parsear solo el contenido del email (textarea) sin modificar estilos del formulario
 function parseEmailContentOnly(htmlString) {
     const parser = new DOMParser();
@@ -2147,21 +2203,23 @@ function parseEmailContentOnly(htmlString) {
         }
         const tag = node.nodeName;
         if (tag === 'UL') {
+            let prefix = buildStylePrefix(node);
             let items = '';
             for (const li of node.querySelectorAll(':scope > li')) {
                 let liContent = '';
                 for (const c of li.childNodes) liContent += processNode(c);
-                items += '- ' + liContent.trim() + '\n';
+                items += prefix + '- ' + liContent.trim() + '\n';
             }
             return items;
         }
         if (tag === 'OL') {
+            let prefix = buildStylePrefix(node);
             let items = '';
             let idx = 1;
             for (const li of node.querySelectorAll(':scope > li')) {
                 let liContent = '';
                 for (const c of li.childNodes) liContent += processNode(c);
-                items += idx + '. ' + liContent.trim() + '\n';
+                items += prefix + idx + '. ' + liContent.trim() + '\n';
                 idx++;
             }
             return items;
@@ -2171,7 +2229,10 @@ function parseEmailContentOnly(htmlString) {
         if (tag === 'STRONG' || tag === 'B') result = '**' + childContent + '**';
         else if (tag === 'EM' || tag === 'I') result = '*' + childContent + '*';
         else if (tag === 'U') result = '__' + childContent + '__';
-        else if (tag === 'P') result = childContent.trim() + '\n';
+        else if (tag === 'P') {
+            let prefix = buildStylePrefix(node);
+            result = prefix + childContent.trim() + '\n';
+        }
         else result = childContent;
         return result;
     };
@@ -2495,21 +2556,23 @@ function parseHTMLTemplate(htmlString) {
                 }
                 const tag = node.nodeName;
                 if (tag === 'UL') {
+                    let prefix = buildStylePrefix(node);
                     let items = '';
                     for (const li of node.querySelectorAll(':scope > li')) {
                         let liContent = '';
                         for (const c of li.childNodes) liContent += processNode(c);
-                        items += '- ' + liContent.trim() + '\n';
+                        items += prefix + '- ' + liContent.trim() + '\n';
                     }
                     return items;
                 }
                 if (tag === 'OL') {
+                    let prefix = buildStylePrefix(node);
                     let items = '';
                     let idx = 1;
                     for (const li of node.querySelectorAll(':scope > li')) {
                         let liContent = '';
                         for (const c of li.childNodes) liContent += processNode(c);
-                        items += idx + '. ' + liContent.trim() + '\n';
+                        items += prefix + idx + '. ' + liContent.trim() + '\n';
                         idx++;
                     }
                     return items;
@@ -2526,7 +2589,8 @@ function parseHTMLTemplate(htmlString) {
                 } else if (tag === 'U') {
                     result = '__' + childContent + '__';
                 } else if (tag === 'P') {
-                    result = childContent.trim() + '\n';
+                    let prefix = buildStylePrefix(node);
+                    result = prefix + childContent.trim() + '\n';
                 } else {
                     result = childContent;
                 }
@@ -3054,6 +3118,38 @@ function insertLineBreak() {
     textarea.value = textarea.value.substring(0, pos) + '\n---\n' + textarea.value.substring(pos);
     textarea.focus();
     textarea.setSelectionRange(pos + 5, pos + 5);
+    updatePreview();
+}
+
+function applyLineStyle() {
+    const textarea = document.getElementById('emailContent');
+    if (!textarea) return;
+    const size = document.getElementById('lineStyleSize').value;
+    const color = document.getElementById('lineStyleColor').value;
+    if (!size && color === '#333333') {
+        showToast('Selecciona un tamaño y/o color distinto');
+        return;
+    }
+    const pos = textarea.selectionStart;
+    const text = textarea.value;
+    let lineStart = text.lastIndexOf('\n', pos - 1) + 1;
+    let lineEnd = text.indexOf('\n', pos);
+    if (lineEnd === -1) lineEnd = text.length;
+    let line = text.substring(lineStart, lineEnd);
+
+    // Remove existing style marker
+    line = line.replace(/^\{[^}]*\}\s*/, '');
+
+    // Build new marker
+    const parts = [];
+    if (size) parts.push('s:' + size);
+    if (color && color !== '#333333') parts.push('c:' + color);
+    const marker = parts.length > 0 ? '{' + parts.join(',') + '} ' : '';
+
+    textarea.value = text.substring(0, lineStart) + marker + line + text.substring(lineEnd);
+    textarea.focus();
+    const newPos = lineStart + marker.length + line.length;
+    textarea.setSelectionRange(newPos, newPos);
     updatePreview();
 }
 

@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v48</span>
+                        <span style="color:#999;font-size:12px;">v49</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -246,7 +246,7 @@
 
                             <div class="form-group">
                                 <label>Contenido Completo del Email</label>
-                                <div style="display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap;">
+                                <div style="display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap; align-items: center;">
                                     <button type="button" onclick="wrapEmailSelection('**', '**')" title="Negrita" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px;">B</button>
                                     <button type="button" onclick="wrapEmailSelection('*', '*')" title="Cursiva" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-style: italic; font-size: 13px;">I</button>
                                     <button type="button" onclick="wrapEmailSelection('__', '__')" title="Subrayado" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; text-decoration: underline; font-size: 13px;">U</button>
@@ -254,7 +254,22 @@
                                     <button type="button" onclick="insertListPrefix('- ')" title="Viñeta" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-size: 13px;">&#8226;</button>
                                     <button type="button" onclick="insertListPrefix('1. ')" title="Lista numerada" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-size: 13px;">1.</button>
                                     <button type="button" onclick="insertLineBreak()" title="Linea separadora" style="padding: 4px 10px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; cursor: pointer; font-size: 13px;">&#8213;</button>
+                                    <span style="border-left: 1px solid #d1d5db; margin: 0 2px;"></span>
+                                    <select id="lineStyleSize" style="padding: 3px 4px; border: 1px solid #d1d5db; background: #f9fafb; border-radius: 4px; font-size: 11px; width: 62px;" title="Tamaño de linea">
+                                        <option value="">px</option>
+                                        <option value="11">11px</option>
+                                        <option value="12">12px</option>
+                                        <option value="13">13px</option>
+                                        <option value="14">14px</option>
+                                        <option value="16">16px</option>
+                                        <option value="18">18px</option>
+                                        <option value="20">20px</option>
+                                        <option value="24">24px</option>
+                                    </select>
+                                    <input type="color" id="lineStyleColor" value="#333333" title="Color de linea" style="width: 28px; height: 26px; padding: 1px; border: 1px solid #d1d5db; border-radius: 4px; cursor: pointer;">
+                                    <button type="button" onclick="applyLineStyle()" title="Aplicar estilo a la linea actual" style="padding: 4px 8px; border: 1px solid #d1d5db; background: #e8f5e9; border-radius: 4px; cursor: pointer; font-size: 11px;">Aplicar</button>
                                 </div>
+                                <small style="color: #6c757d; display: block; margin-bottom: 4px;">B/I/U para inline. Selecciona px y/o color + "Aplicar" para estilar la linea actual: {s:12,c:#666}</small>
                                 <textarea id="emailContent" style="min-height: 300px;" placeholder="Escribe aquí el contenido de tu email...&#10;&#10;Ejemplo:&#10;Estimado/a {{signer_name}}, le hacemos llegar la documentación:&#10;&#10;{{filename}}&#10;&#10;Para firmar, haga clic en: {{sign_button}}&#10;&#10;{{email_body}}"></textarea>
                             </div>
 
@@ -1011,6 +1026,6 @@ window.addEventListener('message', function(event) {
         </div>
     </div>
 
-    <script src="app.js?v=48"></script>
+    <script src="app.js?v=49"></script>
 </body>
 </html>
