@@ -1920,7 +1920,7 @@ function generateHTML() {
         return { text, style, liStyle: liSt };
     };
 
-    const lines = emailContent.split('\n').filter(line => line.trim() !== '');
+    const lines = emailContent.split('\n').map(l => l.trim()).filter(line => line !== '');
     const htmlParts = [];
     let i = 0;
     while (i < lines.length) {
@@ -2253,7 +2253,7 @@ function parseEmailContentOnly(htmlString) {
 
     if (!emailContent.trim()) emailContent = contentArea.textContent || '';
 
-    emailContent = emailContent.replace(/\n{3,}/g, '\n\n').trim();
+    emailContent = emailContent.split('\n').map(l => l.trim()).join('\n').replace(/\n{3,}/g, '\n\n').trim();
     document.getElementById('emailContent').value = emailContent;
 }
 
@@ -2646,6 +2646,9 @@ function parseHTMLTemplate(htmlString) {
     }
 
     emailContent = emailContent
+        .split('\n')
+        .map(l => l.trim())
+        .join('\n')
         .replace(/\n{3,}/g, '\n\n')
         .trim();
 
