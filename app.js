@@ -1898,10 +1898,19 @@ function generateHTML() {
         let lineHeight = textLineHeight;
         let color = textColor;
         let italic = false;
-        m[1].split(',').forEach(part => {
+        const tokenParts = [];
+        let depth = 0, cur = '';
+        for (const ch of m[1]) {
+            if (ch === '(') depth++;
+            if (ch === ')') depth--;
+            if (ch === ',' && depth === 0) { tokenParts.push(cur); cur = ''; }
+            else cur += ch;
+        }
+        if (cur) tokenParts.push(cur);
+        tokenParts.forEach(part => {
             const p = part.trim();
             if (p.startsWith('s:')) fontSize = p.substring(2);
-            else if (p.startsWith('c:')) color = p.substring(2);
+            else if (p.startsWith('c:')) { color = parseColorToHex(p.substring(2)) || p.substring(2); }
             else if (p === 'i') italic = true;
         });
         lineHeight = Math.round(parseInt(fontSize) * 1.45);
@@ -2166,8 +2175,9 @@ function buildStylePrefix(pNode) {
 
 function parseColorToHex(str) {
     if (!str) return null;
+    str = str.trim();
     if (str.startsWith('#')) return str.length === 4 ? '#' + str[1]+str[1]+str[2]+str[2]+str[3]+str[3] : str;
-    const m = str.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    const m = str.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
     if (m) return '#' + [m[1],m[2],m[3]].map(x => parseInt(x).toString(16).padStart(2,'0')).join('');
     return str;
 }
