@@ -1357,31 +1357,31 @@ async function createNewBranding(templateType) {
     }
 
     let html = generateHTML();
-    const shouldMinify = document.getElementById('minifyHTML').checked;
-    if (shouldMinify) {
-        html = minifyHTML(html);
-    }
+    html = minifyHTML(html);
 
-    const formBody = new URLSearchParams();
-    formBody.append('name', name);
-    formBody.append('templates[0][name]', templateType);
-    formBody.append('templates[0][content]', html);
-
+    // Step 1: Create branding with name only (JSON, lightweight)
+    const createBody = { name: name };
     const appParams = collectBrandingAppParams();
     Object.keys(appParams).forEach(key => {
-        const val = appParams[key];
-        if (typeof val === 'object' && val !== null) {
-            Object.keys(val).forEach(subKey => {
-                formBody.append(key + '[' + subKey + ']', val[subKey]);
-            });
-        } else {
-            formBody.append(key, val);
-        }
+        createBody[key] = appParams[key];
     });
 
     try {
-        const result = await apiCall('POST', '/brandings.json', formBody);
-        showToast('Branding "' + name + '" creado con ID: ' + result.id.substring(0, 8) + '...');
+        const result = await apiCall('POST', '/brandings.json', createBody);
+        const newId = result.id;
+        showToast('Branding "' + name + '" creado, guardando template...');
+
+        // Step 2: PATCH templates as form-urlencoded (same as update)
+        const templatesBody = new URLSearchParams();
+        templatesBody.append('templates[' + templateType + ']', html);
+        try {
+            await apiCall('PATCH', '/brandings/' + newId + '.json', templatesBody);
+        } catch (tplError) {
+            console.error('Error saving template after create:', tplError.message);
+            showToast('Branding creado pero error al guardar template: ' + tplError.message);
+        }
+
+        showToast('Branding "' + name + '" creado con ID: ' + newId.substring(0, 8) + '...');
 
         // Recargar lista de brandings
         try {
@@ -1390,12 +1390,12 @@ async function createNewBranding(templateType) {
         } catch (e) { /* silenciar error de recarga */ }
 
         // Cambiar a modo edicion del branding recien creado
-        selectedBrandingId = result.id;
+        selectedBrandingId = newId;
         selectedBrandingTemplates = {};
         selectedBrandingTemplates[templateType] = html;
         isNewBranding = false;
         document.getElementById('editorBrandingName').value = name;
-        document.getElementById('editorBrandingId').textContent = result.id;
+        document.getElementById('editorBrandingId').textContent = newId;
         document.getElementById('newBrandingNameGroup').style.display = 'none';
         document.getElementById('templateTypeGroup').style.display = '';
         const tplDropdown = document.getElementById('templateType');
