@@ -2280,7 +2280,8 @@ function parseHTMLTemplate(htmlString) {
     // Logo
     const logoImg = doc.querySelector('img[alt="Logo"]') ||
                    doc.querySelector('img[alt="logo"]') ||
-                   doc.querySelector('img');
+                   doc.querySelector('td[style*="padding:30px"] img') ||
+                   doc.querySelector('td[style*="padding:20px"] img:not([alt="LinkedIn"]):not([alt="Twitter"]):not([alt="Instagram"]):not([alt="Facebook"])');
 
     if (logoImg) {
         const logoSrc = logoImg.getAttribute('src');
@@ -2382,6 +2383,10 @@ function parseHTMLTemplate(htmlString) {
         }
     }
 
+    // Text format (font-size, line-height, text-align, font-weight, letter-spacing) from first <p> in content
+    const firstP = doc.querySelector('td[style*="padding:0 0 25px 0"] p') ||
+                  doc.querySelector('td[style*="padding:40px 30px"] p');
+
     // Text color from content td or first <p>
     const contentTd = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
                      doc.querySelector('td[style*="padding:40px 30px"]');
@@ -2416,9 +2421,6 @@ function parseHTMLTemplate(htmlString) {
         }
     }
 
-    // Text format (font-size, line-height, text-align, font-weight, letter-spacing) from first <p> in content
-    const firstP = doc.querySelector('td[style*="padding:0 0 25px 0"] p') ||
-                  doc.querySelector('td[style*="padding:40px 30px"] p');
     if (firstP) {
         const pStyle = firstP.getAttribute('style') || '';
         const fsMatch = pStyle.match(/font-size:\s*(\d+)px/);
@@ -2483,12 +2485,14 @@ function parseHTMLTemplate(htmlString) {
             document.getElementById('buttonBorderWidth').value = '0';
         }
 
-        const marginMatch = buttonStyle.match(/margin:\s*(\d+)px\s+(\d+)px\s+(\d+)px\s+(\d+)px/);
+        const marginMatch = buttonStyle.match(/margin:\s*(\d+)px\s+(\S+)\s+(\d+)px\s+(\S+)/);
         if (marginMatch) {
             document.getElementById('buttonMarginTop').value = marginMatch[1];
-            document.getElementById('buttonMarginRight').value = marginMatch[2];
             document.getElementById('buttonMarginBottom').value = marginMatch[3];
-            document.getElementById('buttonMarginLeft').value = marginMatch[4];
+            const align = buttonTable.getAttribute('align') || '';
+            if (align === 'center' || marginMatch[2] === 'auto') {
+                document.getElementById('buttonAlign').value = 'center';
+            }
         }
 
         const buttonTd = buttonTable.querySelector('td');
@@ -2519,11 +2523,13 @@ function parseHTMLTemplate(htmlString) {
                     if (opLabel) opLabel.textContent = parsedTxtColor.opacity;
                 }
             }
-            const btnFontSizeMatch = spanStyle.match(/font-size:\s*(\d+)px/);
+            const btnP = buttonTable.querySelector('p');
+            const btnPStyle = btnP ? (btnP.getAttribute('style') || '') : '';
+            const btnFontSizeMatch = spanStyle.match(/font-size:\s*(\d+)px/) || btnPStyle.match(/font-size:\s*(\d+)px/);
             if (btnFontSizeMatch) {
                 document.getElementById('buttonFontSize').value = btnFontSizeMatch[1];
             }
-            const btnLineHeightMatch = spanStyle.match(/line-height:\s*(\d+)px/);
+            const btnLineHeightMatch = spanStyle.match(/line-height:\s*(\d+)px/) || btnPStyle.match(/line-height:\s*(\d+)px/);
             if (btnLineHeightMatch) {
                 document.getElementById('buttonLineHeight').value = btnLineHeightMatch[1];
             }
