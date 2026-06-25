@@ -1898,10 +1898,19 @@ function generateHTML() {
         let lineHeight = textLineHeight;
         let color = textColor;
         let italic = false;
-        m[1].split(',').forEach(part => {
+        const tokenParts = [];
+        let depth = 0, cur = '';
+        for (const ch of m[1]) {
+            if (ch === '(') depth++;
+            if (ch === ')') depth--;
+            if (ch === ',' && depth === 0) { tokenParts.push(cur); cur = ''; }
+            else cur += ch;
+        }
+        if (cur) tokenParts.push(cur);
+        tokenParts.forEach(part => {
             const p = part.trim();
             if (p.startsWith('s:')) fontSize = p.substring(2);
-            else if (p.startsWith('c:')) color = p.substring(2);
+            else if (p.startsWith('c:')) { color = parseColorToHex(p.substring(2)) || p.substring(2); }
             else if (p === 'i') italic = true;
         });
         lineHeight = Math.round(parseInt(fontSize) * 1.45);
@@ -2166,8 +2175,9 @@ function buildStylePrefix(pNode) {
 
 function parseColorToHex(str) {
     if (!str) return null;
+    str = str.trim();
     if (str.startsWith('#')) return str.length === 4 ? '#' + str[1]+str[1]+str[2]+str[2]+str[3]+str[3] : str;
-    const m = str.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    const m = str.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
     if (m) return '#' + [m[1],m[2],m[3]].map(x => parseInt(x).toString(16).padStart(2,'0')).join('');
     return str;
 }
@@ -2375,10 +2385,25 @@ function parseHTMLTemplate(htmlString) {
     // Text color from content td or first <p>
     const contentTd = doc.querySelector('td[style*="padding:0 0 25px 0"]') ||
                      doc.querySelector('td[style*="padding:40px 30px"]');
-    const textColorSource = contentTd || firstP;
-    if (textColorSource) {
-        const ctStyle = textColorSource.getAttribute('style') || '';
-        const colorMatch = ctStyle.match(/color:\s*([^;]+)/);
+    let textColorFound = false;
+    if (contentTd) {
+        const ctStyle = contentTd.getAttribute('style') || '';
+        const colorMatch = ctStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
+        if (colorMatch) {
+            const parsedTxt = parseColor(colorMatch[1]);
+            if (parsedTxt) {
+                document.getElementById('textColor').value = parsedTxt.hex;
+                document.getElementById('textColorValue').value = parsedTxt.hex;
+                document.getElementById('textColorOpacity').value = parsedTxt.opacity;
+                const opLabel = document.getElementById('textColorOpacityValue');
+                if (opLabel) opLabel.textContent = parsedTxt.opacity;
+                textColorFound = true;
+            }
+        }
+    }
+    if (!textColorFound && firstP) {
+        const pStyle = firstP.getAttribute('style') || '';
+        const colorMatch = pStyle.match(/(?<![a-z-])color:\s*([^;]+)/);
         if (colorMatch) {
             const parsedTxt = parseColor(colorMatch[1]);
             if (parsedTxt) {
