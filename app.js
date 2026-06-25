@@ -1891,7 +1891,7 @@ function generateHTML() {
     };
 
     const parseLineStyle = (line) => {
-        const m = line.match(/^\{([^}]*)\}\s*/);
+        const m = line.match(/^\{(?!\{)([^}]*)\}\s*/);
         if (!m) return { text: line, style: baseTextStyle, liStyle: listStyle };
         const text = line.substring(m[0].length);
         let fontSize = textFontSize;
@@ -1925,7 +1925,7 @@ function generateHTML() {
     let i = 0;
     while (i < lines.length) {
         const line = lines[i];
-        const rawText = line.replace(/^\{[^}]*\}\s*/, '');
+        const rawText = line.replace(/^\{(?!\{)[^}]*\}\s*/, '');
         if (rawText.includes('{{sign_button}}')) {
             htmlParts.push(buildMagicWordButtonHTML('{{sign_button}}'));
         } else if (rawText.includes('{{email_button}}')) {
@@ -1936,20 +1936,20 @@ function generateHTML() {
             htmlParts.push(buildMagicWordButtonHTML('{{dashboard_button}}'));
         } else if (rawText.trim() === '---') {
             htmlParts.push(`<hr style="border:0;border-top:1px solid #e0e0e0;margin:16px 0;">`);
-        } else if (/^(\{[^}]*\}\s*)?[-•]\s/.test(line)) {
+        } else if (/^(\{(?!\{)[^}]*\}\s*)?[-•]\s/.test(line)) {
             const firstParsed = parseLineStyle(lines[i]);
             const items = [];
-            while (i < lines.length && /^(\{[^}]*\}\s*)?[-•]\s/.test(lines[i])) {
+            while (i < lines.length && /^(\{(?!\{)[^}]*\}\s*)?[-•]\s/.test(lines[i])) {
                 const p = parseLineStyle(lines[i]);
                 items.push(`\n                <li style="${p.liStyle}">${formatInline(p.text.replace(/^[-•]\s*/, ''))}</li>`);
                 i++;
             }
             htmlParts.push(`              <ul style="margin:0 0 20px 0;padding-left:20px;${firstParsed.style}">${items.join('')}\n              </ul>`);
             continue;
-        } else if (/^(\{[^}]*\}\s*)?\d+\.\s/.test(line)) {
+        } else if (/^(\{(?!\{)[^}]*\}\s*)?\d+\.\s/.test(line)) {
             const firstParsed = parseLineStyle(lines[i]);
             const items = [];
-            while (i < lines.length && /^(\{[^}]*\}\s*)?\d+\.\s/.test(lines[i])) {
+            while (i < lines.length && /^(\{(?!\{)[^}]*\}\s*)?\d+\.\s/.test(lines[i])) {
                 const p = parseLineStyle(lines[i]);
                 items.push(`\n                <li style="${p.liStyle}">${formatInline(p.text.replace(/^\d+\.\s*/, ''))}</li>`);
                 i++;
@@ -3173,7 +3173,7 @@ function applyLineStyle() {
     let line = text.substring(lineStart, lineEnd);
 
     // Remove existing style marker
-    line = line.replace(/^\{[^}]*\}\s*/, '');
+    line = line.replace(/^\{(?!\{)[^}]*\}\s*/, '');
 
     // Build new marker
     const parts = [];
