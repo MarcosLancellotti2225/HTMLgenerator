@@ -898,14 +898,13 @@ async function duplicateBranding(brandingId, currentName) {
         // Fetch full branding data
         const fullBranding = await apiCall('GET', '/brandings/' + brandingId + '.json');
 
-        // Build new branding body with all templates and params
-        const body = { name: newName.trim(), templates: {} };
+        const body = { name: newName.trim() };
 
-        // Copy all templates
+        const templatesBody = new URLSearchParams();
         if (fullBranding.templates && Array.isArray(fullBranding.templates)) {
             fullBranding.templates.forEach(t => {
                 if (t.name && t.content) {
-                    body.templates[normalizeTemplateName(t.name)] = t.content;
+                    templatesBody.append('templates[' + normalizeTemplateName(t.name) + ']', minifyHTML(t.content));
                 }
             });
         }
@@ -921,8 +920,10 @@ async function duplicateBranding(brandingId, currentName) {
         if (fullBranding.show_csv !== undefined) body.show_csv = fullBranding.show_csv;
         if (fullBranding.show_biometric_hash !== undefined) body.show_biometric_hash = fullBranding.show_biometric_hash;
         if (fullBranding.application_texts) body.application_texts = fullBranding.application_texts;
-        const formBody = objectToFormParams(body);
-        const result = await apiCall('POST', '/brandings.json', formBody);
+        const result = await apiCall('POST', '/brandings.json', body);
+        if ([...templatesBody.keys()].length > 0) {
+            await apiCall('PATCH', '/brandings/' + result.id + '.json', templatesBody);
+        }
         showToast('Branding duplicado como "' + newName.trim() + '"');
 
         // Reload brandings list
