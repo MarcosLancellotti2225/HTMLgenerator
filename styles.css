@@ -1358,3 +1358,165 @@ button {
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Editor tabs ── */
+.editor-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 16px;
+    background: #eef0f3;
+    border-radius: 8px;
+}
+
+.editor-tab {
+    flex: 1;
+    padding: 8px 6px;
+    white-space: nowrap;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555e6b;
+    transition: background 0.15s, color 0.15s;
+}
+
+.editor-tab:hover {
+    color: #1a1a2e;
+}
+
+.editor-tab.active {
+    background: #ffffff;
+    color: #1a1a2e;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+/* ── Cargar / Exportar cards ── */
+.file-card {
+    background: #ffffff;
+    border: 1px solid #e1e4e8;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.file-card h3 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    color: #1a1a2e;
+}
+
+.file-card p {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.file-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.file-card button {
+    font-size: 12px;
+    padding: 7px 12px;
+}
+
+.file-card-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.file-card-check input {
+    width: auto;
+}
+
+.file-card-danger {
+    border-color: #f1c7c7;
+}
+
+/* ── Sticky save bar ── */
+.editor-savebar {
+    position: sticky;
+    bottom: -28px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px -24px -28px;
+    padding: 12px 24px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border-top: 1px solid #e1e4e8;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+}
+
+.savebar-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.savebar-label {
+    font-size: 11px;
+    color: #6c757d;
+}
+
+.savebar-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a2e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn-savebar {
+    flex-shrink: 0;
+    padding: 9px 18px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-savebar:hover {
+    background: #1d4ed8;
+}
+
+@media (max-width: 1200px) {
+    .controls {
+        overflow: visible;
+    }
+
+    .editor-savebar {
+        bottom: 0;
+    }
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+}
+
+.controls > * {
+    flex-shrink: 0;
+}
+
+.controls > .editor-savebar {
+    margin-top: auto;
+}
+

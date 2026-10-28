@@ -54,7 +54,7 @@
                         &mdash;
                         <span id="dashboardCount">0</span> brandings
                         &mdash;
-                        <span style="color:#999;font-size:12px;">v53</span>
+                        <span style="color:#999;font-size:12px;">v54</span>
                     </div>
                 </div>
                 <div class="dashboard-header-right">
@@ -84,10 +84,16 @@
                     </div>
                 </div>
 
-                <!-- Sección: Template API -->
-                <div class="collapsible-section">
+                <div class="editor-tabs" role="tablist">
+                    <button class="editor-tab active" data-editor-tab="email" role="tab" onclick="switchEditorTab('email')">Email</button>
+                    <button class="editor-tab" data-editor-tab="app" role="tab" onclick="switchEditorTab('app')">App de firma</button>
+                    <button class="editor-tab" data-editor-tab="file" role="tab" onclick="switchEditorTab('file')">Cargar / Exportar</button>
+                </div>
+
+                <!-- Sección: Template -->
+                <div class="collapsible-section" data-preview-tab="email">
                     <div class="collapsible-header active" onclick="toggleCollapsible(this)">
-                        <h2>Template API</h2>
+                        <h2>Template</h2>
                         <span class="collapsible-icon">&#9660;</span>
                     </div>
                     <div class="collapsible-content active">
@@ -130,26 +136,6 @@
                                 </div>
                                 <small style="color: #6c757d; display: block; margin-top: 3px;">Carga un template base por idioma.</small>
                             </div>
-
-                            <div class="api-button-row">
-                                <button class="btn-api-action btn-api-load" onclick="loadTemplateFromAPI()">
-                                    Cargar template
-                                </button>
-                                <button class="btn-api-action btn-api-save" onclick="saveTemplateToAPI()">
-                                    Guardar
-                                </button>
-                            </div>
-
-                            <div class="api-button-row" style="margin-top: 8px;">
-                                <button class="btn-api-action" onclick="exportBranding()" style="background: #198754; color: #fff; border-color: #198754;">
-                                    Exportar Branding
-                                </button>
-                                <button class="btn-api-action" onclick="importBranding()" style="background: #0d6efd; color: #fff; border-color: #0d6efd;">
-                                    Importar Branding
-                                </button>
-                                <input type="file" id="importBrandingFile" accept=".json" style="display:none;" onchange="handleImportBranding(event)">
-                            </div>
-                            <small style="color: #6c757d; display: block; margin-top: 3px;">Sandbox &rarr; Produccion via JSON.</small>
                         </div>
                     </div>
                 </div>
@@ -919,19 +905,52 @@ window.addEventListener('message', function(event) {
                     </div>
                 </div>
 
-                <!-- Botones de accion (solo email) -->
-                <div data-preview-tab="email">
-                <div class="button-group">
-                    <button class="btn-primary" onclick="downloadHTML()" style="font-size: 12px; padding: 7px 14px;">Descargar</button>
-                    <button class="btn-secondary" onclick="resetToDefault()" style="font-size: 12px; padding: 7px 14px;">Reset</button>
-                    <button class="btn-secondary" onclick="document.getElementById('importHTML').click()" style="font-size: 12px; padding: 7px 14px;">Importar</button>
-                    <button class="btn-secondary" onclick="openPasteHTMLModal()" style="font-size: 12px; padding: 7px 14px;">Pegar HTML</button>
-                    <input type="file" id="importHTML" accept=".html,.htm" style="display:none;" onchange="importHTMLFile(event)">
+                <!-- Pestaña: Cargar / Exportar -->
+                <div data-preview-tab="file">
+                    <div class="file-card">
+                        <h3>Desde Signaturit</h3>
+                        <p>Trae el template seleccionado tal como está guardado en este branding.</p>
+                        <button class="btn-api-action btn-api-load" onclick="loadTemplateFromAPI()">Cargar template guardado</button>
+                    </div>
+
+                    <div class="file-card">
+                        <h3>HTML del email</h3>
+                        <p>Trabaja con el HTML del template actual.</p>
+                        <div class="file-card-actions">
+                            <button class="btn-secondary" onclick="document.getElementById('importHTML').click()">Importar archivo .html</button>
+                            <button class="btn-secondary" onclick="openPasteHTMLModal()">Pegar HTML</button>
+                            <button class="btn-primary" onclick="downloadHTML()">Descargar .html</button>
+                        </div>
+                        <input type="file" id="importHTML" accept=".html,.htm" style="display:none;" onchange="importHTMLFile(event)">
+                        <label class="file-card-check">
+                            <input type="checkbox" id="minifyHTML" checked>
+                            <span>Minificar HTML al descargar</span>
+                        </label>
+                    </div>
+
+                    <div class="file-card">
+                        <h3>Branding completo (JSON)</h3>
+                        <p>Para pasar un branding de Sandbox a Producción.</p>
+                        <div class="file-card-actions">
+                            <button class="btn-secondary" onclick="exportBranding()">Exportar branding</button>
+                            <button class="btn-secondary" onclick="importBranding()">Importar branding</button>
+                        </div>
+                        <input type="file" id="importBrandingFile" accept=".json" style="display:none;" onchange="handleImportBranding(event)">
+                    </div>
+
+                    <div class="file-card file-card-danger">
+                        <h3>Empezar de cero</h3>
+                        <p>Vuelve todos los campos del editor a los valores por defecto.</p>
+                        <button class="btn-secondary" onclick="resetToDefault()">Resetear editor</button>
+                    </div>
                 </div>
-                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-top: 8px; font-size: 11px;">
-                    <input type="checkbox" id="minifyHTML" checked style="width: auto; cursor: pointer;">
-                    <span>Minificar HTML</span>
-                </label>
+
+                <div class="editor-savebar">
+                    <div class="savebar-info">
+                        <span class="savebar-label" id="savebarLabel">Template</span>
+                        <span class="savebar-value" id="savebarValue">sign_request</span>
+                    </div>
+                    <button class="btn-savebar" onclick="saveTemplateToAPI()">Guardar en Signaturit</button>
                 </div>
             </div>
 
