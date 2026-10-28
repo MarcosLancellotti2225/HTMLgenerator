@@ -1395,6 +1395,7 @@ async function createNewBranding(templateType) {
         selectedBrandingTemplates = {};
         selectedBrandingTemplates[templateType] = html;
         isNewBranding = false;
+        updateSaveBar();
         document.getElementById('editorBrandingName').value = name;
         document.getElementById('editorBrandingId').textContent = newId;
         document.getElementById('newBrandingNameGroup').style.display = 'none';
@@ -3287,26 +3288,53 @@ function switchPreviewTab(tab) {
     updateEditorSectionsVisibility(tab);
 }
 
+function switchEditorTab(tab) {
+    if (tab === 'email') switchPreviewTab('email');
+    else if (tab === 'app') switchPreviewTab('branding');
+    else updateEditorSectionsVisibility(tab);
+}
+
 function updateEditorSectionsVisibility(tab) {
     // Normalize: switchPreviewTab passes 'branding' but data attributes use 'app'
     const normalizedTab = (tab === 'branding') ? 'app' : tab;
+    document.querySelectorAll('.editor-tab').forEach(btn => {
+        const isActive = btn.getAttribute('data-editor-tab') === normalizedTab;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+    const visibleSections = [];
     document.querySelectorAll('[data-preview-tab]').forEach(el => {
         const sectionTab = el.getAttribute('data-preview-tab');
         if (sectionTab === normalizedTab) {
             el.style.display = '';
-            // Auto-expandir secciones colapsables cuando se muestran
-            if (el.classList.contains('collapsible-section')) {
-                const header = el.querySelector('.collapsible-header');
-                const content = el.querySelector('.collapsible-content');
-                if (header && content && !content.classList.contains('active')) {
-                    header.classList.add('active');
-                    content.classList.add('active');
-                }
-            }
+            if (el.classList.contains('collapsible-section')) visibleSections.push(el);
         } else {
             el.style.display = 'none';
         }
     });
+    // Open the first section only if the tab has nothing open, so the panel stays short
+    const anyOpen = visibleSections.some(s => s.querySelector('.collapsible-content.active'));
+    if (!anyOpen && visibleSections.length > 0) {
+        visibleSections[0].querySelector('.collapsible-header')?.classList.add('active');
+        visibleSections[0].querySelector('.collapsible-content')?.classList.add('active');
+    }
+    const controls = document.querySelector('.controls');
+    if (controls) controls.scrollTop = 0;
+    updateSaveBar();
+}
+
+function updateSaveBar() {
+    const label = document.getElementById('savebarLabel');
+    const value = document.getElementById('savebarValue');
+    if (!label || !value) return;
+    const tplType = document.getElementById('templateType')?.value || '';
+    if (isNewBranding) {
+        label.textContent = 'Nuevo branding';
+        value.textContent = 'se crea al guardar · ' + tplType;
+    } else {
+        label.textContent = 'Template';
+        value.textContent = tplType;
+    }
 }
 
 function refreshCurrentPreview() {
@@ -3396,6 +3424,7 @@ function toggleMobilePreview() {
 // ═══════════════════════════════════
 
 function updatePreview() {
+    updateSaveBar();
     const frame = document.getElementById('previewFrame');
     if (frame) {
         let html = generateHTML();
